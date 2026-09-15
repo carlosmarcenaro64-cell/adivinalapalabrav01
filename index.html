@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redireccionando a Mini Juegos Marcenaro</title>
+    <!-- Tailwind CSS for modern, aesthetic styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400,500,600,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 min-h-screen flex items-center justify-center p-4 text-white">
+
+    <div class="max-w-md w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-8 text-center relative overflow-hidden">
+        
+        <!-- Decorative background glow -->
+        <div class="absolute -top-24 -left-24 w-48 h-48 bg-purple-500 rounded-full filter blur-3xl opacity-30"></div>
+        <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-indigo-500 rounded-full filter blur-3xl opacity-30"></div>
+
+        <!-- Icon or Logo placeholder -->
+        <div class="mb-6 flex justify-center">
+            <div class="w-20 h-20 bg-gradient-to-tr from-indigo-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg animate-pulse-slow">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                </svg>
+            </div>
+        </div>
+
+        <h1 class="text-2xl font-bold tracking-tight mb-2">¡Nuevo Enlace Disponible!</h1>
+        <p class="text-indigo-200 text-sm mb-6">Has sido redirigido o puedes acceder directamente a la nueva plataforma de Mini Juegos de Marcenaro.</p>
+
+        <!-- Target Link Box -->
+        <div class="bg-black/30 border border-white/10 rounded-xl p-3 mb-6 break-all text-xs text-indigo-300 font-mono select-all">
+            https://carlosmarcenaro64-cell.github.io/Mini_Juegos_Marcenaro/index.html
+        </div>
+
+        <!-- Countdown / Status Text -->
+        <div id="status" class="text-xs text-gray-400 mb-6">
+            Redireccionando automáticamente en <span id="counter" class="font-bold text-white">5</span> segundos...
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col gap-3">
+            <a href="https://carlosmarcenaro64-cell.github.io/Mini_Juegos_Marcenaro/index.html" 
+               class="w-full bg-gradient-to-r from-indigo-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-200 transform hover:-translate-y-0.5 active:translate-y-0 text-center">
+                Ir al sitio ahora
+            </a>
+            <button onclick="copyLink()" 
+                    class="w-full bg-white/10 hover:bg-white/20 border border-white/10 text-white font-medium py-2.5 px-4 rounded-xl transition duration-200 text-sm">
+                Copiar Enlace
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const targetUrl = "https://carlosmarcenaro64-cell.github.io/Mini_Juegos_Marcenaro/index.html";
+        let secondsLeft = 5;
+        const counterEl = document.getElementById("counter");
+        const statusEl = document.getElementById("status");
+
+        // Countdown timer
+        const timer = setInterval(() => {
+            secondsLeft--;
+            if (counterEl) {
+                counterEl.textContent = secondsLeft;
+            }
+            if (secondsLeft <= 0) {
+                clearInterval(timer);
+                window.location.href = targetUrl;
+            }
+        }, 1000);
+
+        // Copy link functionality with fallback
+        function copyLink() {
+            const textArea = document.createElement("textarea");
+            textArea.value = targetUrl;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alertBox("¡Enlace copiado al portapapeles!");
+            } catch (err) {
+                alertBox("No se pudo copiar el enlace.");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Custom notification box instead of alert()
+        function alertBox(message) {
+            const existing = document.getElementById("toast");
+            if (existing) existing.remove();
+
+            const toast = document.createElement("div");
+            toast.id = "toast";
+            toast.className = "fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-2 px-4 rounded-lg shadow-xl border border-white/20 transition-all duration-300 z-50";
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+    </script>
+
+</body>
+</html>
