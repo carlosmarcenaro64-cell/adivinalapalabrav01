@@ -39,35 +39,6 @@
                 </div>
             </div>
             <div class="flex items-center space-x-3 w-full sm:w-auto justify-end flex-wrap gap-y-2">
-                <!-- Google Sheets Sync Dropdown / Buttons -->
-                <div class="relative group">
-                    <button class="bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 font-medium px-3.5 py-2.5 rounded-xl transition-all flex items-center space-x-2 text-sm shadow-sm">
-                        <i class="fa-solid fa-file-excel"></i>
-                        <span>Google Sheets</span>
-                        <i class="fa-solid fa-chevron-down text-xs opacity-70"></i>
-                    </button>
-                    <div class="absolute right-0 mt-1 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 py-2 hidden group-hover:block z-50">
-                        <button onclick="openSheetsModal()" class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center space-x-2.5">
-                            <i class="fa-solid fa-link text-emerald-500"></i>
-                            <span>Vincular Enlace Publicado (CSV)</span>
-                        </button>
-                        <button onclick="syncFromGoogleSheets()" id="syncBtn" class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center space-x-2.5">
-                            <i class="fa-solid fa-rotate text-blue-500"></i>
-                            <span>Sincronizar Ahora</span>
-                        </button>
-                        <div class="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
-                        <button onclick="exportToCSV()" class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center space-x-2.5">
-                            <i class="fa-solid fa-file-arrow-down text-emerald-500"></i>
-                            <span>Exportar a CSV</span>
-                        </button>
-                        <button onclick="document.getElementById('csvFileInput').click()" class="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center space-x-2.5">
-                            <i class="fa-solid fa-file-arrow-up text-blue-500"></i>
-                            <span>Importar desde CSV</span>
-                        </button>
-                        <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="importFromCSV(event)">
-                    </div>
-                </div>
-
                 <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm" title="Cambiar tema">
                     <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
                 </button>
@@ -130,6 +101,10 @@
                 <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-pink-500 text-white transition-all whitespace-nowrap">Todos</button>
                 <button onclick="setFilter('month')" id="filter-month" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all whitespace-nowrap">Este Mes</button>
                 <button onclick="setFilter('upcoming')" id="filter-upcoming" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all whitespace-nowrap">Próximos 30 días</button>
+                <button onclick="syncFromGoogleSheets()" id="syncDirectBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all whitespace-nowrap flex items-center space-x-1.5">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Actualizar desde Web</span>
+                </button>
             </div>
         </div>
 
@@ -170,9 +145,9 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Categoría / Relación</label>
                         <select id="bCategory" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500">
-                            <option value="Amigos">Amigos</option>
-                            <option value="Familia">Familia</option>
-                            <option value="Trabajo">Trabajo</option>
+                            <option value="Amigos">Atencion al usuario</option>
+                            <option value="Familia">Minsal</option>
+                            <option value="Trabajo">Doctores</option>
                             <option value="Otro">Otro</option>
                         </select>
                     </div>
@@ -195,26 +170,26 @@
             <div class="flex justify-between items-center mb-3">
                 <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                     <i class="fa-solid fa-link text-emerald-500"></i>
-                    <span>Vincular Google Sheets</span>
+                    <span>Configurar Google Sheets</span>
                 </h3>
                 <button onclick="closeSheetsModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                En tu Google Sheet ve a <strong>Archivo > Compartir > Publicar en la Web</strong>, selecciona hoja de cálculo en formato <strong>Valores separados por comas (.csv)</strong> y pega el enlace aquí:
+                En tu Google Sheet ve a <strong>Archivo > Compartir > Publicar en la Web</strong>, selecciona formato <strong>Valores separados por comas (.csv)</strong> y pega el enlace aquí:
             </p>
             <div class="space-y-3">
                 <input type="url" id="sheetsUrlInput" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
                 <div class="flex space-x-2">
-                    <button onclick="saveSheetsUrl()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-xs transition-colors shadow-md">Guardar y Sincronizar</button>
-                    <button onclick="clearSheetsUrl()" class="bg-rose-50 dark:bg-rose-950/40 text-rose-600 hover:bg-rose-100 px-4 py-2.5 rounded-xl text-xs font-medium transition-colors">Desvincular</button>
+                    <button onclick="saveSheetsUrl()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-xs transition-colors shadow-md">Guardar y Actualizar</button>
+                    <button onclick="closeSheetsModal()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl text-xs font-medium transition-colors">Cancelar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Personalizado para Mensajes (reemplaza alert) -->
+    <!-- Modal Personalizado para Mensajes -->
     <div id="customModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border border-slate-100 dark:border-slate-700">
             <div id="customModalIcon" class="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 flex items-center justify-center text-xl mx-auto mb-3">
@@ -227,7 +202,6 @@
     </div>
 
     <script>
-        // Estructura de datos inicial y gestión de LocalStorage
         let birthdays = JSON.parse(localStorage.getItem('birthday_app_data')) || [
             { name: 'María Gómez', date: '1995-09-20', category: 'Familia', notes: 'Le encantan las flores rojas' },
             { name: 'Carlos Pérez', date: '1990-09-20', category: 'Trabajo', notes: 'Café de especialidad' },
@@ -235,13 +209,11 @@
         ];
 
         let currentFilter = 'all';
-        // Enlace de Google Sheets proporcionado por ti
         let googleSheetsUrl = localStorage.getItem('birthday_sheets_url') || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRIS56Nu-Eeh2jb1eyYu_7uqOGl8Qb_LXh5c48gD8iJYZw4RlCEsKidBaZ1zorpbjlpoeLOegNPucQS/pub?gid=0&single=true&output=csv';
         if (!localStorage.getItem('birthday_sheets_url')) {
             localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
         }
 
-        // Inicializar aplicación al cargar la ventana
         window.onload = function() {
             const savedTheme = localStorage.getItem('birthday_app_theme');
             if (savedTheme === 'dark') {
@@ -249,7 +221,7 @@
                 document.getElementById('themeIcon').className = 'fa-solid fa-sun text-sm';
             }
             if (googleSheetsUrl) {
-                syncFromGoogleSheets(true); // sincronización silenciosa al iniciar
+                syncFromGoogleSheets(true);
             } else {
                 renderFeaturedTopBanner();
                 checkTodayBirthdays();
@@ -258,7 +230,6 @@
             }
         };
 
-        // Alternar Modo Oscuro
         function toggleDarkMode() {
             const html = document.documentElement;
             const icon = document.getElementById('themeIcon');
@@ -273,12 +244,10 @@
             }
         }
 
-        // Guardar datos en localStorage
         function saveData() {
             localStorage.setItem('birthday_app_data', JSON.stringify(birthdays));
         }
 
-        // Modales y Sincronización con Google Sheets
         function openSheetsModal() {
             document.getElementById('sheetsUrlInput').value = googleSheetsUrl;
             document.getElementById('sheetsModal').classList.remove('hidden');
@@ -299,30 +268,17 @@
             closeSheetsModal();
             if (googleSheetsUrl) {
                 syncFromGoogleSheets();
-            } else {
-                showCustomModal('Desvinculado', 'Se ha removido el enlace de Google Sheets.');
             }
         }
 
-        function clearSheetsUrl() {
-            googleSheetsUrl = '';
-            localStorage.removeItem('birthday_sheets_url');
-            document.getElementById('sheetsUrlInput').value = '';
-            closeSheetsModal();
-            showCustomModal('Desvinculado', 'Se ha desconectado la hoja de cálculo.');
-        }
-
-        // Normalizar fechas procedentes de CSV (ej: 05/02, 19/02, 09/03/2002, o 1995-09-20)
         function parseSheetDate(rawDate) {
             if (!rawDate) return null;
             let clean = rawDate.replace(/^"|"$/g, '').trim();
             
-            // Si ya está en formato YYYY-MM-DD
             if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
                 return clean;
             }
 
-            // Si está en formato DD/MM/YYYY o D/M/YYYY
             let parts = clean.split('/');
             if (parts.length === 3) {
                 let day = parts[0].padStart(2, '0');
@@ -332,14 +288,12 @@
                 return `${year}-${month}-${day}`;
             }
 
-            // Si está en formato DD/MM (sin año, asumimos año actual o por defecto 2000)
             if (parts.length === 2) {
                 let day = parts[0].padStart(2, '0');
                 let month = parts[1].padStart(2, '0');
                 return `2000-${month}-${day}`;
             }
 
-            // Intentar parseo genérico por si acaso
             let d = new Date(clean);
             if (!isNaN(d.getTime())) {
                 let y = d.getFullYear();
@@ -352,20 +306,23 @@
             return null;
         }
 
-        // Obtener CSV publicado de Google Sheets
         async function syncFromGoogleSheets(isSilent = false) {
             if (!googleSheetsUrl) {
                 if (!isSilent) openSheetsModal();
                 return;
             }
 
-            const syncBtn = document.getElementById('syncBtn');
+            const syncBtn = document.getElementById('syncDirectBtn');
             if (syncBtn && !isSilent) {
-                syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin text-blue-500"><span>Sincronizando...</span>';
+                syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i><span>Actualizando...</span>';
             }
 
             try {
-                const response = await fetch(googleSheetsUrl);
+                // Agregar parámetro de tiempo para evitar caché del navegador al actualizar desde la web
+                const separator = googleSheetsUrl.includes('?') ? '&' : '?';
+                const cacheBustedUrl = `${googleSheetsUrl}${separator}_cb=${new Date().getTime()}`;
+
+                const response = await fetch(cacheBustedUrl);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const text = await response.text();
                 
@@ -391,21 +348,18 @@
                     }
                     row.push(currentVal.trim());
 
-                    // Columnas esperadas según tu hoja: [nombre, fecha, categoria, notas] o adaptativo
                     if (row.length >= 2) {
                         let name = '';
                         let rawDate = '';
                         let category = 'Trabajo';
                         let notes = '';
 
-                        // Detección inteligente según tus capturas
                         if (row.length >= 3 && (row[1].includes('/') || row[1].includes('-') || /^\d+$/.test(row[1]))) {
                             name = row[0].replace(/^"|"$/g, '');
                             rawDate = row[1];
                             category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Trabajo';
                             notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
                         } else if (row.length >= 2 && (row[0].includes('/') || row[0].includes('-'))) {
-                            // Si la primera columna es la fecha y la segunda el nombre
                             rawDate = row[0];
                             name = row[1] ? row[1].replace(/^"|"$/g, '') : 'Sin nombre';
                             category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Trabajo';
@@ -437,23 +391,22 @@
                     renderBirthdays();
                     updateStats();
                     if (!isSilent) {
-                        showCustomModal('¡Sincronización Exitosa!', `Se han actualizado ${newBirthdays.length} cumpleaños desde tu Google Sheet.`);
+                        showCustomModal('¡Hoja de cálculo actualizada!', `Se han sincronizado correctamente ${newBirthdays.length} registros desde la web.`);
                     }
                 } else {
-                    if (!isSilent) showCustomModal('Aviso', 'No se encontraron registros válidos en el enlace proporcionado. Asegúrate de que la hoja tenga datos y esté publicada.');
+                    if (!isSilent) showCustomModal('Aviso', 'No se encontraron registros válidos en la hoja publicada.');
                 }
             } catch (err) {
                 if (!isSilent) {
-                    showCustomModal('Error de Conexión', 'No se pudo sincronizar con Google Sheets. Verifica que el archivo esté publicado en la web como CSV.');
+                    showCustomModal('Error de Conexión', 'No se pudo actualizar desde la web. Comprueba tu enlace o conexión a internet.');
                 }
             } finally {
                 if (syncBtn && !isSilent) {
-                    syncBtn.innerHTML = '<i class="fa-solid fa-rotate text-blue-500"></i><span>Sincronizar Ahora</span>';
+                    syncBtn.innerHTML = '<i class="fa-solid fa-rotate"></i><span>Actualizar desde Web</span>';
                 }
             }
         }
 
-        // Exportar a CSV
         function exportToCSV() {
             if (!birthdays || birthdays.length === 0) {
                 showCustomModal('Sin datos', 'No hay cumpleaños para exportar.');
@@ -481,7 +434,6 @@
             showCustomModal('Exportado con éxito', 'Se ha descargado el archivo CSV compatible con Google Sheets.');
         }
 
-        // Importar desde CSV local
         function importFromCSV(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -548,7 +500,6 @@
             reader.readAsText(file);
         }
 
-        // Calcular detalles del próximo cumpleaños
         function getNextBirthdayDetails(dateString) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -559,7 +510,6 @@
             nextBday.setHours(0, 0, 0, 0);
 
             let turnsAge = today.getFullYear() - year;
-            // Si el año es 2000 (por defecto cuando solo viene día/mes), no mostramos cálculo de edad exacto o estimamos
             let hasRealYear = year > 2005;
 
             if (nextBday < today) {
@@ -573,7 +523,6 @@
             return { diffDays, turnsAge, hasRealYear };
         }
 
-        // REGLA ESTRICTA: Renderizar banner superior SOLO para la fecha más cercana (múltiples si comparten fecha)
         function renderFeaturedTopBanner() {
             const container = document.getElementById('topFeaturedBirthdayContainer');
             if (!birthdays || birthdays.length === 0) {
@@ -588,7 +537,6 @@
 
             processed.sort((a, b) => a.diffDays - b.diffDays);
             
-            // Obtener estrictamente SOLO las personas que comparten el valor menor absoluto de diffDays
             let topCardsData = [];
             if (processed.length > 0) {
                 const minDays = processed[0].diffDays;
@@ -649,9 +597,8 @@
             container.innerHTML = html;
         }
 
-        // Verificar cumpleaños de hoy para banner de alerta
         function checkTodayBirthdays() {
-            const todayStr = new Date().toISOString().slice(5, 10); // MM-DD
+            const todayStr = new Date().toISOString().slice(5, 10);
             const todayBdays = birthdays.filter(b => b.date.slice(5, 10) === todayStr);
 
             const container = document.getElementById('todayAlertsContainer');
@@ -672,7 +619,6 @@
             }
         }
 
-        // Actualizar tarjetas de estadísticas
         function updateStats() {
             const currentMonth = new Date().getMonth();
             let thisMonthCount = 0;
@@ -696,7 +642,6 @@
             document.getElementById('statTotal').innerText = birthdays.length;
         }
 
-        // Renderizar lista principal con filtros y búsqueda
         function renderBirthdays() {
             const listContainer = document.getElementById('birthdayList');
             const emptyState = document.getElementById('emptyState');
@@ -786,7 +731,6 @@
             listContainer.innerHTML = html;
         }
 
-        // Comportamiento de los botones de filtro
         function setFilter(type) {
             currentFilter = type;
             document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -796,7 +740,6 @@
             renderBirthdays();
         }
 
-        // Gestión del Modal
         function openModal() {
             document.getElementById('modalTitle').innerText = 'Nuevo Cumpleaños';
             document.getElementById('birthdayForm').reset();
@@ -819,7 +762,6 @@
             }, 300);
         }
 
-        // Guardar (Crear o Actualizar) cumpleaños
         function saveBirthday(event) {
             event.preventDefault();
             const index = document.getElementById('editIndex').value;
@@ -844,7 +786,6 @@
             updateStats();
         }
 
-        // Editar cumpleaños
         function editBirthday(index) {
             const b = birthdays[index];
             document.getElementById('modalTitle').innerText = 'Editar Cumpleaños';
@@ -862,7 +803,6 @@
             }, 10);
         }
 
-        // Eliminar cumpleaños
         function deleteBirthday(index) {
             birthdays.splice(index, 1);
             saveData();
@@ -873,7 +813,6 @@
             showCustomModal('Eliminado', 'El registro ha sido borrado de la lista.');
         }
 
-        // Modal Personalizado para Alertas
         function showCustomModal(title, text) {
             document.getElementById('customModalTitle').innerText = title;
             document.getElementById('customModalText').innerText = text;
@@ -884,7 +823,6 @@
             document.getElementById('customModal').classList.add('hidden');
         }
 
-        // Función de filtrado en vivo
         function filterBirthdays() {
             renderBirthdays();
         }
