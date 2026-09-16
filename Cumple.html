@@ -34,11 +34,11 @@
             50% { transform: translateY(-6px); }
         }
         @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.3); }
-            50% { box-shadow: 0 0 25px rgba(236, 72, 153, 0.6); }
+            0%, 100% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
+            50% { box-shadow: 0 0 35px rgba(236, 72, 153, 0.6); }
         }
         .animate-fade-in {
-            animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .animate-float {
             animation: floatSlow 4s ease-in-out infinite;
@@ -62,6 +62,7 @@
                 </div>
             </div>
             <div class="flex items-center space-x-3 w-full sm:w-auto justify-end flex-wrap gap-y-2">
+                <span id="syncStatus" class="text-xs text-slate-400 hidden sm:inline-block"><i class="fa-solid fa-circle text-[8px] text-emerald-500 mr-1 animate-pulse"></i>Auto-sync activo</span>
                 <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm transform hover:scale-105 active:scale-95" title="Cambiar tema">
                     <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
                 </button>
@@ -75,7 +76,7 @@
 
     <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
         
-        <!-- Contenedor Superior Estricto para la Fecha Más Cercana (Múltiples si comparten fecha) -->
+        <!-- Banner Superior Estricto para la Fecha Más Cercana (Múltiples si comparten fecha) -->
         <div id="topFeaturedBirthdayContainer" class="flex flex-col gap-4"></div>
 
         <!-- Banner de Alertas para cumpleaños de hoy -->
@@ -124,7 +125,7 @@
                 <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-pink-500 text-white transition-all whitespace-nowrap shadow-sm">Todos</button>
                 <button onclick="setFilter('month')" id="filter-month" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all whitespace-nowrap">Este Mes</button>
                 <button onclick="setFilter('upcoming')" id="filter-upcoming" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all whitespace-nowrap">Próximos 30 días</button>
-                <button onclick="syncFromGoogleSheets()" id="syncDirectBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all whitespace-nowrap flex items-center space-x-1.5 shadow-sm transform hover:scale-105 active:scale-95">
+                <button onclick="syncFromGoogleSheets(false)" id="syncDirectBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all whitespace-nowrap flex items-center space-x-1.5 shadow-sm transform hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-rotate"></i>
                     <span>Actualizar desde Web</span>
                 </button>
@@ -166,14 +167,18 @@
                         <input type="date" id="bDate" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Categoría / Relación</label>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Categoría</label>
                         <select id="bCategory" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
                             <option value="Atencion al usuario">Atencion al usuario</option>
                             <option value="Minsal">Minsal</option>
                             <option value="Doctor/a">Doctor/a</option>
-                            <option value="Otro">Otro</option>
+                            <option value="otro">otro</option>
                         </select>
                     </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Foto (Link URL)</label>
+                    <input type="url" id="bPhoto" placeholder="https://ejemplo.com/foto.jpg" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Notas o Regalos (Opcional)</label>
@@ -201,9 +206,8 @@
 
     <script>
         let birthdays = JSON.parse(localStorage.getItem('birthday_app_data')) || [
-            { name: 'María Gómez', date: '1995-09-20', category: 'Atencion al usuario', notes: 'Le encantan las flores rojas' },
-            { name: 'Carlos Pérez', date: '1990-09-20', category: 'Minsal', notes: 'Café de especialidad' },
-            { name: 'Lucía Méndez', date: '1998-10-05', category: 'Doctor/a', notes: 'Libros de misterio' }
+            { name: 'Maria Mejia', date: '1995-02-05', category: 'Atencion al usuario', notes: 'Le encantan las flores rojas', photo: '' },
+            { name: 'Krissia Rosa', date: '1990-02-19', category: 'Atencion al usuario', notes: 'Café de especialidad', photo: '' }
         ];
 
         let currentFilter = 'all';
@@ -221,11 +225,15 @@
             if (googleSheetsUrl) {
                 syncFromGoogleSheets(true);
             } else {
-                renderFeaturedTopBanner();
-                checkTodayBirthdays();
-                renderBirthdays();
-                updateStats();
+                refreshAllViews();
             }
+
+            // Auto-sincronización cada 5 minutos en segundo plano
+            setInterval(() => {
+                if (googleSheetsUrl) {
+                    syncFromGoogleSheets(true);
+                }
+            }, 5 * 60 * 1000);
         };
 
         function toggleDarkMode() {
@@ -322,24 +330,24 @@
                     if (row.length >= 2) {
                         let name = '';
                         let rawDate = '';
-                        let category = 'Otro';
+                        let category = 'otro';
                         let notes = '';
+                        let photo = '';
 
-                        if (row.length >= 3 && (row[1].includes('/') || row[1].includes('-') || /^\d+$/.test(row[1]))) {
-                            name = row[0].replace(/^"|"$/g, '');
-                            rawDate = row[1];
-                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
-                            notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
-                        } else if (row.length >= 2 && (row[0].includes('/') || row[0].includes('-'))) {
+                        // Columnas según tu hoja: [0] nombre, [1] fecha, [2] categoria, [3] notas, [4] foto
+                        name = row[0] ? row[0].replace(/^"|"$/g, '') : '';
+                        rawDate = row[1] ? row[1].replace(/^"|"$/g, '') : '';
+                        category = row[2] ? row[2].replace(/^"|"$/g, '') : 'otro';
+                        notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
+                        photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
+
+                        // Validación por si la fecha está en la primer columna
+                        if (!rawDate && row[0] && (row[0].includes('/') || row[0].includes('-'))) {
                             rawDate = row[0];
                             name = row[1] ? row[1].replace(/^"|"$/g, '') : 'Sin nombre';
-                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
+                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'otro';
                             notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
-                        } else {
-                            name = row[0].replace(/^"|"$/g, '');
-                            rawDate = row[1] || '';
-                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
-                            notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
+                            photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
                         }
 
                         const parsedDate = parseSheetDate(rawDate);
@@ -347,8 +355,9 @@
                             newBirthdays.push({
                                 name: name,
                                 date: parsedDate,
-                                category: category || 'Otro',
-                                notes: notes
+                                category: category || 'otro',
+                                notes: notes,
+                                photo: photo
                             });
                         }
                     }
@@ -357,19 +366,16 @@
                 if (newBirthdays.length > 0) {
                     birthdays = newBirthdays;
                     saveData();
-                    renderFeaturedTopBanner();
-                    checkTodayBirthdays();
-                    renderBirthdays();
-                    updateStats();
+                    refreshAllViews();
                     if (!isSilent) {
-                        showCustomModal('¡Hoja de cálculo actualizada!', `Se han sincronizado correctamente ${newBirthdays.length} registros desde la web.`);
+                        showCustomModal('¡Sincronización Exitosa!', `Se han actualizado ${newBirthdays.length} registros desde la hoja web.`);
                     }
                 } else {
                     if (!isSilent) showCustomModal('Aviso', 'No se encontraron registros válidos en la hoja publicada.');
                 }
             } catch (err) {
                 if (!isSilent) {
-                    showCustomModal('Error de Conexión', 'No se pudo actualizar desde la web. Comprueba tu enlace o conexión a internet.');
+                    showCustomModal('Error de Conexión', 'No se pudo actualizar desde la web. Comprueba tu enlace o conexión.');
                 }
             } finally {
                 if (syncBtn && !isSilent) {
@@ -401,6 +407,13 @@
             return { diffDays, turnsAge, hasRealYear };
         }
 
+        function refreshAllViews() {
+            renderFeaturedTopBanner();
+            checkTodayBirthdays();
+            renderBirthdays();
+            updateStats();
+        }
+
         function renderFeaturedTopBanner() {
             const container = document.getElementById('topFeaturedBirthdayContainer');
             if (!birthdays || birthdays.length === 0) {
@@ -418,7 +431,6 @@
             let topCardsData = [];
             if (processed.length > 0) {
                 const minDays = processed[0].diffDays;
-                // ESTRICTO: Solo mostrar los de la fecha más cercana (si hay varios el mismo día, salen todos)
                 topCardsData = processed.filter(b => b.diffDays === minDays);
             }
 
@@ -447,14 +459,21 @@
                 ];
                 const gradientClass = gradients[index % gradients.length];
 
+                let avatarContent = '';
+                if (nextBday.photo && nextBday.photo.startsWith('http')) {
+                    avatarContent = `<img src="${nextBday.photo}" alt="${nextBday.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${nextBday.name.charAt(0).toUpperCase()}';">`;
+                } else {
+                    avatarContent = nextBday.name.charAt(0).toUpperCase();
+                }
+
                 html += `
                     <div class="bg-gradient-to-r ${gradientClass} text-white p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden animate-fade-in animate-glow">
                         <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl pointer-events-none">
                             <i class="fa-solid fa-cake-candles"></i>
                         </div>
                         <div class="flex items-center space-x-4 z-10">
-                            <div class="w-16 h-16 rounded-2xl bg-white/25 backdrop-blur-md flex items-center justify-center text-3xl font-extrabold shadow-inner shrink-0 transform hover:scale-105 transition-transform">
-                                ${nextBday.name.charAt(0).toUpperCase()}
+                            <div class="w-16 h-16 rounded-2xl bg-white/25 backdrop-blur-md flex items-center justify-center text-2xl font-extrabold shadow-inner shrink-0 overflow-hidden transform hover:scale-105 transition-transform">
+                                ${avatarContent}
                             </div>
                             <div>
                                 <div class="flex items-center space-x-2 mb-1">
@@ -561,7 +580,7 @@
                 if (b.category === 'Atencion al usuario') badgeColor = 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400';
                 if (b.category === 'Minsal') badgeColor = 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
                 if (b.category === 'Doctor/a') badgeColor = 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400';
-                if (b.category === 'Otro') badgeColor = 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400';
+                if (b.category === 'otro') badgeColor = 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400';
 
                 let timeText = '';
                 if (b.diffDays === 0) {
@@ -577,12 +596,19 @@
                 const formattedDate = `${d} de ${monthNames[parseInt(m)-1]}`;
                 const ageSubText = b.hasRealYear ? ` (${b.turnsAge} años)` : '';
 
+                let avatarCardContent = '';
+                if (b.photo && b.photo.startsWith('http')) {
+                    avatarCardContent = `<img src="${b.photo}" alt="${b.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${b.name.charAt(0).toUpperCase()}';">`;
+                } else {
+                    avatarCardContent = b.name.charAt(0).toUpperCase();
+                }
+
                 html += `
                     <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 relative group animate-fade-in">
                         <div class="flex items-start justify-between">
                             <div class="flex items-center space-x-3">
-                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center text-base shadow-inner">
-                                    ${b.name.charAt(0).toUpperCase()}
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center text-base shadow-inner overflow-hidden shrink-0">
+                                    ${avatarCardContent}
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-slate-800 dark:text-white text-base">${b.name}</h4>
@@ -650,22 +676,20 @@
             const name = document.getElementById('bName').value.trim();
             const date = document.getElementById('bDate').value;
             const category = document.getElementById('bCategory').value;
+            const photo = document.getElementById('bPhoto').value.trim();
             const notes = document.getElementById('bNotes').value.trim();
 
             if (index === '') {
-                birthdays.push({ name, date, category, notes });
+                birthdays.push({ name, date, category, photo, notes });
                 showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
             } else {
-                birthdays[index] = { name, date, category, notes };
+                birthdays[index] = { ...birthdays[index], name, date, category, photo, notes };
                 showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
             }
 
             saveData();
             closeModal();
-            renderFeaturedTopBanner();
-            checkTodayBirthdays();
-            renderBirthdays();
-            updateStats();
+            refreshAllViews();
         }
 
         function editBirthday(index) {
@@ -674,7 +698,8 @@
             document.getElementById('editIndex').value = index;
             document.getElementById('bName').value = b.name;
             document.getElementById('bDate').value = b.date;
-            document.getElementById('bCategory').value = b.category;
+            document.getElementById('bCategory').value = b.category || 'otro';
+            document.getElementById('bPhoto').value = b.photo || '';
             document.getElementById('bNotes').value = b.notes || '';
 
             const modal = document.getElementById('birthdayModal');
@@ -688,10 +713,7 @@
         function deleteBirthday(index) {
             birthdays.splice(index, 1);
             saveData();
-            renderFeaturedTopBanner();
-            checkTodayBirthdays();
-            renderBirthdays();
-            updateStats();
+            refreshAllViews();
             showCustomModal('Eliminado', 'El registro ha sido borrado de la lista.');
         }
 
