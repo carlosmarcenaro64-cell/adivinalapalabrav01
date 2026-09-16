@@ -44,134 +44,168 @@
     </script>
     <style>
         @keyframes fadeInScale {
-            0% { opacity: 0; transform: scale(0.92) translateY(10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+            0% { opacity: 0; transform: scale(0.9) translateY(15px); filter: blur(4px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
         @keyframes floatSlow {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-12px) rotate(4deg) scale(1.03); }
+        }
+        @keyframes floatFast {
             0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(3deg); }
+            50% { transform: translateY(-18px) rotate(-6deg); }
         }
         @keyframes pulseGlow {
             0%, 100% { box-shadow: 0 0 25px rgba(236, 72, 153, 0.35), inset 0 0 15px rgba(255, 255, 255, 0.2); }
-            50% { box-shadow: 0 0 45px rgba(236, 72, 153, 0.7), inset 0 0 25px rgba(255, 255, 255, 0.4); }
+            50% { box-shadow: 0 0 50px rgba(236, 72, 153, 0.75), inset 0 0 25px rgba(255, 255, 255, 0.45); }
         }
         @keyframes shimmerBg {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        @keyframes bounceGentle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
+        @keyframes ledRainbow {
+            0% { border-color: #ec4899; box-shadow: 0 0 12px rgba(236, 72, 153, 0.7), inset 0 0 6px rgba(236, 72, 153, 0.4); }
+            20% { border-color: #8b5cf6; box-shadow: 0 0 12px rgba(139, 92, 246, 0.7), inset 0 0 6px rgba(139, 92, 246, 0.4); }
+            40% { border-color: #3b82f6; box-shadow: 0 0 12px rgba(59, 130, 246, 0.7), inset 0 0 6px rgba(59, 130, 246, 0.4); }
+            60% { border-color: #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.7), inset 0 0 6px rgba(16, 185, 129, 0.4); }
+            80% { border-color: #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.7), inset 0 0 6px rgba(245, 158, 11, 0.4); }
+            100% { border-color: #ec4899; box-shadow: 0 0 12px rgba(236, 72, 153, 0.7), inset 0 0 6px rgba(236, 72, 153, 0.4); }
+        }
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
         }
         .animate-fade-in {
-            animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInScale 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .animate-float {
             animation: floatSlow 4s ease-in-out infinite;
         }
+        .animate-float-fast {
+            animation: floatFast 2.5s ease-in-out infinite;
+        }
         .animate-glow {
             animation: pulseGlow 3.5s ease-in-out infinite;
+        }
+        .animate-spin-slow {
+            animation: spinSlow 12s linear infinite;
+        }
+        .animate-pop {
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .led-border {
+            border: 3px solid #ec4899;
+            animation: ledRainbow 6s linear infinite;
         }
         .shimmer-gradient {
             background-size: 200% 200%;
             animation: shimmerBg 8s ease infinite;
         }
         .hover-scale-card {
-            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .hover-scale-card:hover {
-            transform: translateY(-6px) scale(1.01);
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 35px -10px rgba(236, 72, 153, 0.3);
         }
-        .dark .hover-scale-card:hover {
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.4);
-        }
-        /* Fondo animado sutil de partículas flotantes en header */
-        .particle {
-            position: absolute;
+        /* Fondo animado interactivo */
+        .ambient-particle {
+            position: fixed;
             pointer-events: none;
-            opacity: 0.15;
-            animation: floatSlow 6s ease-in-out infinite;
+            opacity: 0.08;
+            z-index: 0;
+            animation: floatSlow 7s ease-in-out infinite;
         }
     </style>
 </head>
-<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden">
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
+
+    <!-- Globos y elementos flotantes decorativos en el fondo -->
+    <div class="ambient-particle text-5xl top-12 left-[8%] animate-float" style="animation-delay: 0s;">🎈</div>
+    <div class="ambient-particle text-4xl top-40 right-[10%] animate-float" style="animation-delay: 1.2s;">✨</div>
+    <div class="ambient-particle text-5xl bottom-20 left-[12%] animate-float" style="animation-delay: 2.4s;">🎁</div>
+    <div class="ambient-particle text-4xl bottom-36 right-[15%] animate-float" style="animation-delay: 3.6s;">⭐</div>
 
     <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80 sticky top-0 z-30 shadow-sm transition-colors duration-300">
         <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3 group cursor-pointer" onclick="triggerPartyConfetti()">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-pink-500/25 animate-float transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-pink-500/25 animate-float transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-125">
                     <i class="fa-solid fa-cake-candles text-lg"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                         CumpleApp 
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 font-bold tracking-normal animate-pulse">Pro ✨</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold tracking-normal animate-pulse shadow-sm">Pro ✨</span>
                     </h1>
                     <p class="text-xs text-slate-500 dark:text-slate-400">Nunca olvides una fecha especial</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2.5 w-full sm:w-auto justify-end flex-wrap gap-y-2">
-                <span id="syncStatus" class="text-xs text-slate-400 hidden md:inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-700/60 px-2.5 py-1 rounded-xl">
+                <span id="syncStatus" class="text-xs text-slate-400 hidden md:inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600/50">
                     <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-ping"></i> Auto-sync activo
                 </span>
-                <button onclick="requestNotificationPermission()" id="notifBellBtn" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 relative" title="Activar Notificaciones (1 día antes y el mismo día)">
-                    <i class="fa-solid fa-bell text-sm"></i>
-                    <span id="notifBadge" class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 text-[8px] text-slate-900 font-extrabold flex items-center justify-center hidden">!</span>
+                <button onclick="requestNotificationPermission()" id="notifBellBtn" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 relative group" title="Activar Notificaciones">
+                    <i class="fa-solid fa-bell text-sm transition-transform group-hover:rotate-12"></i>
+                    <span id="notifBadge" class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 text-[8px] text-slate-900 font-extrabold flex items-center justify-center hidden animate-bounce">!</span>
                 </button>
                 <button onclick="triggerPartyConfetti()" class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="¡Lanzar Confeti!">
-                    <i class="fa-solid fa-wand-magic-sparkles text-sm transition-transform group-hover:rotate-45"></i>
+                    <i class="fa-solid fa-wand-magic-sparkles text-sm transition-transform group-hover:rotate-45 group-hover:scale-125"></i>
                 </button>
-                <button onclick="openInstallModal()" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95" title="Instalar App en el Teléfono">
-                    <i class="fa-solid fa-mobile-screen-button text-sm"></i>
+                <button onclick="openInstallModal()" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Instalar App">
+                    <i class="fa-solid fa-mobile-screen-button text-sm transition-transform group-hover:translate-y-[-2px]"></i>
                 </button>
-                <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95" title="Cambiar tema">
-                    <i id="themeIcon" class="fa-solid fa-moon text-sm transition-transform duration-500"></i>
+                <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Cambiar tema">
+                    <i id="themeIcon" class="fa-solid fa-moon text-sm transition-transform duration-500 group-hover:rotate-180"></i>
                 </button>
                 <button onclick="openModal()" class="bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-pink-500/25 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 text-sm group">
-                    <i class="fa-solid fa-plus transition-transform group-hover:rotate-90"></i>
+                    <i class="fa-solid fa-plus transition-transform group-hover:rotate-90 group-hover:scale-125"></i>
                     <span>Nuevo Cumpleaños</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6 z-10">
         
-        <!-- Banner Superior: Muestra EXCLUSIVAMENTE la fecha más cercana (con animación shimmer y partículas) -->
+        <!-- Banner Superior -->
         <div id="topFeaturedBirthdayContainer" class="flex flex-col gap-4"></div>
 
         <!-- Banner de Alertas para cumpleaños de hoy -->
         <div id="todayAlertsContainer"></div>
 
-        <!-- Cuadricula de Estadísticas con hover animado -->
+        <!-- Cuadricula de Estadísticas -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group">
-                <div class="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group cursor-pointer" onclick="triggerPartyConfetti()">
+                <div class="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 flex items-center justify-center text-xl transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 shadow-sm">
                     <i class="fa-solid fa-gift"></i>
                 </div>
                 <div>
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Este Mes</p>
-                    <h3 id="statThisMonth" class="text-2xl font-black text-slate-800 dark:text-white">0</h3>
+                    <h3 id="statThisMonth" class="text-2xl font-black text-slate-800 dark:text-white transition-transform group-hover:scale-105 origin-left">0</h3>
                 </div>
             </div>
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group">
-                <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-500 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group cursor-pointer" onclick="triggerPartyConfetti()">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-500 flex items-center justify-center text-xl transition-transform duration-500 group-hover:scale-125 group-hover:-rotate-12 shadow-sm">
                     <i class="fa-solid fa-hourglass-half"></i>
                 </div>
                 <div>
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Próximo</p>
-                    <h3 id="statNext" class="text-lg font-bold text-slate-800 dark:text-white truncate max-w-[150px]">-</h3>
+                    <h3 id="statNext" class="text-lg font-bold text-slate-800 dark:text-white truncate max-w-[150px] transition-transform group-hover:scale-105 origin-left">-</h3>
                 </div>
             </div>
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group">
-                <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group cursor-pointer" onclick="triggerPartyConfetti()">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center text-xl transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 shadow-sm">
                     <i class="fa-solid fa-users"></i>
                 </div>
                 <div>
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Registrados</p>
-                    <h3 id="statTotal" class="text-2xl font-black text-slate-800 dark:text-white">0</h3>
+                    <h3 id="statTotal" class="text-2xl font-black text-slate-800 dark:text-white transition-transform group-hover:scale-105 origin-left">0</h3>
                 </div>
             </div>
         </div>
@@ -188,8 +222,8 @@
                 <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-pink-500 text-white transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap shadow-md shadow-pink-500/20">Todos</button>
                 <button onclick="setFilter('month')" id="filter-month" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap">Este Mes</button>
                 <button onclick="setFilter('upcoming')" id="filter-upcoming" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap">Próximos 30 días</button>
-                <button onclick="syncFromGoogleSheets(false)" id="syncDirectBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all whitespace-nowrap flex items-center space-x-1.5 shadow-sm transform hover:scale-105 active:scale-95">
-                    <i class="fa-solid fa-rotate"></i>
+                <button onclick="syncFromGoogleSheets(false)" id="syncDirectBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all whitespace-nowrap flex items-center space-x-1.5 shadow-sm transform hover:scale-105 active:scale-95 group">
+                    <i class="fa-solid fa-rotate transition-transform group-hover:rotate-180"></i>
                     <span>Actualizar desde Web</span>
                 </button>
             </div>
@@ -211,10 +245,10 @@
 
     <!-- Modal para Agregar/Editar -->
     <div id="birthdayModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700 transform scale-90 transition-transform duration-300" id="modalContent">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700 transform scale-90 transition-transform duration-300 animate-pop" id="modalContent">
             <div class="flex justify-between items-center mb-5">
                 <h3 id="modalTitle" class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-cake-candles text-pink-500"></i> Nuevo Cumpleaños
+                    <i class="fa-solid fa-cake-candles text-pink-500 animate-bounce"></i> Nuevo Cumpleaños
                 </h3>
                 <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center transition-transform hover:rotate-90">
                     <i class="fa-solid fa-xmark"></i>
@@ -259,7 +293,7 @@
 
     <!-- Modal Personalizado para Mensajes -->
     <div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border border-slate-100 dark:border-slate-700 animate-fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border border-slate-100 dark:border-slate-700 animate-fade-in animate-pop">
             <div id="customModalIcon" class="w-14 h-14 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 flex items-center justify-center text-2xl mx-auto mb-3 animate-bounce">
                 <i class="fa-solid fa-bell"></i>
             </div>
@@ -269,9 +303,9 @@
         </div>
     </div>
 
-    <!-- Modal para Instalar como App en el Teléfono -->
+    <!-- Modal para Instalar como App -->
     <div id="installModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700 transform scale-90 transition-transform duration-300" id="installModalContent">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700 transform scale-90 transition-transform duration-300 animate-pop" id="installModalContent">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center space-x-3">
                     <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-500 text-white flex items-center justify-center text-lg shadow-md shadow-pink-500/25 animate-float">
@@ -285,10 +319,9 @@
             </div>
             
             <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
-                Lleva CumpleApp siempre contigo en tu pantalla de inicio como una aplicación independiente, sin barras de navegación y acceso rápido.
+                Lleva CumpleApp siempre contigo en tu pantalla de inicio como una aplicación independiente.
             </p>
 
-            <!-- Sección Android / Chrome con botón nativo si está disponible -->
             <div id="nativeInstallSection" class="hidden mb-4 p-4 rounded-2xl bg-pink-50 dark:bg-pink-950/30 border border-pink-100 dark:border-pink-900/50 text-center">
                 <p class="text-xs text-pink-600 dark:text-pink-400 font-semibold mb-3">Tu dispositivo soporta instalación directa:</p>
                 <button id="nativeInstallBtn" onclick="triggerNativeInstall()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-semibold py-2.5 rounded-xl text-sm shadow-md shadow-pink-500/25 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2">
@@ -304,21 +337,20 @@
                         <span>Para iPhone / iPad (Safari):</span>
                     </div>
                     <ol class="text-xs text-slate-500 dark:text-slate-400 space-y-1 pl-6 list-decimal">
-                        <li>Toca el botón <strong>Compartir</strong> <i class="fa-solid fa-arrow-up-from-bracket inline text-blue-500"></i> en la barra inferior de Safari.</li>
-                        <li>Desplázate y selecciona <strong>"Agregar a Inicio"</strong> <i class="fa-solid fa-square-plus inline text-slate-700 dark:text-slate-300"></i>.</li>
-                        <li>Confirma tocando <strong>Agregar</strong> arriba a la derecha.</li>
+                        <li>Toca el botón <strong>Compartir</strong> <i class="fa-solid fa-arrow-up-from-bracket inline text-blue-500"></i> en la barra inferior.</li>
+                        <li>Selecciona <strong>"Agregar a Inicio"</strong> <i class="fa-solid fa-square-plus inline text-slate-700 dark:text-slate-300"></i>.</li>
+                        <li>Confirma tocando <strong>Agregar</strong>.</li>
                     </ol>
                 </div>
 
                 <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/80">
                     <div class="flex items-center space-x-2.5 mb-1.5 text-slate-800 dark:text-white font-semibold text-sm">
                         <i class="fa-brands fa-android text-lg text-emerald-500"></i>
-                        <span>Para Android (Chrome / otros):</span>
+                        <span>Para Android (Chrome):</span>
                     </div>
                     <ol class="text-xs text-slate-500 dark:text-slate-400 space-y-1 pl-6 list-decimal">
-                        <li>Toca el menú de los 3 puntos <i class="fa-solid fa-ellipsis-vertical inline"></i> en la esquina superior derecha.</li>
-                        <li>Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</li>
-                        <li>Sigue las instrucciones en pantalla para confirmar.</li>
+                        <li>Toca el menú de los 3 puntos <i class="fa-solid fa-ellipsis-vertical inline"></i>.</li>
+                        <li>Selecciona <strong>"Instalar aplicación"</strong>.</li>
                     </ol>
                 </div>
             </div>
@@ -345,19 +377,31 @@
             e.preventDefault();
             deferredPrompt = e;
             const nativeSection = document.getElementById('nativeInstallSection');
-            if (nativeSection) {
-                nativeSection.classList.remove('hidden');
-            }
+            if (nativeSection) nativeSection.classList.remove('hidden');
         });
 
-        // Lanzador de Confetti con canvas-confetti
         function triggerPartyConfetti() {
             confetti({
-                particleCount: 120,
-                spread: 80,
+                particleCount: 140,
+                spread: 100,
                 origin: { y: 0.6 },
                 colors: ['#ec4899', '#f43f5e', '#fbbf24', '#8b5cf6', '#3b82f6', '#10b981']
             });
+            // Lanza una segunda ráfaga de confeti estilo side cannons
+            setTimeout(() => {
+                confetti({
+                    particleCount: 80,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.7 }
+                });
+                confetti({
+                    particleCount: 80,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.7 }
+                });
+            }, 250);
         }
 
         function openInstallModal() {
@@ -373,9 +417,7 @@
             const modal = document.getElementById('installModal');
             modal.classList.add('opacity-0');
             document.getElementById('installModalContent').classList.add('scale-90');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         async function triggerNativeInstall() {
@@ -401,7 +443,6 @@
                 document.getElementById('themeIcon').className = 'fa-solid fa-sun text-sm';
             }
             
-            // Comprobar estado de notificaciones
             checkNotificationPermissionUI();
 
             if (googleSheetsUrl) {
@@ -410,14 +451,10 @@
                 refreshAllViews();
             }
 
-            // Auto-sincronización cada 5 minutos en segundo plano
             setInterval(() => {
-                if (googleSheetsUrl) {
-                    syncFromGoogleSheets(true);
-                }
+                if (googleSheetsUrl) syncFromGoogleSheets(true);
             }, 5 * 60 * 1000);
 
-            // Comprobación periódica de notificaciones (cada hora o al cargar)
             checkAndTriggerAlerts();
         };
 
@@ -429,79 +466,47 @@
             }
             if (Notification.permission === 'granted') {
                 if (badge) badge.classList.add('hidden');
-            } else if (Notification.permission === 'denied') {
-                if (badge) {
-                    badge.classList.remove('hidden');
-                    badge.className = 'absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-[8px] text-white font-extrabold flex items-center justify-center';
-                }
             } else {
-                if (badge) {
-                    badge.classList.remove('hidden');
-                    badge.className = 'absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 text-[8px] text-slate-900 font-extrabold flex items-center justify-center';
-                }
+                if (badge) badge.classList.remove('hidden');
             }
         }
 
         async function requestNotificationPermission() {
             if (!("Notification" in window)) {
-                showCustomModal('Aviso', 'Tu navegador no soporta notificaciones de escritorio.');
+                showCustomModal('Aviso', 'Tu navegador no soporta notificaciones.');
                 return;
             }
-
             if (Notification.permission === 'granted') {
                 showCustomModal('Notificaciones Activas', 'Ya tienes activadas las alertas para 1 día antes y el día del cumpleaños.');
-                new Notification('CumpleApp Pro', {
-                    body: '¡Las notificaciones están funcionando correctamente!',
-                    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>'
-                });
                 return;
             }
-
             const permission = await Notification.requestPermission();
             checkNotificationPermissionUI();
-
             if (permission === 'granted') {
                 triggerPartyConfetti();
-                showCustomModal('¡Notificaciones Activadas!', 'Ahora recibirás una notificación 1 día antes y el mismo día del cumpleaños.');
-                new Notification('¡CumpleApp Activado!', {
-                    body: 'Te avisaremos con antelación para que ningún cumpleaños te tome por sorpresa.',
-                    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>'
-                });
+                showCustomModal('¡Notificaciones Activadas!', 'Ahora recibirás una notificación 1 día antes y el mismo día.');
             } else {
-                showCustomModal('Aviso', 'Has denegado o cerrado el permiso de notificaciones. Puedes habilitarlo en la configuración de tu navegador.');
+                showCustomModal('Aviso', 'Has denegado el permiso de notificaciones.');
             }
         }
 
         function checkAndTriggerAlerts() {
             if (!("Notification" in window) || Notification.permission !== 'granted') return;
-
             const lastCheckedKey = 'birthday_last_notified_date';
             const todayStr = new Date().toISOString().slice(0, 10);
-            const lastChecked = localStorage.getItem(lastCheckedKey);
-
-            // Evitar notificar múltiples veces el mismo día
-            if (lastChecked === todayStr) return;
+            if (localStorage.getItem(lastCheckedKey) === todayStr) return;
 
             birthdays.forEach(b => {
                 const details = getNextBirthdayDetails(b.date);
-                // details.diffDays = 0 (hoy), 1 (mañana)
                 if (details.diffDays === 0) {
                     try {
                         new Notification('🎉 ¡Es HOY el Cumpleaños!', {
-                            body: `¡Hoy está cumpliendo años ${b.name}! (${b.category}). ¡Felicítale y celebra!`,
+                            body: `¡Hoy está cumpliendo años ${b.name}! (${b.category})`,
                             icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>'
-                        });
-                    } catch(e) {}
-                } else if (details.diffDays === 1) {
-                    try {
-                        new Notification('⏰ ¡Mañana es un Cumpleaños!', {
-                            body: `Mañana ${b.date.slice(5, 10).split('-').reverse().join('/')} es el cumpleaños de ${b.name} (${b.category}). ¡Prepárate con tiempo!`,
-                            icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏰</text></svg>'
                         });
                     } catch(e) {}
                 }
             });
-
             localStorage.setItem(lastCheckedKey, todayStr);
         }
 
@@ -526,10 +531,7 @@
         function parseSheetDate(rawDate) {
             if (!rawDate) return null;
             let clean = rawDate.replace(/^"|"$/g, '').trim();
-            
-            if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
-                return clean;
-            }
+            if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
 
             let parts = clean.split('/');
             if (parts.length === 3) {
@@ -539,38 +541,26 @@
                 if (year.length === 2) year = '20' + year;
                 return `${year}-${month}-${day}`;
             }
-
             if (parts.length === 2) {
-                let day = parts[0].padStart(2, '0');
-                let month = parts[1].padStart(2, '0');
-                return `2000-${month}-${day}`;
+                return `2000-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
             }
-
             let d = new Date(clean);
             if (!isNaN(d.getTime())) {
-                let y = d.getFullYear();
-                if (y < 1920) y = 2000;
-                let m = String(d.getMonth() + 1).padStart(2, '0');
-                let day = String(d.getDate()).padStart(2, '0');
-                return `${y}-${m}-${day}`;
+                let y = d.getFullYear() < 1920 ? 2000 : d.getFullYear();
+                return `${y}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             }
-
             return null;
         }
 
         async function syncFromGoogleSheets(isSilent = false) {
             if (!googleSheetsUrl) return;
-
             const syncBtn = document.getElementById('syncDirectBtn');
             if (syncBtn && !isSilent) {
                 syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i><span>Actualizando...</span>';
             }
-
             try {
                 const separator = googleSheetsUrl.includes('?') ? '&' : '?';
-                const cacheBustedUrl = `${googleSheetsUrl}${separator}_cb=${new Date().getTime()}`;
-
-                const response = await fetch(cacheBustedUrl);
+                const response = await fetch(`${googleSheetsUrl}${separator}_cb=${new Date().getTime()}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const text = await response.text();
                 
@@ -585,14 +575,11 @@
                     let inQuotes = false;
                     let currentVal = '';
                     for (let char of line) {
-                        if (char === '"') {
-                            inQuotes = !inQuotes;
-                        } else if (char === ',' && !inQuotes) {
+                        if (char === '"') inQuotes = !inQuotes;
+                        else if (char === ',' && !inQuotes) {
                             row.push(currentVal.trim());
                             currentVal = '';
-                        } else {
-                            currentVal += char;
-                        }
+                        } else currentVal += char;
                     }
                     row.push(currentVal.trim());
 
@@ -603,9 +590,7 @@
                         let notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
                         let photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
 
-                        if (!['Atencion al usuario', 'Minsal', 'Doctor/a', 'Otro'].includes(category)) {
-                            category = 'Otro';
-                        }
+                        if (!['Atencion al usuario', 'Minsal', 'Doctor/a', 'Otro'].includes(category)) category = 'Otro';
 
                         if (!rawDate && row[0] && (row[0].includes('/') || row[0].includes('-'))) {
                             rawDate = row[0];
@@ -617,13 +602,7 @@
 
                         const parsedDate = parseSheetDate(rawDate);
                         if (name && parsedDate) {
-                            newBirthdays.push({
-                                name: name,
-                                date: parsedDate,
-                                category: category || 'Otro',
-                                notes: notes,
-                                photo: photo
-                            });
+                            newBirthdays.push({ name, date: parsedDate, category, notes, photo });
                         }
                     }
                 }
@@ -634,15 +613,11 @@
                     refreshAllViews();
                     if (!isSilent) {
                         triggerPartyConfetti();
-                        showCustomModal('¡Sincronización Exitosa!', `Se han actualizado ${newBirthdays.length} registros desde la hoja web.`);
+                        showCustomModal('¡Sincronización Exitosa!', `Se han actualizado ${newBirthdays.length} registros.`);
                     }
-                } else {
-                    if (!isSilent) showCustomModal('Aviso', 'No se encontraron registros válidos en la hoja publicada.');
                 }
             } catch (err) {
-                if (!isSilent) {
-                    showCustomModal('Error de Conexión', 'No se pudo actualizar desde la web. Comprueba tu enlace o conexión.');
-                }
+                if (!isSilent) showCustomModal('Error de Conexión', 'No se pudo actualizar desde la web.');
             } finally {
                 if (syncBtn && !isSilent) {
                     syncBtn.innerHTML = '<i class="fa-solid fa-rotate"></i><span>Actualizar desde Web</span>';
@@ -655,7 +630,6 @@
             today.setHours(0, 0, 0, 0);
 
             const [year, month, day] = dateString.split('-').map(Number);
-            
             let nextBday = new Date(today.getFullYear(), month - 1, day);
             nextBday.setHours(0, 0, 0, 0);
 
@@ -687,18 +661,10 @@
                 return;
             }
 
-            let processed = birthdays.map((b) => {
-                const details = getNextBirthdayDetails(b.date);
-                return { ...b, ...details };
-            });
-
+            let processed = birthdays.map((b) => ({ ...b, ...getNextBirthdayDetails(b.date) }));
             processed.sort((a, b) => a.diffDays - b.diffDays);
             
-            let topCardsData = [];
-            if (processed.length > 0) {
-                const minDays = processed[0].diffDays;
-                topCardsData = processed.filter(b => b.diffDays === minDays);
-            }
+            let topCardsData = processed.length > 0 ? processed.filter(b => b.diffDays === processed[0].diffDays) : [];
 
             let html = '';
             topCardsData.forEach((nextBday, index) => {
@@ -725,30 +691,26 @@
                 ];
                 const gradientClass = gradients[index % gradients.length];
 
-                let avatarContent = '';
-                if (nextBday.photo && nextBday.photo.startsWith('http')) {
-                    avatarContent = `<img src="${nextBday.photo}" alt="${nextBday.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${nextBday.name.charAt(0).toUpperCase()}';">`;
-                } else {
-                    avatarContent = nextBday.name.charAt(0).toUpperCase();
-                }
+                let avatarContent = nextBday.photo && nextBday.photo.startsWith('http') ? 
+                    `<img src="${nextBday.photo}" alt="${nextBday.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${nextBday.name.charAt(0).toUpperCase()}';">` : 
+                    nextBday.name.charAt(0).toUpperCase();
 
                 html += `
-                    <div class="bg-gradient-to-r ${gradientClass} text-white p-6 rounded-3xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-5 relative overflow-hidden animate-fade-in animate-glow shimmer-gradient group cursor-pointer" onclick="triggerPartyConfetti()">
-                        <!-- Elementos flotantes animados dentro del banner -->
-                        <div class="absolute -right-4 -bottom-4 opacity-15 text-8xl pointer-events-none transform transition-transform group-hover:rotate-12 group-hover:scale-110">
+                    <div class="bg-gradient-to-r ${gradientClass} text-white p-6 rounded-3xl shadow-2xl led-border flex flex-col sm:flex-row items-center justify-between gap-5 relative overflow-hidden animate-fade-in shimmer-gradient group cursor-pointer" onclick="triggerPartyConfetti()">
+                        <div class="absolute -right-4 -bottom-4 opacity-15 text-8xl pointer-events-none transform transition-transform duration-500 group-hover:rotate-12 group-hover:scale-125">
                             <i class="fa-solid fa-cake-candles"></i>
                         </div>
-                        <div class="absolute top-2 right-12 opacity-10 text-2xl animate-float">✨</div>
-                        <div class="absolute bottom-3 left-1/3 opacity-15 text-xl animate-float" style="animation-delay: 1.5s;">🎈</div>
+                        <div class="absolute top-2 right-12 opacity-15 text-2xl animate-float">✨</div>
+                        <div class="absolute bottom-3 left-1/3 opacity-20 text-2xl animate-float" style="animation-delay: 1.5s;">🎈</div>
 
                         <div class="flex items-center space-x-4 z-10 w-full sm:w-auto">
-                            <div class="w-18 h-18 w-16 h-16 rounded-2xl bg-white/30 backdrop-blur-md flex items-center justify-center text-2xl font-extrabold shadow-inner shrink-0 overflow-hidden transform group-hover:scale-110 group-hover:rotate-6 transition-transform">
+                            <div class="w-16 h-16 rounded-2xl bg-white/30 backdrop-blur-md flex items-center justify-center text-2xl font-extrabold shadow-inner shrink-0 overflow-hidden transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
                                 ${avatarContent}
                             </div>
                             <div>
                                 <div class="flex items-center space-x-2 mb-1.5 flex-wrap gap-y-1">
                                     <span class="text-xs uppercase tracking-widest font-bold opacity-90 flex items-center gap-1">
-                                        <i class="fa-solid fa-star text-amber-300 animate-spin" style="animation-duration: 6s;"></i> Próximo Cumpleaños
+                                        <i class="fa-solid fa-star text-amber-300 animate-spin-slow"></i> Próximo Cumpleaños
                                     </span>
                                     ${timeBadge}
                                 </div>
@@ -763,19 +725,18 @@
                     </div>
                 `;
             });
-
             container.innerHTML = html;
         }
 
         function checkTodayBirthdays() {
             const todayStr = new Date().toISOString().slice(5, 10);
             const todayBdays = birthdays.filter(b => b.date.slice(5, 10) === todayStr);
-
             const container = document.getElementById('todayAlertsContainer');
+
             if (todayBdays.length > 0) {
                 let names = todayBdays.map(b => `<strong class="font-bold underline">${b.name}</strong>`).join(', ');
                 container.innerHTML = `
-                    <div class="bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white p-4 rounded-2xl shadow-xl flex items-center space-x-3.5 animate-fade-in animate-glow shimmer-gradient cursor-pointer" onclick="triggerPartyConfetti()">
+                    <div class="bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white p-4 rounded-2xl shadow-xl led-border flex items-center space-x-3.5 animate-fade-in shimmer-gradient cursor-pointer" onclick="triggerPartyConfetti()">
                         <div class="w-11 h-11 rounded-xl bg-white/25 backdrop-blur-md flex items-center justify-center text-xl shrink-0 animate-bounce">
                             <i class="fa-solid fa-cake-candles"></i>
                         </div>
@@ -796,10 +757,7 @@
             let minDays = Infinity;
 
             birthdays.forEach(b => {
-                const [y, m, d] = b.date.split('-').map(Number);
-                if (m - 1 === currentMonth) {
-                    thisMonthCount++;
-                }
+                if (parseInt(b.date.split('-')[1]) - 1 === currentMonth) thisMonthCount++;
                 const details = getNextBirthdayDetails(b.date);
                 if (details.diffDays < minDays) {
                     minDays = details.diffDays;
@@ -817,21 +775,13 @@
             const emptyState = document.getElementById('emptyState');
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
 
-            let processed = birthdays.map((b, index) => {
-                const details = getNextBirthdayDetails(b.date);
-                return { ...b, originalIndex: index, ...details };
-            });
-
+            let processed = birthdays.map((b, index) => ({ ...b, originalIndex: index, ...getNextBirthdayDetails(b.date) }));
             processed.sort((a, b) => a.diffDays - b.diffDays);
 
             let filtered = processed.filter(b => {
-                const matchesSearch = b.name.toLowerCase().includes(searchVal);
-                if (!matchesSearch) return false;
-
+                if (!b.name.toLowerCase().includes(searchVal)) return false;
                 if (currentFilter === 'month') {
-                    const currentMonth = new Date().getMonth();
-                    const bMonth = parseInt(b.date.split('-')[1]) - 1;
-                    return bMonth === currentMonth;
+                    return parseInt(b.date.split('-')[1]) - 1 === new Date().getMonth();
                 } else if (currentFilter === 'upcoming') {
                     return b.diffDays <= 30;
                 }
@@ -868,21 +818,19 @@
                 const formattedDate = `${d} de ${monthNames[parseInt(m)-1]}`;
                 const ageSubText = b.hasRealYear ? ` (${b.turnsAge} años)` : '';
 
-                let avatarCardContent = '';
-                if (b.photo && b.photo.startsWith('http')) {
-                    avatarCardContent = `<img src="${b.photo}" alt="${b.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${b.name.charAt(0).toUpperCase()}';">`;
-                } else {
-                    avatarCardContent = b.name.charAt(0).toUpperCase();
-                }
+                let avatarCardContent = b.photo && b.photo.startsWith('http') ?
+                    `<img src="${b.photo}" alt="${b.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${b.name.charAt(0).toUpperCase()}';">` :
+                    b.name.charAt(0).toUpperCase();
 
-                // Animación escalonada con retraso basado en índice
                 const animDelay = (idx % 6) * 0.05;
+                // Si es el cumple de hoy, le ponemos el marco de tira LED de colores brillante
+                const cardLedClass = b.diffDays === 0 ? 'led-border bg-gradient-to-br from-pink-500/5 via-amber-500/5 to-transparent' : 'border border-slate-200/80 dark:border-slate-700';
 
                 html += `
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between hover-scale-card relative group animate-fade-in" style="animation-delay: ${animDelay}s;">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl ${cardLedClass} shadow-sm flex flex-col justify-between hover-scale-card relative group animate-fade-in" style="animation-delay: ${animDelay}s;">
                         <div class="flex items-start justify-between">
                             <div class="flex items-center space-x-3.5">
-                                <div class="w-13 h-13 w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200 font-black flex items-center justify-center text-lg shadow-inner overflow-hidden shrink-0 transform transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200 font-black flex items-center justify-center text-lg shadow-inner overflow-hidden shrink-0 transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
                                     ${avatarCardContent}
                                 </div>
                                 <div>
@@ -910,14 +858,13 @@
                     </div>
                 `;
             });
-
             listContainer.innerHTML = html;
         }
 
         function setFilter(type) {
             currentFilter = type;
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                if(btn.id !== 'syncDirectBtn') {
+                if (btn.id !== 'syncDirectBtn') {
                     btn.className = "filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap";
                 }
             });
@@ -926,10 +873,9 @@
         }
 
         function openModal() {
-            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-cake-candles text-pink-500"></i> Nuevo Cumpleaños';
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-cake-candles text-pink-500 animate-bounce"></i> Nuevo Cumpleaños';
             document.getElementById('birthdayForm').reset();
             document.getElementById('editIndex').value = '';
-            
             const modal = document.getElementById('birthdayModal');
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -942,9 +888,7 @@
             const modal = document.getElementById('birthdayModal');
             modal.classList.add('opacity-0');
             document.getElementById('modalContent').classList.add('scale-90');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         function saveBirthday(event) {
@@ -972,7 +916,7 @@
 
         function editBirthday(index) {
             const b = birthdays[index];
-            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen text-pink-500"></i> Editar Cumpleaños';
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen text-pink-500 animate-pulse"></i> Editar Cumpleaños';
             document.getElementById('editIndex').value = index;
             document.getElementById('bName').value = b.name;
             document.getElementById('bDate').value = b.date;
