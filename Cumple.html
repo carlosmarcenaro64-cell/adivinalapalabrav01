@@ -9,7 +9,7 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -24,13 +24,36 @@
             }
         }
     </script>
+    <style>
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(236, 72, 153, 0.6); }
+        }
+        .animate-fade-in {
+            animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-float {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+        .animate-glow {
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+    </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-300">
 
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm transition-colors duration-300">
+    <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm transition-colors duration-300">
         <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center text-white shadow-md shadow-pink-500/20">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center text-white shadow-md shadow-pink-500/20 animate-float">
                     <i class="fa-solid fa-cake-candles text-lg"></i>
                 </div>
                 <div>
@@ -39,10 +62,10 @@
                 </div>
             </div>
             <div class="flex items-center space-x-3 w-full sm:w-auto justify-end flex-wrap gap-y-2">
-                <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm" title="Cambiar tema">
+                <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm transform hover:scale-105 active:scale-95" title="Cambiar tema">
                     <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
                 </button>
-                <button onclick="openModal()" class="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium px-4 py-2.5 rounded-xl shadow-md shadow-pink-500/20 transition-all flex items-center justify-center space-x-2 text-sm">
+                <button onclick="openModal()" class="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium px-4 py-2.5 rounded-xl shadow-md shadow-pink-500/20 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 text-sm">
                     <i class="fa-solid fa-plus"></i>
                     <span>Nuevo Cumpleaños</span>
                 </button>
@@ -60,7 +83,7 @@
 
         <!-- Cuadricula de Estadísticas -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-colors duration-300">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-md transform hover:-translate-y-1">
                 <div class="w-12 h-12 rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 flex items-center justify-center text-xl">
                     <i class="fa-solid fa-gift"></i>
                 </div>
@@ -69,7 +92,7 @@
                     <h3 id="statThisMonth" class="text-2xl font-bold text-slate-800 dark:text-white">0</h3>
                 </div>
             </div>
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-colors duration-300">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-md transform hover:-translate-y-1">
                 <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-500 flex items-center justify-center text-xl">
                     <i class="fa-solid fa-hourglass-half"></i>
                 </div>
@@ -78,7 +101,7 @@
                     <h3 id="statNext" class="text-lg font-bold text-slate-800 dark:text-white truncate max-w-[150px]">-</h3>
                 </div>
             </div>
-            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-colors duration-300">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-md transform hover:-translate-y-1">
                 <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center text-xl">
                     <i class="fa-solid fa-users"></i>
                 </div>
@@ -98,10 +121,10 @@
                 <input type="text" id="searchInput" oninput="filterBirthdays()" placeholder="Buscar por nombre..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
             </div>
             <div class="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-                <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-pink-500 text-white transition-all whitespace-nowrap">Todos</button>
+                <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-pink-500 text-white transition-all whitespace-nowrap shadow-sm">Todos</button>
                 <button onclick="setFilter('month')" id="filter-month" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all whitespace-nowrap">Este Mes</button>
                 <button onclick="setFilter('upcoming')" id="filter-upcoming" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all whitespace-nowrap">Próximos 30 días</button>
-                <button onclick="syncFromGoogleSheets()" id="syncDirectBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all whitespace-nowrap flex items-center space-x-1.5">
+                <button onclick="syncFromGoogleSheets()" id="syncDirectBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all whitespace-nowrap flex items-center space-x-1.5 shadow-sm transform hover:scale-105 active:scale-95">
                     <i class="fa-solid fa-rotate"></i>
                     <span>Actualizar desde Web</span>
                 </button>
@@ -112,12 +135,12 @@
             <div id="birthdayList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Tarjetas dinámicas aquí -->
             </div>
-            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center animate-fade-in">
                 <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center text-2xl mb-4">
                     <i class="fa-solid fa-cake-candles"></i>
                 </div>
                 <h3 class="text-base font-semibold text-slate-700 dark:text-slate-300">No hay cumpleaños encontrados</h3>
-                <p class="text-sm text-slate-400 mt-1 max-w-sm">Agrega nuevos cumpleaños usando el botón superior o vincula tu Google Sheet.</p>
+                <p class="text-sm text-slate-400 mt-1 max-w-sm">Agrega nuevos cumpleaños usando el botón superior o sincroniza desde tu hoja web.</p>
             </div>
         </div>
     </main>
@@ -135,26 +158,26 @@
                 <input type="hidden" id="editIndex" value="">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Nombre Completo</label>
-                    <input type="text" id="bName" required placeholder="Ej. Sofía Martínez" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500">
+                    <input type="text" id="bName" required placeholder="Ej. Sofía Martínez" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Fecha de Nacimiento</label>
-                        <input type="date" id="bDate" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500">
+                        <input type="date" id="bDate" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Categoría / Relación</label>
-                        <select id="bCategory" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500">
-                            <option value="Amigos">Atencion al usuario</option>
-                            <option value="Familia">Minsal</option>
-                            <option value="Trabajo">Doctores</option>
+                        <select id="bCategory" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
+                            <option value="Atencion al usuario">Atencion al usuario</option>
+                            <option value="Minsal">Minsal</option>
+                            <option value="Doctor/a">Doctor/a</option>
                             <option value="Otro">Otro</option>
                         </select>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Notas o Regalos (Opcional)</label>
-                    <textarea id="bNotes" rows="2" placeholder="Ej. Le gusta el chocolate, talla M..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500"></textarea>
+                    <textarea id="bNotes" rows="2" placeholder="Ej. Le gusta el chocolate, talla M..." class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"></textarea>
                 </div>
                 <div class="flex space-x-3 pt-2">
                     <button type="button" onclick="closeModal()" class="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-medium py-2.5 rounded-xl text-sm transition-colors">Cancelar</button>
@@ -164,34 +187,9 @@
         </div>
     </div>
 
-    <!-- Modal para Enlace de Google Sheets -->
-    <div id="sheetsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                    <i class="fa-solid fa-link text-emerald-500"></i>
-                    <span>Configurar Google Sheets</span>
-                </h3>
-                <button onclick="closeSheetsModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                En tu Google Sheet ve a <strong>Archivo > Compartir > Publicar en la Web</strong>, selecciona formato <strong>Valores separados por comas (.csv)</strong> y pega el enlace aquí:
-            </p>
-            <div class="space-y-3">
-                <input type="url" id="sheetsUrlInput" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
-                <div class="flex space-x-2">
-                    <button onclick="saveSheetsUrl()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-xs transition-colors shadow-md">Guardar y Actualizar</button>
-                    <button onclick="closeSheetsModal()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl text-xs font-medium transition-colors">Cancelar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal Personalizado para Mensajes -->
     <div id="customModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border border-slate-100 dark:border-slate-700">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border border-slate-100 dark:border-slate-700 animate-fade-in">
             <div id="customModalIcon" class="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 flex items-center justify-center text-xl mx-auto mb-3">
                 <i class="fa-solid fa-bell"></i>
             </div>
@@ -203,9 +201,9 @@
 
     <script>
         let birthdays = JSON.parse(localStorage.getItem('birthday_app_data')) || [
-            { name: 'María Gómez', date: '1995-09-20', category: 'Familia', notes: 'Le encantan las flores rojas' },
-            { name: 'Carlos Pérez', date: '1990-09-20', category: 'Trabajo', notes: 'Café de especialidad' },
-            { name: 'Lucía Méndez', date: '1998-10-05', category: 'Amigos', notes: 'Libros de misterio' }
+            { name: 'María Gómez', date: '1995-09-20', category: 'Atencion al usuario', notes: 'Le encantan las flores rojas' },
+            { name: 'Carlos Pérez', date: '1990-09-20', category: 'Minsal', notes: 'Café de especialidad' },
+            { name: 'Lucía Méndez', date: '1998-10-05', category: 'Doctor/a', notes: 'Libros de misterio' }
         ];
 
         let currentFilter = 'all';
@@ -248,29 +246,6 @@
             localStorage.setItem('birthday_app_data', JSON.stringify(birthdays));
         }
 
-        function openSheetsModal() {
-            document.getElementById('sheetsUrlInput').value = googleSheetsUrl;
-            document.getElementById('sheetsModal').classList.remove('hidden');
-        }
-
-        function closeSheetsModal() {
-            document.getElementById('sheetsModal').classList.add('hidden');
-        }
-
-        function saveSheetsUrl() {
-            const url = document.getElementById('sheetsUrlInput').value.trim();
-            if (url && !url.includes('docs.google.com')) {
-                showCustomModal('Enlace no válido', 'Por favor ingresa un enlace válido publicado de Google Sheets.');
-                return;
-            }
-            googleSheetsUrl = url;
-            localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
-            closeSheetsModal();
-            if (googleSheetsUrl) {
-                syncFromGoogleSheets();
-            }
-        }
-
         function parseSheetDate(rawDate) {
             if (!rawDate) return null;
             let clean = rawDate.replace(/^"|"$/g, '').trim();
@@ -307,10 +282,7 @@
         }
 
         async function syncFromGoogleSheets(isSilent = false) {
-            if (!googleSheetsUrl) {
-                if (!isSilent) openSheetsModal();
-                return;
-            }
+            if (!googleSheetsUrl) return;
 
             const syncBtn = document.getElementById('syncDirectBtn');
             if (syncBtn && !isSilent) {
@@ -318,7 +290,6 @@
             }
 
             try {
-                // Agregar parámetro de tiempo para evitar caché del navegador al actualizar desde la web
                 const separator = googleSheetsUrl.includes('?') ? '&' : '?';
                 const cacheBustedUrl = `${googleSheetsUrl}${separator}_cb=${new Date().getTime()}`;
 
@@ -351,23 +322,23 @@
                     if (row.length >= 2) {
                         let name = '';
                         let rawDate = '';
-                        let category = 'Trabajo';
+                        let category = 'Otro';
                         let notes = '';
 
                         if (row.length >= 3 && (row[1].includes('/') || row[1].includes('-') || /^\d+$/.test(row[1]))) {
                             name = row[0].replace(/^"|"$/g, '');
                             rawDate = row[1];
-                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Trabajo';
+                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
                             notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
                         } else if (row.length >= 2 && (row[0].includes('/') || row[0].includes('-'))) {
                             rawDate = row[0];
                             name = row[1] ? row[1].replace(/^"|"$/g, '') : 'Sin nombre';
-                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Trabajo';
+                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
                             notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
                         } else {
                             name = row[0].replace(/^"|"$/g, '');
                             rawDate = row[1] || '';
-                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Trabajo';
+                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
                             notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
                         }
 
@@ -376,7 +347,7 @@
                             newBirthdays.push({
                                 name: name,
                                 date: parsedDate,
-                                category: category || 'Trabajo',
+                                category: category || 'Otro',
                                 notes: notes
                             });
                         }
@@ -405,99 +376,6 @@
                     syncBtn.innerHTML = '<i class="fa-solid fa-rotate"></i><span>Actualizar desde Web</span>';
                 }
             }
-        }
-
-        function exportToCSV() {
-            if (!birthdays || birthdays.length === 0) {
-                showCustomModal('Sin datos', 'No hay cumpleaños para exportar.');
-                return;
-            }
-
-            let csvContent = "\uFEFFnombre completo,fecha de nacimiento,categoria/relacion,nota o regalos (opcional)\n";
-            
-            birthdays.forEach(b => {
-                const name = `"${(b.name || '').replace(/"/g, '""')}"`;
-                const date = `"${b.date || ''}"`;
-                const category = `"${(b.category || '').replace(/"/g, '""')}"`;
-                const notes = `"${(b.notes || '').replace(/"/g, '""')}"`;
-                csvContent += `${name},${date},${category},${notes}\n`;
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'cumpleanos_export.csv');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showCustomModal('Exportado con éxito', 'Se ha descargado el archivo CSV compatible con Google Sheets.');
-        }
-
-        function importFromCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const text = e.target.result;
-                    const lines = text.split(/\r\n|\n/);
-                    let newBirthdays = [];
-
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-
-                        const row = [];
-                        let inQuotes = false;
-                        let currentVal = '';
-                        for (let char of line) {
-                            if (char === '"') {
-                                inQuotes = !inQuotes;
-                            } else if (char === ',' && !inQuotes) {
-                                row.push(currentVal.trim());
-                                currentVal = '';
-                            } else {
-                                currentVal += char;
-                            }
-                        }
-                        row.push(currentVal.trim());
-
-                        if (row.length >= 2 && row[0]) {
-                            const cleanName = row[0].replace(/^"|"$/g, '');
-                            const parsedDate = parseSheetDate(row[1]);
-                            const cleanCat = row[2] ? row[2].replace(/^"|"$/g, '') : 'Trabajo';
-                            const cleanNotes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
-
-                            if (cleanName && parsedDate) {
-                                newBirthdays.push({
-                                    name: cleanName,
-                                    date: parsedDate,
-                                    category: cleanCat,
-                                    notes: cleanNotes
-                                });
-                            }
-                        }
-                    }
-
-                    if (newBirthdays.length > 0) {
-                        birthdays = newBirthdays;
-                        saveData();
-                        renderFeaturedTopBanner();
-                        checkTodayBirthdays();
-                        renderBirthdays();
-                        updateStats();
-                        showCustomModal('¡Importación Exitosa!', `Se han cargado ${newBirthdays.length} cumpleaños correctamente.`);
-                    } else {
-                        showCustomModal('Error de formato', 'No se pudieron detectar registros válidos en el archivo CSV.');
-                    }
-                } catch (err) {
-                    showCustomModal('Error', 'Ocurrió un error al procesar el archivo CSV.');
-                }
-                event.target.value = '';
-            };
-            reader.readAsText(file);
         }
 
         function getNextBirthdayDetails(dateString) {
@@ -540,6 +418,7 @@
             let topCardsData = [];
             if (processed.length > 0) {
                 const minDays = processed[0].diffDays;
+                // ESTRICTO: Solo mostrar los de la fecha más cercana (si hay varios el mismo día, salen todos)
                 topCardsData = processed.filter(b => b.diffDays === minDays);
             }
 
@@ -569,12 +448,12 @@
                 const gradientClass = gradients[index % gradients.length];
 
                 html += `
-                    <div class="bg-gradient-to-r ${gradientClass} text-white p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden">
+                    <div class="bg-gradient-to-r ${gradientClass} text-white p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden animate-fade-in animate-glow">
                         <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl pointer-events-none">
                             <i class="fa-solid fa-cake-candles"></i>
                         </div>
                         <div class="flex items-center space-x-4 z-10">
-                            <div class="w-16 h-16 rounded-2xl bg-white/25 backdrop-blur-md flex items-center justify-center text-3xl font-extrabold shadow-inner shrink-0">
+                            <div class="w-16 h-16 rounded-2xl bg-white/25 backdrop-blur-md flex items-center justify-center text-3xl font-extrabold shadow-inner shrink-0 transform hover:scale-105 transition-transform">
                                 ${nextBday.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -605,7 +484,7 @@
             if (todayBdays.length > 0) {
                 let names = todayBdays.map(b => `<strong class="font-semibold">${b.name}</strong>`).join(', ');
                 container.innerHTML = `
-                    <div class="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-4 rounded-2xl shadow-md flex items-center space-x-3">
+                    <div class="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-4 rounded-2xl shadow-md flex items-center space-x-3 animate-fade-in">
                         <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl shrink-0">
                             <i class="fa-solid fa-cake-candles animate-bounce"></i>
                         </div>
@@ -679,9 +558,10 @@
             let html = '';
             filtered.forEach(b => {
                 let badgeColor = 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300';
-                if (b.category === 'Familia') badgeColor = 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400';
-                if (b.category === 'Amigos') badgeColor = 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400';
-                if (b.category === 'Trabajo' || b.category === 'trabajo') badgeColor = 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+                if (b.category === 'Atencion al usuario') badgeColor = 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400';
+                if (b.category === 'Minsal') badgeColor = 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+                if (b.category === 'Doctor/a') badgeColor = 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400';
+                if (b.category === 'Otro') badgeColor = 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400';
 
                 let timeText = '';
                 if (b.diffDays === 0) {
@@ -698,7 +578,7 @@
                 const ageSubText = b.hasRealYear ? ` (${b.turnsAge} años)` : '';
 
                 html += `
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative group">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 relative group animate-fade-in">
                         <div class="flex items-start justify-between">
                             <div class="flex items-center space-x-3">
                                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center text-base shadow-inner">
@@ -734,9 +614,11 @@
         function setFilter(type) {
             currentFilter = type;
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.className = "filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all whitespace-nowrap";
+                if(btn.id !== 'syncDirectBtn') {
+                    btn.className = "filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all whitespace-nowrap";
+                }
             });
-            document.getElementById(`filter-${type}`).className = "filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-pink-500 text-white transition-all whitespace-nowrap";
+            document.getElementById(`filter-${type}`).className = "filter-btn px-3.5 py-1.5 rounded-xl text-xs font-medium bg-pink-500 text-white transition-all whitespace-nowrap shadow-sm";
             renderBirthdays();
         }
 
