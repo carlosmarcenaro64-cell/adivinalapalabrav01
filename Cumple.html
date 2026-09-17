@@ -466,12 +466,15 @@
         ];
 
         let currentFilter = 'all';
-
-        // API actual de CumpleApp.
-        const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycby-pbrEswqX-dGWYyRadiGwkiOGKYIMXDy_w8JD6vXs0HJtbecKzCxjQmD7-avxLGJG/exec';
-        const googleSheetsUrl = googleAppsScriptUrl;
-        localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
-        localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
+        let googleSheetsUrl = localStorage.getItem('birthday_sheets_url') || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRIS56Nu-Eeh2jb1eyYu_7uqOGl8Qb_LXh5c48gD8iJYZw4RlCEsKidBaZ1zorpbjlpoeLOegNPucQS/pub?gid=0&single=true&output=csv';
+        if (!localStorage.getItem('birthday_sheets_url')) {
+            localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
+        }
+        // URL de tu Web App de Google Apps Script. Pega aquí la URL que termina en /exec.
+        let googleAppsScriptUrl = localStorage.getItem('birthday_apps_script_url') || 'https://script.google.com/macros/s/AKfycbw8FGHTWAOODHJkCAwLDuGe_Bxaubr62CXMvhcloHMAsU2gHRuTuQ0WbBAFv779ngTM/exec';
+        if (!localStorage.getItem('birthday_apps_script_url')) {
+            localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
+        }
 
         function createBirthdayId() {
             if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -479,25 +482,20 @@
         }
 
         async function sendToGoogleSheets(payload) {
+            if (!googleAppsScriptUrl) return false;
             try {
-                const response = await fetch(googleAppsScriptUrl, {
+                // text/plain evita el preflight CORS de application/json.
+                await fetch(googleAppsScriptUrl, {
                     method: 'POST',
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    keepalive: true
                 });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const result = await response.json();
-                if (!result || result.status !== 'success') {
-                    throw new Error((result && result.message) || 'Google Sheets rechazó la operación.');
-                }
-                return result;
+                return true;
             } catch (error) {
-                console.error('No se pudo completar la operación en Google Sheets:', error);
-                return null;
+                console.error('No se pudo enviar a Google Sheets:', error);
+                return false;
             }
         }
 
@@ -777,46 +775,76 @@
         }
 
         async function syncFromGoogleSheets(isSilent = false) {
+            if (!googleSheetsUrl) return;
             const syncBtn = document.getElementById('syncDirectBtn');
             if (syncBtn && !isSilent) {
                 syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i><span>Actualizando...</span>';
             }
-
             try {
-                const response = await fetch(googleAppsScriptUrl, {
-                    method: 'GET',
-                    cache: 'no-store',
-                    redirect: 'follow'
-                });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const separator = googleSheetsUrl.includes('?') ? '&' : '?';
+                const response = await fetch(`${googleSheetsUrl}${separator}_cb=${new Date().getTime()}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const text = await response.text();
+                
+                const lines = text.split(/\r\n|\n/);
+                let newBirthdays = [];
 
-                const result = await response.json();
-                if (!result || result.status !== 'success' || !Array.isArray(result.data)) {
-                    throw new Error((result && result.message) || 'Respuesta inválida de Google Sheets.');
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    const row = [];
+                    let inQuotes = false;
+                    let currentVal = '';
+                    for (let char of line) {
+                        if (char === '"') inQuotes = !inQuotes;
+                        else if (char === ',' && !inQuotes) {
+                            row.push(currentVal.trim());
+                            currentVal = '';
+                        } else currentVal += char;
+                    }
+                    row.push(currentVal.trim());
+
+                    if (row.length >= 2) {
+                        let name = row[0] ? row[0].replace(/^"|"$/g, '') : '';
+                        let rawDate = row[1] ? row[1].replace(/^"|"$/g, '') : '';
+                        let category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
+                        let notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
+                        let photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
+
+                        if (!['Atencion al usuario', 'Minsal', 'Doctor/a', 'Otro'].includes(category)) category = 'Otro';
+
+                        if (!rawDate && row[0] && (row[0].includes('/') || row[0].includes('-'))) {
+                            rawDate = row[0];
+                            name = row[1] ? row[1].replace(/^"|"$/g, '') : 'Sin nombre';
+                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
+                            notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
+                            photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
+                        }
+
+                        const parsedDate = parseSheetDate(rawDate);
+                        if (name && parsedDate) {
+                            const sheetId = row[5] ? row[5].replace(/^"|"$/g, '') : '';
+                            newBirthdays.push({
+                                id: sheetId || `sheet-row-${i + 1}`,
+                                row: i + 1,
+                                name, date: parsedDate, category, notes, photo
+                            });
+                        }
+                    }
                 }
 
-                birthdays = result.data.map(b => ({
-                    id: String(b.id || ''),
-                    row: Number(b.row || 0),
-                    name: String(b.name || ''),
-                    date: parseSheetDate(String(b.date || '')) || String(b.date || ''),
-                    category: String(b.category || 'Otro'),
-                    notes: String(b.notes || ''),
-                    photo: String(b.photo || '')
-                })).filter(b => b.name && b.date);
-
-                saveData();
-                refreshAllViews();
-
-                if (!isSilent) {
-                    triggerPartyConfetti();
-                    showCustomModal('¡Sincronización Exitosa!', `Se han actualizado ${birthdays.length} registros.`);
+                if (newBirthdays.length > 0) {
+                    birthdays = newBirthdays;
+                    saveData();
+                    refreshAllViews();
+                    if (!isSilent) {
+                        triggerPartyConfetti();
+                        showCustomModal('¡Sincronización Exitosa!', `Se han actualizado ${newBirthdays.length} registros.`);
+                    }
                 }
             } catch (err) {
-                console.error('Error Google Sheets:', err);
-                if (!isSilent) {
-                    showCustomModal('Error de Conexión', 'No se pudo actualizar desde Google Sheets.');
-                }
+                if (!isSilent) showCustomModal('Error de Conexión', 'No se pudo actualizar desde la web.');
             } finally {
                 if (syncBtn && !isSilent) {
                     syncBtn.innerHTML = '<i class="fa-solid fa-rotate"></i><span>Actualizar desde Web</span>';
@@ -1092,7 +1120,6 @@
 
         async function saveBirthday(event) {
             event.preventDefault();
-
             const index = document.getElementById('editIndex').value;
             const name = document.getElementById('bName').value.trim();
             const date = document.getElementById('bDate').value;
@@ -1106,53 +1133,48 @@
             }
 
             if (index === '') {
-                const data = { name, date, category, notes, photo };
-                const result = await sendToGoogleSheets({ action: 'create', data });
-
-                if (!result) {
-                    showCustomModal('Error al guardar', 'No se pudo guardar en Google Sheets. Inténtalo nuevamente.');
-                    return;
-                }
-
-                birthdays.push({
-                    ...data,
-                    id: String(result.id || ''),
-                    row: Number(result.row || 0)
-                });
-
+                const birthday = { id: createBirthdayId(), name, date, category, photo, notes };
+                birthdays.push(birthday);
                 saveData();
                 closeModal();
                 refreshAllViews();
                 triggerPartyConfetti();
-                showCustomModal('¡Guardado!', 'El cumpleaños se guardó correctamente en Google Sheets.');
-            } else {
-                const oldBirthday = birthdays[Number(index)];
-                if (!oldBirthday) return;
+                showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
 
-                const data = {
-                    id: oldBirthday.id || '',
-                    row: oldBirthday.row || '',
-                    name, date, category, notes, photo
-                };
-
-                const result = await sendToGoogleSheets({ action: 'update', data });
-
-                if (!result) {
-                    showCustomModal('Error al actualizar', 'No se pudo modificar el registro en Google Sheets.');
-                    return;
+                const sent = await sendToGoogleSheets({
+                    action: 'add',
+                    id: birthday.id,
+                    name: birthday.name,
+                    date: birthday.date,
+                    category: birthday.category,
+                    notes: birthday.notes,
+                    photo: birthday.photo
+                });
+                if (!sent && googleAppsScriptUrl) {
+                    showCustomModal('Guardado localmente', 'No se pudo confirmar el envío a Google Sheets. Revisa la conexión y vuelve a sincronizar.');
                 }
-
-                birthdays[Number(index)] = {
-                    ...oldBirthday,
-                    ...data,
-                    id: String(result.id || oldBirthday.id || ''),
-                    row: Number(result.row || oldBirthday.row || 0)
-                };
-
+            } else {
+                const birthday = birthdays[index];
+                const updated = { ...birthday, name, date, category, photo, notes };
+                birthdays[index] = updated;
                 saveData();
                 closeModal();
                 refreshAllViews();
-                showCustomModal('¡Actualizado!', 'Los datos se modificaron correctamente en Google Sheets.');
+                showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
+
+                const sent = await sendToGoogleSheets({
+                    action: 'update',
+                    id: updated.id || '',
+                    row: updated.row || '',
+                    name: updated.name,
+                    date: updated.date,
+                    category: updated.category,
+                    notes: updated.notes,
+                    photo: updated.photo
+                });
+                if (!sent && googleAppsScriptUrl) {
+                    showCustomModal('Actualizado localmente', 'No se pudo confirmar la actualización en Google Sheets.');
+                }
             }
         }
 
@@ -1176,27 +1198,22 @@
 
         async function deleteBirthday(index) {
             playDeleteSound();
-
             const birthday = birthdays[index];
             if (!birthday) return;
-
-            const result = await sendToGoogleSheets({
-                action: 'delete',
-                data: {
-                    id: birthday.id || '',
-                    row: birthday.row || ''
-                }
-            });
-
-            if (!result) {
-                showCustomModal('Error al eliminar', 'No se pudo eliminar el registro de Google Sheets.');
-                return;
-            }
 
             birthdays.splice(index, 1);
             saveData();
             refreshAllViews();
-            showCustomModal('Eliminado', 'El registro se eliminó correctamente de Google Sheets.');
+            showCustomModal('Eliminado', 'El registro ha sido borrado de la lista.');
+
+            const sent = await sendToGoogleSheets({
+                action: 'delete',
+                id: birthday.id || '',
+                row: birthday.row || ''
+            });
+            if (!sent && googleAppsScriptUrl) {
+                showCustomModal('Eliminado localmente', 'No se pudo confirmar el borrado en Google Sheets.');
+            }
         }
 
         // ==================== AVISO DE CUMPLEAÑOS PREMIUM ====================
