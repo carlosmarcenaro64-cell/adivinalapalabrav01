@@ -160,37 +160,6 @@
 .extra-sparkle{position:fixed;z-index:9999;pointer-events:none;font-size:18px;animation:sparklePop .9s ease-out forwards}
 @media (prefers-reduced-motion: reduce){.extra-shine::after,.extra-breathe,.extra-border-pulse,.extra-sparkle{animation:none!important}.extra-reveal{transition:none}}
 
-
-/* ==================== AVISO DE CUMPLEAÑOS PREMIUM ==================== */
-.birthday-celebration-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,23,.78);backdrop-filter:blur(12px);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility .35s ease}
-.birthday-celebration-overlay.show{opacity:1;visibility:visible}
-.birthday-celebration-card{position:relative;width:min(720px,96vw);max-height:92vh;overflow:auto;border-radius:32px;padding:6px;background:linear-gradient(90deg,#00f5ff,#315cff,#9b00ff,#ff00d4,#ff287c,#ff3b30,#ffd000,#58ff00,#00f5ff);background-size:300% 300%;animation:rgbBorder 5s linear infinite,celebrationIn .65s cubic-bezier(.16,1,.3,1);box-shadow:0 0 18px #00eaff,0 0 42px rgba(255,0,214,.55),0 0 90px rgba(0,255,128,.28)}
-.birthday-celebration-inner{position:relative;overflow:hidden;border-radius:27px;background:radial-gradient(circle at 50% 0%,#34146f 0,#080d35 48%,#020617 100%);color:#fff;padding:28px 28px 24px;text-align:center}
-.birthday-celebration-inner:before{content:"";position:absolute;inset:-50%;background:conic-gradient(from 0deg,transparent 0 25%,rgba(255,255,255,.09) 28%,transparent 31% 50%,rgba(255,255,255,.06) 54%,transparent 57% 100%);animation:celebrationSpin 12s linear infinite;pointer-events:none}
-.birthday-celebration-content{position:relative;z-index:2}
-.birthday-close{position:absolute;right:18px;top:18px;z-index:5;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.8);background:rgba(2,6,23,.5);color:#fff;font-size:22px;cursor:pointer;transition:.25s}
-.birthday-close:hover{transform:rotate(90deg) scale(1.1);background:rgba(255,255,255,.15)}
-.birthday-photo-wrap{width:150px;height:150px;margin:4px auto 14px;padding:5px;border-radius:28px;background:linear-gradient(135deg,#ffd400,#ff24c8,#00eaff);box-shadow:0 0 18px #ff22c8,0 0 38px rgba(0,234,255,.55);animation:photoFloat 3s ease-in-out infinite}
-.birthday-photo{width:100%;height:100%;object-fit:cover;border-radius:23px;background:#111827}
-.birthday-avatar-fallback{width:100%;height:100%;border-radius:23px;display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:900;background:linear-gradient(135deg,#111827,#0f766e);color:#5eead4}
-.birthday-title{font-size:clamp(38px,7vw,70px);line-height:.95;font-weight:1000;margin:4px 0 12px;background:linear-gradient(180deg,#fff8a8 0%,#ffd43b 35%,#ff4fc3 68%,#ff00a8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 8px 25px rgba(255,0,170,.35);letter-spacing:-2px}
-.birthday-name{font-size:clamp(24px,5vw,43px);font-weight:900;color:#fff;margin:0 0 14px;text-shadow:0 0 20px rgba(255,0,200,.55)}
-.birthday-message{font-size:clamp(15px,2.5vw,21px);line-height:1.55;color:#f8fafc;max-width:600px;margin:0 auto 18px}
-.birthday-message strong{color:#ffe14a}
-.birthday-decor{position:absolute;inset:0;pointer-events:none;font-size:30px}
-.birthday-decor span{position:absolute;animation:decorFloat 4s ease-in-out infinite}
-.birthday-decor span:nth-child(1){left:3%;top:9%}.birthday-decor span:nth-child(2){right:5%;top:12%;animation-delay:.8s}.birthday-decor span:nth-child(3){left:7%;bottom:10%;animation-delay:1.4s}.birthday-decor span:nth-child(4){right:7%;bottom:9%;animation-delay:2.1s}.birthday-decor span:nth-child(5){left:16%;top:38%;animation-delay:.4s}.birthday-decor span:nth-child(6){right:15%;top:42%;animation-delay:1.8s}
-.birthday-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:18px;padding:14px 28px;font-size:16px;font-weight:900;color:#fff;background:linear-gradient(90deg,#ec4899,#f000b8,#ff3d8d);box-shadow:0 10px 30px rgba(236,72,153,.4);cursor:pointer;transition:.25s}
-.birthday-action:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 15px 38px rgba(236,72,153,.55)}
-.birthday-actions-row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:12px}
-.birthday-mini-btn{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:10px 15px;font-weight:700;cursor:pointer}
-@keyframes celebrationIn{0%{transform:translateY(35px) scale(.82) rotate(-1deg)}70%{transform:translateY(-5px) scale(1.015)}100%{transform:translateY(0) scale(1)}}
-@keyframes rgbBorder{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-@keyframes celebrationSpin{to{transform:rotate(360deg)}}
-@keyframes photoFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1deg)}}
-@keyframes decorFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-16px) rotate(8deg)}}
-@media(max-width:640px){.birthday-celebration-card{max-height:94vh;border-radius:24px}.birthday-celebration-inner{padding:22px 16px 18px;border-radius:19px}.birthday-photo-wrap{width:118px;height:118px}.birthday-close{right:10px;top:10px;width:38px;height:38px}.birthday-title{font-size:42px}.birthday-message{font-size:15px}.birthday-action{width:100%}}
-
     </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
@@ -222,9 +191,6 @@
                 <button onclick="requestNotificationPermission()" id="notifBellBtn" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 relative group" title="Activar Notificaciones">
                     <i class="fa-solid fa-bell text-sm transition-transform group-hover:rotate-12"></i>
                     <span id="notifBadge" class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 text-[8px] text-slate-900 font-extrabold flex items-center justify-center hidden animate-bounce">!</span>
-                </button>
-                <button onclick="testBirthdayAlert()" class="w-10 h-10 rounded-xl bg-fuchsia-50 dark:bg-fuchsia-950/40 text-fuchsia-600 dark:text-fuchsia-400 border border-fuchsia-200 dark:border-fuchsia-800/60 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Probar aviso de cumpleaños">
-                    <i class="fa-solid fa-cake-candles text-sm transition-transform group-hover:scale-125 group-hover:rotate-12"></i>
                 </button>
                 <button onclick="triggerPartyConfetti()" class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="¡Lanzar Confeti!">
                     <i class="fa-solid fa-wand-magic-sparkles text-sm transition-transform group-hover:rotate-45 group-hover:scale-125"></i>
@@ -367,31 +333,6 @@
     </div>
 
     <!-- Modal Personalizado para Mensajes -->
-    <!-- AVISO DE CUMPLEAÑOS PREMIUM -->
-    <div id="birthdayCelebration" class="birthday-celebration-overlay" onclick="if(event.target===this) closeBirthdayCelebration()">
-        <div class="birthday-celebration-card" role="dialog" aria-modal="true" aria-labelledby="birthdayCelebrationTitle">
-            <div class="birthday-celebration-inner">
-                <button class="birthday-close" onclick="closeBirthdayCelebration()" aria-label="Cerrar">×</button>
-                <div class="birthday-decor" aria-hidden="true">
-                    <span>🎈</span><span>✨</span><span>🎁</span><span>🎂</span><span>🎉</span><span>💖</span>
-                </div>
-                <div class="birthday-celebration-content">
-                    <div id="birthdayCelebrationPhoto" class="birthday-photo-wrap"></div>
-                    <div class="text-sm sm:text-base font-black uppercase tracking-widest text-pink-300">🎉 Hoy celebramos a 🎉</div>
-                    <div id="birthdayCelebrationName" class="birthday-name"></div>
-                    <h2 id="birthdayCelebrationTitle" class="birthday-title">¡Feliz Cumpleaños!</h2>
-                    <p class="birthday-message">Que este nuevo año de vida esté lleno de <strong>salud, amor, alegría y muchos éxitos</strong>.<br>¡Disfruta tu día al máximo! 💖</p>
-                    <button class="birthday-action" onclick="celebrateBirthdayAgain()"><span>🎊</span> ¡Feliz Cumpleaños! <span>🎊</span></button>
-                    <div class="birthday-actions-row">
-                        <button class="birthday-mini-btn" onclick="toggleBirthdayAlertSound()"><i id="birthdaySoundIcon" class="fa-solid fa-volume-high"></i> Melodía</button>
-                        <button class="birthday-mini-btn" onclick="playBirthdayMelody()"><i class="fa-solid fa-music"></i> Repetir</button>
-                        <button class="birthday-mini-btn" onclick="closeBirthdayCelebration()">✕ Cerrar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border border-slate-100 dark:border-slate-700 animate-fade-in animate-pop">
             <div id="customModalIcon" class="w-14 h-14 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 flex items-center justify-center text-2xl mx-auto mb-3 animate-bounce">
@@ -466,68 +407,37 @@
         ];
 
         let currentFilter = 'all';
-
-        // API actual de CumpleApp.
-        const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbw3JYwWOhmpVhPo3PZn2Qmz2GEWyqhRhZq5wk5ESUeFxAHhcjOiTKUAIyhQUm2XaGEG/exec';
-        const googleSheetsUrl = googleAppsScriptUrl;
-        localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
-        localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
+        let googleSheetsUrl = localStorage.getItem('birthday_sheets_url') || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRIS56Nu-Eeh2jb1eyYu_7uqOGl8Qb_LXh5c48gD8iJYZw4RlCEsKidBaZ1zorpbjlpoeLOegNPucQS/pub?gid=0&single=true&output=csv';
+        if (!localStorage.getItem('birthday_sheets_url')) {
+            localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
+        }
+        // URL de tu Web App de Google Apps Script. Pega aquí la URL que termina en /exec.
+        let googleAppsScriptUrl = localStorage.getItem('birthday_apps_script_url') || 'https://script.google.com/macros/s/AKfycbw8FGHTWAOODHJkCAwLDuGe_Bxaubr62CXMvhcloHMAsU2gHRuTuQ0WbBAFv779ngTM/exec';
+        if (!localStorage.getItem('birthday_apps_script_url')) {
+            localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
+        }
 
         function createBirthdayId() {
             if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
             return 'bday-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
         }
 
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Envía cambios a Apps Script mediante un formulario POST oculto.
-        // Un envío de formulario normal no depende de CORS como fetch().
-        function sendToGoogleSheets(payload) {
-            return new Promise((resolve, reject) => {
-                const frameName = 'cumplePost_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-                const iframe = document.createElement('iframe');
-                const form = document.createElement('form');
-                const input = document.createElement('input');
-
-                iframe.name = frameName;
-                iframe.style.display = 'none';
-
-                form.method = 'POST';
-                form.action = googleAppsScriptUrl;
-                form.target = frameName;
-                form.style.display = 'none';
-
-                input.type = 'hidden';
-                input.name = 'payload';
-                input.value = JSON.stringify(payload);
-                form.appendChild(input);
-
-                const cleanup = () => {
-                    setTimeout(() => {
-                        if (form.parentNode) form.parentNode.removeChild(form);
-                        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                    }, 1500);
-                };
-
-                try {
-                    document.body.appendChild(iframe);
-                    document.body.appendChild(form);
-                    form.submit();
-
-                    // El POST se envía aunque no podamos leer la respuesta cross-origin.
-                    // La confirmación real se hace leyendo nuevamente la hoja por JSONP.
-                    setTimeout(() => {
-                        cleanup();
-                        resolve(true);
-                    }, 500);
-                } catch (error) {
-                    cleanup();
-                    console.error('No se pudo enviar la operación a Google Sheets:', error);
-                    reject(error);
-                }
-            });
+        async function sendToGoogleSheets(payload) {
+            if (!googleAppsScriptUrl) return false;
+            try {
+                // text/plain evita el preflight CORS de application/json.
+                await fetch(googleAppsScriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                });
+                return true;
+            } catch (error) {
+                console.error('No se pudo enviar a Google Sheets:', error);
+                return false;
+            }
         }
 
         function saveBirthdayLocalOnly(birthday) {
@@ -708,7 +618,6 @@
             }, 5 * 60 * 1000);
 
             checkAndTriggerAlerts();
-            setTimeout(checkAndShowBirthdayCelebration, 1200);
         };
 
         function checkNotificationPermissionUI() {
@@ -805,110 +714,82 @@
             return null;
         }
 
-        function loadGoogleSheetsJSONP() {
-            return new Promise((resolve, reject) => {
-                const callbackName = 'cumpleAppCallback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-                const script = document.createElement('script');
+        async function syncFromGoogleSheets(isSilent = false) {
+            if (!googleSheetsUrl) return;
+            const syncBtn = document.getElementById('syncDirectBtn');
+            if (syncBtn && !isSilent) {
+                syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i><span>Actualizando...</span>';
+            }
+            try {
+                const separator = googleSheetsUrl.includes('?') ? '&' : '?';
+                const response = await fetch(`${googleSheetsUrl}${separator}_cb=${new Date().getTime()}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const text = await response.text();
+                
+                const lines = text.split(/\r\n|\n/);
+                let newBirthdays = [];
 
-                const timer = setTimeout(() => {
-                    cleanup();
-                    reject(new Error('Tiempo de espera agotado al conectar con Google Sheets.'));
-                }, 15000);
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
 
-                function cleanup() {
-                    clearTimeout(timer);
-                    if (script.parentNode) script.parentNode.removeChild(script);
-                    try {
-                        delete window[callbackName];
-                    } catch (_) {
-                        window[callbackName] = undefined;
+                    const row = [];
+                    let inQuotes = false;
+                    let currentVal = '';
+                    for (let char of line) {
+                        if (char === '"') inQuotes = !inQuotes;
+                        else if (char === ',' && !inQuotes) {
+                            row.push(currentVal.trim());
+                            currentVal = '';
+                        } else currentVal += char;
+                    }
+                    row.push(currentVal.trim());
+
+                    if (row.length >= 2) {
+                        let name = row[0] ? row[0].replace(/^"|"$/g, '') : '';
+                        let rawDate = row[1] ? row[1].replace(/^"|"$/g, '') : '';
+                        let category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
+                        let notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
+                        let photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
+
+                        if (!['Atencion al usuario', 'Minsal', 'Doctor/a', 'Otro'].includes(category)) category = 'Otro';
+
+                        if (!rawDate && row[0] && (row[0].includes('/') || row[0].includes('-'))) {
+                            rawDate = row[0];
+                            name = row[1] ? row[1].replace(/^"|"$/g, '') : 'Sin nombre';
+                            category = row[2] ? row[2].replace(/^"|"$/g, '') : 'Otro';
+                            notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
+                            photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
+                        }
+
+                        const parsedDate = parseSheetDate(rawDate);
+                        if (name && parsedDate) {
+                            const sheetId = row[5] ? row[5].replace(/^"|"$/g, '') : '';
+                            newBirthdays.push({
+                                id: sheetId || `sheet-row-${i + 1}`,
+                                row: i + 1,
+                                name, date: parsedDate, category, notes, photo
+                            });
+                        }
                     }
                 }
 
-                window[callbackName] = function(result) {
-                    cleanup();
-                    resolve(result);
-                };
-
-                script.onerror = function() {
-                    cleanup();
-                    const previewMessage =
-                        location.protocol === 'blob:'
-                            ? ' La vista previa del archivo puede bloquear conexiones externas; prueba la versión publicada en GitHub Pages.'
-                            : '';
-                    reject(new Error('No se pudo cargar la respuesta de Google Apps Script.' + previewMessage));
-                };
-
-                // Google documenta JSONP usando un parámetro "prefix".
-                script.src = googleAppsScriptUrl +
-                    '?prefix=' + encodeURIComponent(callbackName) +
-                    '&t=' + Date.now();
-
-                document.head.appendChild(script);
-            });
-        }
-
-        function applyGoogleData(result) {
-            if (!result || result.status !== 'success' || !Array.isArray(result.data)) {
-                throw new Error((result && result.message) || 'Respuesta inválida de Google Sheets.');
-            }
-
-            birthdays = result.data.map(b => ({
-                id: String(b.id || ''),
-                row: Number(b.row || 0),
-                name: String(b.name || ''),
-                date: parseSheetDate(String(b.date || '')) || String(b.date || ''),
-                category: String(b.category || 'Otro'),
-                notes: String(b.notes || ''),
-                photo: String(b.photo || '')
-            })).filter(b => b.name && b.date);
-
-            saveData();
-            refreshAllViews();
-        }
-
-        async function syncFromGoogleSheets(isSilent = false) {
-            const syncBtn = document.getElementById('syncDirectBtn');
-
-            if (syncBtn && !isSilent) {
-                syncBtn.disabled = true;
-                syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i><span>Actualizando...</span>';
-            }
-
-            try {
-                const result = await loadGoogleSheetsJSONP();
-                applyGoogleData(result);
-
-                if (!isSilent) {
-                    triggerPartyConfetti();
-                    showCustomModal('¡Sincronización Exitosa!', `Se han actualizado ${birthdays.length} registros.`);
+                if (newBirthdays.length > 0) {
+                    birthdays = newBirthdays;
+                    saveData();
+                    refreshAllViews();
+                    if (!isSilent) {
+                        triggerPartyConfetti();
+                        showCustomModal('¡Sincronización Exitosa!', `Se han actualizado ${newBirthdays.length} registros.`);
+                    }
                 }
-                return true;
             } catch (err) {
-                console.error('Error Google Sheets:', err);
-
-                if (!isSilent) {
-                    showCustomModal(
-                        'Error de Conexión',
-                        'No se pudo actualizar desde Google Sheets. ' + (err.message || '')
-                    );
-                }
-                return false;
+                if (!isSilent) showCustomModal('Error de Conexión', 'No se pudo actualizar desde la web.');
             } finally {
                 if (syncBtn && !isSilent) {
-                    syncBtn.disabled = false;
                     syncBtn.innerHTML = '<i class="fa-solid fa-rotate"></i><span>Actualizar desde Web</span>';
                 }
             }
-        }
-
-        async function waitForGoogleState(predicate, attempts = 6, delay = 850) {
-            for (let i = 0; i < attempts; i++) {
-                await sleep(delay);
-                const ok = await syncFromGoogleSheets(true);
-                if (ok && predicate(birthdays)) return true;
-            }
-            return false;
         }
 
         function getNextBirthdayDetails(dateString) {
@@ -1179,10 +1060,6 @@
 
         async function saveBirthday(event) {
             event.preventDefault();
-
-            const submitBtn = event.submitter || document.querySelector('#birthdayForm button[type="submit"]');
-            if (submitBtn) submitBtn.disabled = true;
-
             const index = document.getElementById('editIndex').value;
             const name = document.getElementById('bName').value.trim();
             const date = document.getElementById('bDate').value;
@@ -1191,71 +1068,53 @@
             const notes = document.getElementById('bNotes').value.trim();
 
             if (!name || !date) {
-                if (submitBtn) submitBtn.disabled = false;
                 showCustomModal('Faltan datos', 'Escribe el nombre y selecciona la fecha.');
                 return;
             }
 
-            try {
-                if (index === '') {
-                    const id = createBirthdayId();
-                    const data = { id, name, date, category, notes, photo };
+            if (index === '') {
+                const birthday = { id: createBirthdayId(), name, date, category, photo, notes };
+                birthdays.push(birthday);
+                saveData();
+                closeModal();
+                refreshAllViews();
+                triggerPartyConfetti();
+                showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
 
-                    await sendToGoogleSheets({ action: 'create', data });
-
-                    const confirmed = await waitForGoogleState(
-                        list => list.some(item => item.id === id)
-                    );
-
-                    if (!confirmed) {
-                        throw new Error('Google Sheets no confirmó el nuevo registro.');
-                    }
-
-                    closeModal();
-                    triggerPartyConfetti();
-                    showCustomModal('¡Guardado!', 'El cumpleaños se guardó correctamente en Google Sheets.');
-                } else {
-                    const oldBirthday = birthdays[Number(index)];
-                    if (!oldBirthday) throw new Error('No se encontró el registro que deseas modificar.');
-
-                    const data = {
-                        id: oldBirthday.id || '',
-                        row: oldBirthday.row || '',
-                        name,
-                        date,
-                        category,
-                        notes,
-                        photo
-                    };
-
-                    await sendToGoogleSheets({ action: 'update', data });
-
-                    const confirmed = await waitForGoogleState(
-                        list => list.some(item =>
-                            item.id === data.id &&
-                            item.name === name &&
-                            item.date === date &&
-                            item.category === category &&
-                            item.notes === notes &&
-                            item.photo === photo
-                        )
-                    );
-
-                    if (!confirmed) {
-                        throw new Error('Google Sheets no confirmó la modificación.');
-                    }
-
-                    closeModal();
-                    showCustomModal('¡Actualizado!', 'Los datos se modificaron correctamente en Google Sheets.');
+                const sent = await sendToGoogleSheets({
+                    action: 'add',
+                    id: birthday.id,
+                    name: birthday.name,
+                    date: birthday.date,
+                    category: birthday.category,
+                    notes: birthday.notes,
+                    photo: birthday.photo
+                });
+                if (!sent && googleAppsScriptUrl) {
+                    showCustomModal('Guardado localmente', 'No se pudo confirmar el envío a Google Sheets. Revisa la conexión y vuelve a sincronizar.');
                 }
-            } catch (error) {
-                console.error('Error al guardar/modificar:', error);
-                showCustomModal(
-                    index === '' ? 'Error al guardar' : 'Error al actualizar',
-                    (error && error.message) || 'No se pudo completar la operación en Google Sheets.'
-                );
-            } finally {
-                if (submitBtn) submitBtn.disabled = false;
+            } else {
+                const birthday = birthdays[index];
+                const updated = { ...birthday, name, date, category, photo, notes };
+                birthdays[index] = updated;
+                saveData();
+                closeModal();
+                refreshAllViews();
+                showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
+
+                const sent = await sendToGoogleSheets({
+                    action: 'update',
+                    id: updated.id || '',
+                    row: updated.row || '',
+                    name: updated.name,
+                    date: updated.date,
+                    category: updated.category,
+                    notes: updated.notes,
+                    photo: updated.photo
+                });
+                if (!sent && googleAppsScriptUrl) {
+                    showCustomModal('Actualizado localmente', 'No se pudo confirmar la actualización en Google Sheets.');
+                }
             }
         }
 
@@ -1279,128 +1138,23 @@
 
         async function deleteBirthday(index) {
             playDeleteSound();
-
             const birthday = birthdays[index];
             if (!birthday) return;
 
-            try {
-                await sendToGoogleSheets({
-                    action: 'delete',
-                    data: {
-                        id: birthday.id || '',
-                        row: birthday.row || ''
-                    }
-                });
+            birthdays.splice(index, 1);
+            saveData();
+            refreshAllViews();
+            showCustomModal('Eliminado', 'El registro ha sido borrado de la lista.');
 
-                const confirmed = await waitForGoogleState(
-                    list => !list.some(item => item.id === birthday.id)
-                );
-
-                if (!confirmed) {
-                    throw new Error('Google Sheets no confirmó la eliminación.');
-                }
-
-                showCustomModal('Eliminado', 'El registro se eliminó correctamente de Google Sheets.');
-            } catch (error) {
-                console.error('Error al eliminar:', error);
-                showCustomModal(
-                    'Error al eliminar',
-                    (error && error.message) || 'No se pudo eliminar el registro de Google Sheets.'
-                );
-            }
-        }
-
-        // ==================== AVISO DE CUMPLEAÑOS PREMIUM ====================
-        let birthdayAlertSound = true;
-
-        function getBirthdayForAlert() {
-            if (!birthdays || !birthdays.length) return null;
-            const today = new Date().toISOString().slice(5,10);
-            const todayPerson = birthdays.find(b => String(b.date || '').slice(5,10) === today);
-            if (todayPerson) return todayPerson;
-            return [...birthdays].sort((a,b) => getNextBirthdayDetails(a.date).diffDays - getNextBirthdayDetails(b.date).diffDays)[0] || null;
-        }
-
-        function openBirthdayCelebration(person) {
-            person = person || getBirthdayForAlert();
-            if (!person) {
-                showCustomModal('Sin cumpleaños', 'Agrega al menos un cumpleaños para poder probar el aviso.');
-                return;
-            }
-            const photoBox = document.getElementById('birthdayCelebrationPhoto');
-            const nameBox = document.getElementById('birthdayCelebrationName');
-            nameBox.textContent = person.name || 'Cumpleañero/a';
-            if (person.photo && /^https?:\/\//i.test(person.photo)) {
-                photoBox.innerHTML = `<img class="birthday-photo" src="${person.photo}" alt="${person.name || 'Cumpleañero/a'}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"> <div class="birthday-avatar-fallback" style="display:none">${(person.name||'?').charAt(0).toUpperCase()}</div>`;
-            } else {
-                photoBox.innerHTML = `<div class="birthday-avatar-fallback">${(person.name||'?').charAt(0).toUpperCase()}</div>`;
-            }
-            document.getElementById('birthdayCelebration').classList.add('show');
-            if (birthdayAlertSound && soundEnabled) playBirthdayMelody();
-            triggerPartyConfetti();
-        }
-
-        function closeBirthdayCelebration() {
-            const overlay = document.getElementById('birthdayCelebration');
-            if (overlay) overlay.classList.remove('show');
-        }
-
-        function testBirthdayAlert() {
-            getAudioContext();
-            openBirthdayCelebration(getBirthdayForAlert());
-        }
-
-        function celebrateBirthdayAgain() {
-            if (birthdayAlertSound && soundEnabled) playBirthdayMelody();
-            triggerPartyConfetti();
-        }
-
-        function toggleBirthdayAlertSound() {
-            birthdayAlertSound = !birthdayAlertSound;
-            const icon = document.getElementById('birthdaySoundIcon');
-            if (icon) icon.className = birthdayAlertSound ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
-            if (birthdayAlertSound && soundEnabled) playBirthdayMelody();
-        }
-
-        function playBirthdayFanfare() {
-            playTone(523.25,0.16,'sine',0.055,0);
-            playTone(659.25,0.16,'sine',0.055,0.12);
-            playTone(783.99,0.18,'sine',0.06,0.24);
-            playTone(1046.5,0.28,'sine',0.065,0.38);
-            playTone(1318.51,0.38,'sine',0.05,0.58);
-        }
-
-        // Melodía de cumpleaños: versión instrumental sintetizada, sin archivos externos.
-        function playBirthdayMelody() {
-            const notes = [
-                [392.00,0.32],[392.00,0.32],[440.00,0.64],[392.00,0.64],[523.25,0.64],[493.88,1.00],
-                [392.00,0.32],[392.00,0.32],[440.00,0.64],[392.00,0.64],[587.33,0.64],[523.25,1.00],
-                [392.00,0.32],[392.00,0.32],[783.99,0.64],[659.25,0.64],[523.25,0.64],[493.88,0.64],[440.00,1.00],
-                [698.46,0.32],[698.46,0.32],[659.25,0.64],[523.25,0.64],[587.33,0.64],[523.25,1.10]
-            ];
-            let t = 0;
-            notes.forEach(([freq,dur], i) => {
-                playTone(freq, dur * 0.88, i > 17 ? 'triangle' : 'sine', 0.065, t);
-                if (i % 3 === 0) playTone(freq / 2, dur * 0.72, 'triangle', 0.018, t);
-                t += dur;
+            const sent = await sendToGoogleSheets({
+                action: 'delete',
+                id: birthday.id || '',
+                row: birthday.row || ''
             });
-            // Campanitas al final para darle sensación de celebración.
-            playTone(1046.50,0.22,'sine',0.045,t+0.05);
-            playTone(1318.51,0.30,'sine',0.04,t+0.22);
-            playTone(1567.98,0.38,'sine',0.035,t+0.42);
+            if (!sent && googleAppsScriptUrl) {
+                showCustomModal('Eliminado localmente', 'No se pudo confirmar el borrado en Google Sheets.');
+            }
         }
-
-        function checkAndShowBirthdayCelebration() {
-            const today = new Date().toISOString().slice(0,10);
-            if (!birthdays || !birthdays.length) return;
-            const todayPerson = birthdays.find(b => String(b.date || '').slice(5,10) === today.slice(5,10));
-            if (!todayPerson) return;
-            const key = 'birthday_celebration_shown_' + today;
-            if (localStorage.getItem(key) === '1') return;
-            setTimeout(() => openBirthdayCelebration(todayPerson), 900);
-            localStorage.setItem(key,'1');
-        }
-
 
         function showCustomModal(title, text) {
             document.getElementById('customModalTitle').innerText = title;
