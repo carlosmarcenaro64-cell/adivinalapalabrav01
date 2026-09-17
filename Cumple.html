@@ -6,22 +6,12 @@
     <title>Recordatorio de Cumpleaños</title>
     <!-- Favicon de Pastel Dinámico -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
-    <!-- Web App Manifest simulado / dinámico para PWA -->
-    <link rel="manifest" href="data:application/manifest+json,{
-      &quot;name&quot;: &quot;CumpleApp&quot;,
-      &quot;short_name&quot;: &quot;CumpleApp&quot;,
-      &quot;start_url&quot;: &quot;.&quot;,
-      &quot;display&quot;: &quot;standalone&quot;,
-      &quot;background_color&quot;: &quot;#0f172a&quot;,
-      &quot;theme_color&quot;: &quot;#ec4899&quot;,
-      &quot;icons&quot;: [
-        {
-          &quot;src&quot;: &quot;data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 rx=%22120%22 fill=%22%23ec4899%22/><text x=%22256%22 y=%22320%22 font-size=%22250%22 text-anchor=%22middle%22>🎂</text></svg>&quot;,
-          &quot;sizes&quot;: &quot;512x512&quot;,
-          &quot;type&quot;: &quot;image/svg+xml&quot;
-        }
-      ]
-    }">
+    <!-- PWA: manifest real para instalación como aplicación -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#ec4899">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts Inter -->
@@ -207,6 +197,9 @@
                 </button>
                 <button onclick="openInstallModal()" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Instalar App">
                     <i class="fa-solid fa-mobile-screen-button text-sm transition-transform group-hover:translate-y-[-2px]"></i>
+                </button>
+                <button onclick="toggleSound()" id="soundBtn" class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Activar o desactivar sonidos">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-sm transition-transform duration-500 group-hover:rotate-12"></i>
                 </button>
                 <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Cambiar tema">
                     <i id="themeIcon" class="fa-solid fa-moon text-sm transition-transform duration-500 group-hover:rotate-180"></i>
@@ -454,6 +447,69 @@
         }
 
         let deferredPrompt = null;
+        let soundEnabled = localStorage.getItem('birthday_app_sound') !== 'off';
+        let audioContext = null;
+
+        // El navegador exige una interacción del usuario antes de reproducir audio.
+        function getAudioContext() {
+            if (!audioContext) {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                if (!Ctx) return null;
+                audioContext = new Ctx();
+            }
+            if (audioContext.state === 'suspended') audioContext.resume();
+            return audioContext;
+        }
+
+        function playTone(frequency, duration = 0.08, type = 'sine', volume = 0.035, delay = 0) {
+            if (!soundEnabled) return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime + delay;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(frequency, now);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(volume, now + 0.012);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration + 0.02);
+        }
+
+        function playClickSound() { playTone(620, 0.07, 'sine', 0.025); }
+        function playSuccessSound() {
+            playTone(523.25, 0.11, 'sine', 0.035);
+            playTone(659.25, 0.12, 'sine', 0.035, 0.08);
+            playTone(783.99, 0.18, 'sine', 0.04, 0.17);
+        }
+        function playDeleteSound() {
+            playTone(330, 0.10, 'triangle', 0.03);
+            playTone(220, 0.14, 'triangle', 0.025, 0.08);
+        }
+        function playInstallSound() {
+            playTone(523.25, 0.09, 'sine', 0.03);
+            playTone(659.25, 0.09, 'sine', 0.03, 0.09);
+            playTone(1046.50, 0.20, 'sine', 0.04, 0.18);
+        }
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('birthday_app_sound', soundEnabled ? 'on' : 'off');
+            const icon = document.getElementById('soundIcon');
+            const btn = document.getElementById('soundBtn');
+            if (icon) icon.className = 'fa-solid ' + (soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark') + ' text-sm transition-transform duration-500 group-hover:rotate-12';
+            if (btn) btn.title = soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
+            if (soundEnabled) playSuccessSound();
+        }
+
+        function updateSoundUI() {
+            const icon = document.getElementById('soundIcon');
+            const btn = document.getElementById('soundBtn');
+            if (icon) icon.className = 'fa-solid ' + (soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark') + ' text-sm transition-transform duration-500 group-hover:rotate-12';
+            if (btn) btn.title = soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
+        }
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -462,7 +518,22 @@
             if (nativeSection) nativeSection.classList.remove('hidden');
         });
 
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            playInstallSound();
+            const nativeSection = document.getElementById('nativeInstallSection');
+            if (nativeSection) nativeSection.classList.add('hidden');
+        });
+
+        // Registra el Service Worker necesario para que CumpleApp sea una PWA instalable.
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service Worker:', err));
+            });
+        }
+
         function triggerPartyConfetti() {
+            playSuccessSound();
             confetti({
                 particleCount: 140,
                 spread: 100,
@@ -487,6 +558,13 @@
         }
 
         function openInstallModal() {
+            playClickSound();
+            // En Android/Chrome y navegadores compatibles, el botón abre directamente
+            // el aviso nativo de instalación. El usuario debe confirmar la instalación.
+            if (deferredPrompt) {
+                triggerNativeInstall();
+                return;
+            }
             const modal = document.getElementById('installModal');
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -507,6 +585,7 @@
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
+                    playInstallSound();
                     showCustomModal('¡Gracias!', 'La aplicación se está instalando en tu dispositivo.');
                     triggerPartyConfetti();
                 }
@@ -519,6 +598,7 @@
         }
 
         window.onload = function() {
+            updateSoundUI();
             const savedTheme = localStorage.getItem('birthday_app_theme');
             if (savedTheme === 'dark') {
                 document.documentElement.classList.add('dark');
@@ -1057,6 +1137,7 @@
         }
 
         async function deleteBirthday(index) {
+            playDeleteSound();
             const birthday = birthdays[index];
             if (!birthday) return;
 
@@ -1090,6 +1171,16 @@
         }
     </script>
 <script>
+/* ===== SONIDOS DE INTERFAZ ===== */
+(function(){
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('button');
+    if (!btn || btn.id === 'soundBtn') return;
+    // Evita duplicar los sonidos de acciones que ya tienen sonido propio.
+    if (btn.getAttribute('onclick') && /triggerPartyConfetti|saveBirthday|deleteBirthday|triggerNativeInstall/.test(btn.getAttribute('onclick'))) return;
+    playClickSound();
+  }, true);
+})();
 
 /* ===== ANIMACIONES EXTRA - NO CAMBIAN LA LOGICA ===== */
 (function(){
