@@ -6,12 +6,22 @@
     <title>Recordatorio de Cumpleaños</title>
     <!-- Favicon de Pastel Dinámico -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
-    <!-- PWA: manifest real para instalación como aplicación -->
-    <link rel="manifest" href="manifest.webmanifest">
-    <meta name="theme-color" content="#ec4899">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Web App Manifest simulado / dinámico para PWA -->
+    <link rel="manifest" href="data:application/manifest+json,{
+      &quot;name&quot;: &quot;CumpleApp&quot;,
+      &quot;short_name&quot;: &quot;CumpleApp&quot;,
+      &quot;start_url&quot;: &quot;.&quot;,
+      &quot;display&quot;: &quot;standalone&quot;,
+      &quot;background_color&quot;: &quot;#0f172a&quot;,
+      &quot;theme_color&quot;: &quot;#ec4899&quot;,
+      &quot;icons&quot;: [
+        {
+          &quot;src&quot;: &quot;data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 rx=%22120%22 fill=%22%23ec4899%22/><text x=%22256%22 y=%22320%22 font-size=%22250%22 text-anchor=%22middle%22>🎂</text></svg>&quot;,
+          &quot;sizes&quot;: &quot;512x512&quot;,
+          &quot;type&quot;: &quot;image/svg+xml&quot;
+        }
+      ]
+    }">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts Inter -->
@@ -89,39 +99,9 @@
         .animate-pop {
             animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
-        /* ===== BORDE RGB NEÓN =====
-           Borde limpio que cambia de color, sin dibujar líneas sobre el banner. */
-        @keyframes rgbBorderCycle {
-            0% { border-color: #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,.70), 0 0 24px rgba(0,229,255,.28); }
-            12.5% { border-color: #2455ff; box-shadow: 0 0 10px rgba(36,85,255,.70), 0 0 24px rgba(36,85,255,.28); }
-            25% { border-color: #7c3aed; box-shadow: 0 0 10px rgba(124,58,237,.70), 0 0 24px rgba(124,58,237,.28); }
-            37.5% { border-color: #d946ef; box-shadow: 0 0 10px rgba(217,70,239,.70), 0 0 24px rgba(217,70,239,.28); }
-            50% { border-color: #ff1493; box-shadow: 0 0 10px rgba(255,20,147,.70), 0 0 24px rgba(255,20,147,.28); }
-            62.5% { border-color: #ff4d00; box-shadow: 0 0 10px rgba(255,77,0,.70), 0 0 24px rgba(255,77,0,.28); }
-            75% { border-color: #ffe600; box-shadow: 0 0 10px rgba(255,230,0,.70), 0 0 24px rgba(255,230,0,.28); }
-            87.5% { border-color: #00e676; box-shadow: 0 0 10px rgba(0,230,118,.70), 0 0 24px rgba(0,230,118,.28); }
-            100% { border-color: #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,.70), 0 0 24px rgba(0,229,255,.28); }
-        }
         .led-border {
-            position: relative;
-            isolation: isolate;
-            border: 3px solid #00e5ff !important;
-            animation: rgbBorderCycle 5s linear infinite;
-        }
-        .led-border::before {
-            content: none !important;
-        }
-        .led-border:hover {
-            animation-duration: 2.2s;
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .led-border { animation: none; border-color: #00e5ff !important; }
-        }
-
-        /* El modo claro conserva los colores del banner y mantiene el texto legible. */
-        html:not(.dark) #topFeaturedBirthdayContainer .led-border,
-        html:not(.dark) #todayAlertsContainer .led-border {
-            color: #fff !important;
+            border: 3px solid #ec4899;
+            animation: ledRainbow 6s linear infinite;
         }
         .shimmer-gradient {
             background-size: 200% 200%;
@@ -142,24 +122,6 @@
             z-index: 0;
             animation: floatSlow 7s ease-in-out infinite;
         }
-    
-/* ===== ANIMACIONES EXTRA - SOLO VISUALES ===== */
-@keyframes softBounce {0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes shineSweep {0%{transform:translateX(-120%) rotate(12deg)}100%{transform:translateX(220%) rotate(12deg)}}
-@keyframes breathing {0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
-@keyframes borderPulse {0%,100%{outline:0 solid rgba(236,72,153,0)}50%{outline:6px solid rgba(236,72,153,.08)}}
-@keyframes sparklePop {0%{opacity:0;transform:scale(0) rotate(0)}50%{opacity:1;transform:scale(1.25) rotate(90deg)}100%{opacity:0;transform:scale(.4) rotate(180deg)}}
-@keyframes rippleAnim {to{transform:scale(4);opacity:0}}
-.extra-shine{position:relative;overflow:hidden}
-.extra-shine::after{content:"";position:absolute;top:-60%;left:0;width:35%;height:220%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.24),transparent);transform:translateX(-120%) rotate(12deg);pointer-events:none;animation:shineSweep 5s ease-in-out infinite}
-.extra-breathe{animation:breathing 4s ease-in-out infinite}
-.extra-border-pulse{animation:borderPulse 3s ease-in-out infinite}
-.extra-reveal{opacity:0;transform:translateY(18px) scale(.98);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
-.extra-reveal.visible{opacity:1;transform:translateY(0) scale(1)}
-.extra-ripple{position:absolute;border-radius:999px;pointer-events:none;width:22px;height:22px;background:rgba(255,255,255,.45);transform:scale(0);animation:rippleAnim .65s ease-out forwards}
-.extra-sparkle{position:fixed;z-index:9999;pointer-events:none;font-size:18px;animation:sparklePop .9s ease-out forwards}
-@media (prefers-reduced-motion: reduce){.extra-shine::after,.extra-breathe,.extra-border-pulse,.extra-sparkle{animation:none!important}.extra-reveal{transition:none}}
-
     </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
@@ -198,8 +160,8 @@
                 <button onclick="openInstallModal()" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Instalar App">
                     <i class="fa-solid fa-mobile-screen-button text-sm transition-transform group-hover:translate-y-[-2px]"></i>
                 </button>
-                <button onclick="toggleSound()" id="soundBtn" class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Activar o desactivar sonidos">
-                    <i id="soundIcon" class="fa-solid fa-volume-high text-sm transition-transform duration-500 group-hover:rotate-12"></i>
+                <button id="soundToggleBtn" onclick="toggleSounds()" class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800/60 hover:bg-violet-100 dark:hover:bg-violet-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Activar sonidos">
+                    <i id="soundToggleIcon" class="fa-solid fa-volume-high text-sm transition-transform group-hover:scale-110"></i>
                 </button>
                 <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Cambiar tema">
                     <i id="themeIcon" class="fa-solid fa-moon text-sm transition-transform duration-500 group-hover:rotate-180"></i>
@@ -411,105 +373,8 @@
         if (!localStorage.getItem('birthday_sheets_url')) {
             localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
         }
-        // URL de tu Web App de Google Apps Script. Pega aquí la URL que termina en /exec.
-        let googleAppsScriptUrl = localStorage.getItem('birthday_apps_script_url') || 'https://script.google.com/macros/s/AKfycbw8FGHTWAOODHJkCAwLDuGe_Bxaubr62CXMvhcloHMAsU2gHRuTuQ0WbBAFv779ngTM/exec';
-        if (!localStorage.getItem('birthday_apps_script_url')) {
-            localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
-        }
-
-        function createBirthdayId() {
-            if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-            return 'bday-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
-        }
-
-        async function sendToGoogleSheets(payload) {
-            if (!googleAppsScriptUrl) return false;
-            try {
-                // text/plain evita el preflight CORS de application/json.
-                await fetch(googleAppsScriptUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload),
-                    keepalive: true
-                });
-                return true;
-            } catch (error) {
-                console.error('No se pudo enviar a Google Sheets:', error);
-                return false;
-            }
-        }
-
-        function saveBirthdayLocalOnly(birthday) {
-            birthdays.push(birthday);
-            saveData();
-            refreshAllViews();
-        }
 
         let deferredPrompt = null;
-        let soundEnabled = localStorage.getItem('birthday_app_sound') !== 'off';
-        let audioContext = null;
-
-        // El navegador exige una interacción del usuario antes de reproducir audio.
-        function getAudioContext() {
-            if (!audioContext) {
-                const Ctx = window.AudioContext || window.webkitAudioContext;
-                if (!Ctx) return null;
-                audioContext = new Ctx();
-            }
-            if (audioContext.state === 'suspended') audioContext.resume();
-            return audioContext;
-        }
-
-        function playTone(frequency, duration = 0.08, type = 'sine', volume = 0.035, delay = 0) {
-            if (!soundEnabled) return;
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const now = ctx.currentTime + delay;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(frequency, now);
-            gain.gain.setValueAtTime(0.0001, now);
-            gain.gain.exponentialRampToValueAtTime(volume, now + 0.012);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + duration + 0.02);
-        }
-
-        function playClickSound() { playTone(620, 0.07, 'sine', 0.025); }
-        function playSuccessSound() {
-            playTone(523.25, 0.11, 'sine', 0.035);
-            playTone(659.25, 0.12, 'sine', 0.035, 0.08);
-            playTone(783.99, 0.18, 'sine', 0.04, 0.17);
-        }
-        function playDeleteSound() {
-            playTone(330, 0.10, 'triangle', 0.03);
-            playTone(220, 0.14, 'triangle', 0.025, 0.08);
-        }
-        function playInstallSound() {
-            playTone(523.25, 0.09, 'sine', 0.03);
-            playTone(659.25, 0.09, 'sine', 0.03, 0.09);
-            playTone(1046.50, 0.20, 'sine', 0.04, 0.18);
-        }
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            localStorage.setItem('birthday_app_sound', soundEnabled ? 'on' : 'off');
-            const icon = document.getElementById('soundIcon');
-            const btn = document.getElementById('soundBtn');
-            if (icon) icon.className = 'fa-solid ' + (soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark') + ' text-sm transition-transform duration-500 group-hover:rotate-12';
-            if (btn) btn.title = soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
-            if (soundEnabled) playSuccessSound();
-        }
-
-        function updateSoundUI() {
-            const icon = document.getElementById('soundIcon');
-            const btn = document.getElementById('soundBtn');
-            if (icon) icon.className = 'fa-solid ' + (soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark') + ' text-sm transition-transform duration-500 group-hover:rotate-12';
-            if (btn) btn.title = soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
-        }
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -518,22 +383,7 @@
             if (nativeSection) nativeSection.classList.remove('hidden');
         });
 
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            playInstallSound();
-            const nativeSection = document.getElementById('nativeInstallSection');
-            if (nativeSection) nativeSection.classList.add('hidden');
-        });
-
-        // Registra el Service Worker necesario para que CumpleApp sea una PWA instalable.
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service Worker:', err));
-            });
-        }
-
         function triggerPartyConfetti() {
-            playSuccessSound();
             confetti({
                 particleCount: 140,
                 spread: 100,
@@ -558,13 +408,6 @@
         }
 
         function openInstallModal() {
-            playClickSound();
-            // En Android/Chrome y navegadores compatibles, el botón abre directamente
-            // el aviso nativo de instalación. El usuario debe confirmar la instalación.
-            if (deferredPrompt) {
-                triggerNativeInstall();
-                return;
-            }
             const modal = document.getElementById('installModal');
             modal.classList.remove('hidden');
             setTimeout(() => {
@@ -585,7 +428,6 @@
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    playInstallSound();
                     showCustomModal('¡Gracias!', 'La aplicación se está instalando en tu dispositivo.');
                     triggerPartyConfetti();
                 }
@@ -598,7 +440,6 @@
         }
 
         window.onload = function() {
-            updateSoundUI();
             const savedTheme = localStorage.getItem('birthday_app_theme');
             if (savedTheme === 'dark') {
                 document.documentElement.classList.add('dark');
@@ -764,12 +605,7 @@
 
                         const parsedDate = parseSheetDate(rawDate);
                         if (name && parsedDate) {
-                            const sheetId = row[5] ? row[5].replace(/^"|"$/g, '') : '';
-                            newBirthdays.push({
-                                id: sheetId || `sheet-row-${i + 1}`,
-                                row: i + 1,
-                                name, date: parsedDate, category, notes, photo
-                            });
+                            newBirthdays.push({ name, date: parsedDate, category, notes, photo });
                         }
                     }
                 }
@@ -1058,7 +894,7 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        async function saveBirthday(event) {
+        function saveBirthday(event) {
             event.preventDefault();
             const index = document.getElementById('editIndex').value;
             const name = document.getElementById('bName').value.trim();
@@ -1067,55 +903,18 @@
             const photo = document.getElementById('bPhoto').value.trim();
             const notes = document.getElementById('bNotes').value.trim();
 
-            if (!name || !date) {
-                showCustomModal('Faltan datos', 'Escribe el nombre y selecciona la fecha.');
-                return;
-            }
-
             if (index === '') {
-                const birthday = { id: createBirthdayId(), name, date, category, photo, notes };
-                birthdays.push(birthday);
-                saveData();
-                closeModal();
-                refreshAllViews();
+                birthdays.push({ name, date, category, photo, notes });
                 triggerPartyConfetti();
                 showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
-
-                const sent = await sendToGoogleSheets({
-                    action: 'add',
-                    id: birthday.id,
-                    name: birthday.name,
-                    date: birthday.date,
-                    category: birthday.category,
-                    notes: birthday.notes,
-                    photo: birthday.photo
-                });
-                if (!sent && googleAppsScriptUrl) {
-                    showCustomModal('Guardado localmente', 'No se pudo confirmar el envío a Google Sheets. Revisa la conexión y vuelve a sincronizar.');
-                }
             } else {
-                const birthday = birthdays[index];
-                const updated = { ...birthday, name, date, category, photo, notes };
-                birthdays[index] = updated;
-                saveData();
-                closeModal();
-                refreshAllViews();
+                birthdays[index] = { ...birthdays[index], name, date, category, photo, notes };
                 showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
-
-                const sent = await sendToGoogleSheets({
-                    action: 'update',
-                    id: updated.id || '',
-                    row: updated.row || '',
-                    name: updated.name,
-                    date: updated.date,
-                    category: updated.category,
-                    notes: updated.notes,
-                    photo: updated.photo
-                });
-                if (!sent && googleAppsScriptUrl) {
-                    showCustomModal('Actualizado localmente', 'No se pudo confirmar la actualización en Google Sheets.');
-                }
             }
+
+            saveData();
+            closeModal();
+            refreshAllViews();
         }
 
         function editBirthday(index) {
@@ -1136,24 +935,11 @@
             }, 10);
         }
 
-        async function deleteBirthday(index) {
-            playDeleteSound();
-            const birthday = birthdays[index];
-            if (!birthday) return;
-
+        function deleteBirthday(index) {
             birthdays.splice(index, 1);
             saveData();
             refreshAllViews();
             showCustomModal('Eliminado', 'El registro ha sido borrado de la lista.');
-
-            const sent = await sendToGoogleSheets({
-                action: 'delete',
-                id: birthday.id || '',
-                row: birthday.row || ''
-            });
-            if (!sent && googleAppsScriptUrl) {
-                showCustomModal('Eliminado localmente', 'No se pudo confirmar el borrado en Google Sheets.');
-            }
         }
 
         function showCustomModal(title, text) {
@@ -1169,79 +955,121 @@
         function filterBirthdays() {
             renderBirthdays();
         }
+
+
+        // ==================== SISTEMA DE SONIDOS ====================
+        // Usa Web Audio API: no necesita MP3 externos y funciona en PC y móvil.
+        let soundsEnabled = localStorage.getItem('birthday_sounds_enabled') !== 'false';
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (!AC) return null;
+                audioCtx = new AC();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function tone(freq, duration, type='sine', volume=0.045, delay=0) {
+            if (!soundsEnabled) return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime + delay;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(volume, now + 0.012);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration + 0.03);
+        }
+
+        function playButtonSound() {
+            tone(520, 0.07, 'sine', 0.035);
+            tone(760, 0.09, 'sine', 0.025, 0.045);
+        }
+
+        function playSuccessSound() {
+            tone(523.25, 0.12, 'sine', 0.05);
+            tone(659.25, 0.12, 'sine', 0.05, 0.09);
+            tone(783.99, 0.18, 'sine', 0.055, 0.18);
+        }
+
+        function playDeleteSound() {
+            tone(440, 0.10, 'triangle', 0.045);
+            tone(293.66, 0.16, 'triangle', 0.04, 0.08);
+        }
+
+        function playConfettiSound() {
+            tone(659.25, 0.10, 'sine', 0.045);
+            tone(783.99, 0.10, 'sine', 0.045, 0.07);
+            tone(1046.50, 0.22, 'sine', 0.05, 0.14);
+        }
+
+        function toggleSounds() {
+            soundsEnabled = !soundsEnabled;
+            localStorage.setItem('birthday_sounds_enabled', soundsEnabled);
+            updateSoundButton();
+            if (soundsEnabled) playSuccessSound();
+        }
+
+        function updateSoundButton() {
+            const icon = document.getElementById('soundToggleIcon');
+            const btn = document.getElementById('soundToggleBtn');
+            if (!icon || !btn) return;
+            icon.className = soundsEnabled
+                ? 'fa-solid fa-volume-high text-sm transition-transform group-hover:scale-110'
+                : 'fa-solid fa-volume-xmark text-sm transition-transform group-hover:scale-110';
+            btn.title = soundsEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
+        }
+
+        // El primer toque desbloquea el audio en móviles y reproduce un sonido suave.
+        document.addEventListener('pointerdown', function unlockAudio(e) {
+            const ctx = getAudioContext();
+            if (ctx && soundsEnabled) playButtonSound();
+            document.removeEventListener('pointerdown', unlockAudio);
+        }, { once: true, passive: true });
+
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            if (btn.id === 'soundToggleBtn') return;
+            // Sonido general para botones que no tienen una acción sonora específica.
+            if (!btn.closest('#birthdayForm')) playButtonSound();
+        });
+
+        // Sonidos específicos sin reemplazar los manejadores existentes.
+        const originalTriggerPartyConfetti = window.triggerPartyConfetti;
+        if (typeof originalTriggerPartyConfetti === 'function') {
+            window.triggerPartyConfetti = function() {
+                playConfettiSound();
+                return originalTriggerPartyConfetti.apply(this, arguments);
+            };
+        }
+
+        const originalDeleteBirthday = window.deleteBirthday;
+        if (typeof originalDeleteBirthday === 'function') {
+            window.deleteBirthday = function(index) {
+                playDeleteSound();
+                return originalDeleteBirthday.apply(this, arguments);
+            };
+        }
+
+        const originalSaveBirthday = window.saveBirthday;
+        if (typeof originalSaveBirthday === 'function') {
+            window.saveBirthday = function(event) {
+                playSuccessSound();
+                return originalSaveBirthday.apply(this, arguments);
+            };
+        }
+
+        updateSoundButton();
     </script>
-<script>
-/* ===== SONIDOS DE INTERFAZ ===== */
-(function(){
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('button');
-    if (!btn || btn.id === 'soundBtn') return;
-    // Evita duplicar los sonidos de acciones que ya tienen sonido propio.
-    if (btn.getAttribute('onclick') && /triggerPartyConfetti|saveBirthday|deleteBirthday|triggerNativeInstall/.test(btn.getAttribute('onclick'))) return;
-    playClickSound();
-  }, true);
-})();
-
-/* ===== ANIMACIONES EXTRA - NO CAMBIAN LA LOGICA ===== */
-(function(){
-  function addExtraAnimations(){
-    // Aparición suave de secciones y tarjetas al entrar en pantalla.
-    const targets=document.querySelectorAll('main > div, #birthdayList > div, header, #todayAlertsContainer > div, #topFeaturedBirthdayContainer > div');
-    targets.forEach((el,i)=>{
-      if(!el.classList.contains('extra-reveal')){
-        el.classList.add('extra-reveal');
-        el.style.transitionDelay=Math.min(i*35,350)+'ms';
-      }
-    });
-    const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
-    document.querySelectorAll('.extra-reveal').forEach(el=>observer.observe(el));
-
-    // Brillo y respiración sutil en elementos importantes.
-    document.querySelectorAll('#topFeaturedBirthdayContainer > div, #todayAlertsContainer > div').forEach(el=>el.classList.add('extra-shine','extra-breathe'));
-    document.querySelectorAll('#birthdayList > div').forEach(el=>el.classList.add('extra-shine'));
-
-    // Efecto de inclinación 3D muy suave al pasar el mouse por tarjetas.
-    document.querySelectorAll('#birthdayList > div').forEach(card=>{
-      if(card.dataset.extraTilt) return; card.dataset.extraTilt='1';
-      card.addEventListener('mousemove',function(e){
-        const r=this.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
-        this.style.transform='perspective(900px) rotateX('+(-y*2.2)+'deg) rotateY('+(x*2.2)+'deg) translateY(-8px) scale(1.015)';
-      });
-      card.addEventListener('mouseleave',function(){this.style.transform='';});
-    });
-
-    // Ondas visuales al hacer clic, sin tocar onclick existentes.
-    document.querySelectorAll('button').forEach(btn=>{
-      if(btn.dataset.extraRipple) return; btn.dataset.extraRipple='1';
-      btn.style.position=btn.style.position||'relative'; btn.style.overflow='hidden';
-      btn.addEventListener('click',function(e){
-        const r=this.getBoundingClientRect(), wave=document.createElement('span');
-        wave.className='extra-ripple'; wave.style.left=(e.clientX-r.left-11)+'px'; wave.style.top=(e.clientY-r.top-11)+'px';
-        this.appendChild(wave); setTimeout(()=>wave.remove(),700);
-      });
-    });
-  }
-
-  function sparkleBurst(){
-    const symbols=['✨','⭐','💖','🎈'];
-    for(let i=0;i<3;i++) setTimeout(()=>{
-      const s=document.createElement('span'); s.className='extra-sparkle'; s.textContent=symbols[Math.floor(Math.random()*symbols.length)];
-      s.style.left=(12+Math.random()*76)+'vw'; s.style.top=(12+Math.random()*70)+'vh';
-      document.body.appendChild(s); setTimeout(()=>s.remove(),950);
-    },i*120);
-  }
-
-  document.addEventListener('click',function(e){
-    if(e.target.closest('button') || e.target.closest('#topFeaturedBirthdayContainer > div') || e.target.closest('#todayAlertsContainer > div')) sparkleBurst();
-  },true);
-
-  // Reaplica solo clases visuales después de renderizados dinámicos.
-  const originalRefresh=window.refreshAllViews;
-  if(typeof originalRefresh==='function'){
-    window.refreshAllViews=function(){ originalRefresh.apply(this,arguments); setTimeout(addExtraAnimations,40); };
-  }
-  window.addEventListener('load',()=>setTimeout(addExtraAnimations,120));
-})();
-</script>
 </body>
 </html>
