@@ -122,6 +122,24 @@
             z-index: 0;
             animation: floatSlow 7s ease-in-out infinite;
         }
+    
+/* ===== ANIMACIONES EXTRA - SOLO VISUALES ===== */
+@keyframes softBounce {0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes shineSweep {0%{transform:translateX(-120%) rotate(12deg)}100%{transform:translateX(220%) rotate(12deg)}}
+@keyframes breathing {0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
+@keyframes borderPulse {0%,100%{outline:0 solid rgba(236,72,153,0)}50%{outline:6px solid rgba(236,72,153,.08)}}
+@keyframes sparklePop {0%{opacity:0;transform:scale(0) rotate(0)}50%{opacity:1;transform:scale(1.25) rotate(90deg)}100%{opacity:0;transform:scale(.4) rotate(180deg)}}
+@keyframes rippleAnim {to{transform:scale(4);opacity:0}}
+.extra-shine{position:relative;overflow:hidden}
+.extra-shine::after{content:"";position:absolute;top:-60%;left:0;width:35%;height:220%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.24),transparent);transform:translateX(-120%) rotate(12deg);pointer-events:none;animation:shineSweep 5s ease-in-out infinite}
+.extra-breathe{animation:breathing 4s ease-in-out infinite}
+.extra-border-pulse{animation:borderPulse 3s ease-in-out infinite}
+.extra-reveal{opacity:0;transform:translateY(18px) scale(.98);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.extra-reveal.visible{opacity:1;transform:translateY(0) scale(1)}
+.extra-ripple{position:absolute;border-radius:999px;pointer-events:none;width:22px;height:22px;background:rgba(255,255,255,.45);transform:scale(0);animation:rippleAnim .65s ease-out forwards}
+.extra-sparkle{position:fixed;z-index:9999;pointer-events:none;font-size:18px;animation:sparklePop .9s ease-out forwards}
+@media (prefers-reduced-motion: reduce){.extra-shine::after,.extra-breathe,.extra-border-pulse,.extra-sparkle{animation:none!important}.extra-reveal{transition:none}}
+
     </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
@@ -370,6 +388,40 @@
         if (!localStorage.getItem('birthday_sheets_url')) {
             localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
         }
+        // URL de tu Web App de Google Apps Script. Pega aquí la URL que termina en /exec.
+        let googleAppsScriptUrl = localStorage.getItem('birthday_apps_script_url') || 'https://script.google.com/macros/s/AKfycbw8FGHTWAOODHJkCAwLDuGe_Bxaubr62CXMvhcloHMAsU2gHRuTuQ0WbBAFv779ngTM/exec';
+        if (!localStorage.getItem('birthday_apps_script_url')) {
+            localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
+        }
+
+        function createBirthdayId() {
+            if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+            return 'bday-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        }
+
+        async function sendToGoogleSheets(payload) {
+            if (!googleAppsScriptUrl) return false;
+            try {
+                // text/plain evita el preflight CORS de application/json.
+                await fetch(googleAppsScriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                });
+                return true;
+            } catch (error) {
+                console.error('No se pudo enviar a Google Sheets:', error);
+                return false;
+            }
+        }
+
+        function saveBirthdayLocalOnly(birthday) {
+            birthdays.push(birthday);
+            saveData();
+            refreshAllViews();
+        }
 
         let deferredPrompt = null;
 
@@ -602,7 +654,12 @@
 
                         const parsedDate = parseSheetDate(rawDate);
                         if (name && parsedDate) {
-                            newBirthdays.push({ name, date: parsedDate, category, notes, photo });
+                            const sheetId = row[5] ? row[5].replace(/^"|"$/g, '') : '';
+                            newBirthdays.push({
+                                id: sheetId || `sheet-row-${i + 1}`,
+                                row: i + 1,
+                                name, date: parsedDate, category, notes, photo
+                            });
                         }
                     }
                 }
@@ -891,7 +948,7 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        function saveBirthday(event) {
+        async function saveBirthday(event) {
             event.preventDefault();
             const index = document.getElementById('editIndex').value;
             const name = document.getElementById('bName').value.trim();
@@ -900,18 +957,55 @@
             const photo = document.getElementById('bPhoto').value.trim();
             const notes = document.getElementById('bNotes').value.trim();
 
-            if (index === '') {
-                birthdays.push({ name, date, category, photo, notes });
-                triggerPartyConfetti();
-                showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
-            } else {
-                birthdays[index] = { ...birthdays[index], name, date, category, photo, notes };
-                showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
+            if (!name || !date) {
+                showCustomModal('Faltan datos', 'Escribe el nombre y selecciona la fecha.');
+                return;
             }
 
-            saveData();
-            closeModal();
-            refreshAllViews();
+            if (index === '') {
+                const birthday = { id: createBirthdayId(), name, date, category, photo, notes };
+                birthdays.push(birthday);
+                saveData();
+                closeModal();
+                refreshAllViews();
+                triggerPartyConfetti();
+                showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
+
+                const sent = await sendToGoogleSheets({
+                    action: 'add',
+                    id: birthday.id,
+                    name: birthday.name,
+                    date: birthday.date,
+                    category: birthday.category,
+                    notes: birthday.notes,
+                    photo: birthday.photo
+                });
+                if (!sent && googleAppsScriptUrl) {
+                    showCustomModal('Guardado localmente', 'No se pudo confirmar el envío a Google Sheets. Revisa la conexión y vuelve a sincronizar.');
+                }
+            } else {
+                const birthday = birthdays[index];
+                const updated = { ...birthday, name, date, category, photo, notes };
+                birthdays[index] = updated;
+                saveData();
+                closeModal();
+                refreshAllViews();
+                showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
+
+                const sent = await sendToGoogleSheets({
+                    action: 'update',
+                    id: updated.id || '',
+                    row: updated.row || '',
+                    name: updated.name,
+                    date: updated.date,
+                    category: updated.category,
+                    notes: updated.notes,
+                    photo: updated.photo
+                });
+                if (!sent && googleAppsScriptUrl) {
+                    showCustomModal('Actualizado localmente', 'No se pudo confirmar la actualización en Google Sheets.');
+                }
+            }
         }
 
         function editBirthday(index) {
@@ -932,11 +1026,23 @@
             }, 10);
         }
 
-        function deleteBirthday(index) {
+        async function deleteBirthday(index) {
+            const birthday = birthdays[index];
+            if (!birthday) return;
+
             birthdays.splice(index, 1);
             saveData();
             refreshAllViews();
             showCustomModal('Eliminado', 'El registro ha sido borrado de la lista.');
+
+            const sent = await sendToGoogleSheets({
+                action: 'delete',
+                id: birthday.id || '',
+                row: birthday.row || ''
+            });
+            if (!sent && googleAppsScriptUrl) {
+                showCustomModal('Eliminado localmente', 'No se pudo confirmar el borrado en Google Sheets.');
+            }
         }
 
         function showCustomModal(title, text) {
@@ -953,5 +1059,68 @@
             renderBirthdays();
         }
     </script>
+<script>
+
+/* ===== ANIMACIONES EXTRA - NO CAMBIAN LA LOGICA ===== */
+(function(){
+  function addExtraAnimations(){
+    // Aparición suave de secciones y tarjetas al entrar en pantalla.
+    const targets=document.querySelectorAll('main > div, #birthdayList > div, header, #todayAlertsContainer > div, #topFeaturedBirthdayContainer > div');
+    targets.forEach((el,i)=>{
+      if(!el.classList.contains('extra-reveal')){
+        el.classList.add('extra-reveal');
+        el.style.transitionDelay=Math.min(i*35,350)+'ms';
+      }
+    });
+    const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
+    document.querySelectorAll('.extra-reveal').forEach(el=>observer.observe(el));
+
+    // Brillo y respiración sutil en elementos importantes.
+    document.querySelectorAll('#topFeaturedBirthdayContainer > div, #todayAlertsContainer > div').forEach(el=>el.classList.add('extra-shine','extra-breathe'));
+    document.querySelectorAll('#birthdayList > div').forEach(el=>el.classList.add('extra-shine'));
+
+    // Efecto de inclinación 3D muy suave al pasar el mouse por tarjetas.
+    document.querySelectorAll('#birthdayList > div').forEach(card=>{
+      if(card.dataset.extraTilt) return; card.dataset.extraTilt='1';
+      card.addEventListener('mousemove',function(e){
+        const r=this.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+        this.style.transform='perspective(900px) rotateX('+(-y*2.2)+'deg) rotateY('+(x*2.2)+'deg) translateY(-8px) scale(1.015)';
+      });
+      card.addEventListener('mouseleave',function(){this.style.transform='';});
+    });
+
+    // Ondas visuales al hacer clic, sin tocar onclick existentes.
+    document.querySelectorAll('button').forEach(btn=>{
+      if(btn.dataset.extraRipple) return; btn.dataset.extraRipple='1';
+      btn.style.position=btn.style.position||'relative'; btn.style.overflow='hidden';
+      btn.addEventListener('click',function(e){
+        const r=this.getBoundingClientRect(), wave=document.createElement('span');
+        wave.className='extra-ripple'; wave.style.left=(e.clientX-r.left-11)+'px'; wave.style.top=(e.clientY-r.top-11)+'px';
+        this.appendChild(wave); setTimeout(()=>wave.remove(),700);
+      });
+    });
+  }
+
+  function sparkleBurst(){
+    const symbols=['✨','⭐','💖','🎈'];
+    for(let i=0;i<3;i++) setTimeout(()=>{
+      const s=document.createElement('span'); s.className='extra-sparkle'; s.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+      s.style.left=(12+Math.random()*76)+'vw'; s.style.top=(12+Math.random()*70)+'vh';
+      document.body.appendChild(s); setTimeout(()=>s.remove(),950);
+    },i*120);
+  }
+
+  document.addEventListener('click',function(e){
+    if(e.target.closest('button') || e.target.closest('#topFeaturedBirthdayContainer > div') || e.target.closest('#todayAlertsContainer > div')) sparkleBurst();
+  },true);
+
+  // Reaplica solo clases visuales después de renderizados dinámicos.
+  const originalRefresh=window.refreshAllViews;
+  if(typeof originalRefresh==='function'){
+    window.refreshAllViews=function(){ originalRefresh.apply(this,arguments); setTimeout(addExtraAnimations,40); };
+  }
+  window.addEventListener('load',()=>setTimeout(addExtraAnimations,120));
+})();
+</script>
 </body>
 </html>
