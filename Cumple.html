@@ -346,7 +346,8 @@
                     <p class="birthday-message">Que este nuevo año de vida esté lleno de <strong>salud, amor, alegría y muchos éxitos</strong>.<br>¡Disfruta tu día al máximo! 💖</p>
                     <button class="birthday-action" onclick="celebrateBirthdayAgain()"><span>🎊</span> ¡Feliz Cumpleaños! <span>🎊</span></button>
                     <div class="birthday-actions-row">
-                        <button class="birthday-mini-btn" onclick="toggleBirthdayAlertSound()"><i id="birthdaySoundIcon" class="fa-solid fa-volume-high"></i> Sonido</button>
+                        <button class="birthday-mini-btn" onclick="toggleBirthdayAlertSound()"><i id="birthdaySoundIcon" class="fa-solid fa-volume-high"></i> Melodía</button>
+                        <button class="birthday-mini-btn" onclick="playBirthdayMelody()"><i class="fa-solid fa-music"></i> Repetir</button>
                         <button class="birthday-mini-btn" onclick="closeBirthdayCelebration()">✕ Cerrar</button>
                     </div>
                 </div>
@@ -1029,7 +1030,7 @@
                 photoBox.innerHTML = `<div class="birthday-avatar-fallback">${(person.name||'?').charAt(0).toUpperCase()}</div>`;
             }
             document.getElementById('birthdayCelebration').classList.add('show');
-            if (birthdayAlertSound && soundsEnabled) playBirthdayFanfare();
+            if (birthdayAlertSound && soundsEnabled) playBirthdayMelody();
             triggerPartyConfetti();
         }
 
@@ -1044,7 +1045,7 @@
         }
 
         function celebrateBirthdayAgain() {
-            if (birthdayAlertSound && soundsEnabled) playBirthdayFanfare();
+            if (birthdayAlertSound && soundsEnabled) playBirthdayMelody();
             triggerPartyConfetti();
         }
 
@@ -1052,7 +1053,7 @@
             birthdayAlertSound = !birthdayAlertSound;
             const icon = document.getElementById('birthdaySoundIcon');
             if (icon) icon.className = birthdayAlertSound ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
-            if (birthdayAlertSound && soundsEnabled) playBirthdayFanfare();
+            if (birthdayAlertSound && soundsEnabled) playBirthdayMelody();
         }
 
         function playBirthdayFanfare() {
@@ -1061,6 +1062,26 @@
             tone(783.99,0.18,'sine',0.06,0.24);
             tone(1046.5,0.28,'sine',0.065,0.38);
             tone(1318.51,0.38,'sine',0.05,0.58);
+        }
+
+        // Melodía de cumpleaños: versión instrumental sintetizada, sin archivos externos.
+        function playBirthdayMelody() {
+            const notes = [
+                [392.00,0.32],[392.00,0.32],[440.00,0.64],[392.00,0.64],[523.25,0.64],[493.88,1.00],
+                [392.00,0.32],[392.00,0.32],[440.00,0.64],[392.00,0.64],[587.33,0.64],[523.25,1.00],
+                [392.00,0.32],[392.00,0.32],[783.99,0.64],[659.25,0.64],[523.25,0.64],[493.88,0.64],[440.00,1.00],
+                [698.46,0.32],[698.46,0.32],[659.25,0.64],[523.25,0.64],[587.33,0.64],[523.25,1.10]
+            ];
+            let t = 0;
+            notes.forEach(([freq,dur], i) => {
+                tone(freq, dur * 0.88, i > 17 ? 'triangle' : 'sine', 0.065, t);
+                if (i % 3 === 0) tone(freq / 2, dur * 0.72, 'triangle', 0.018, t);
+                t += dur;
+            });
+            // Campanitas al final para darle sensación de celebración.
+            tone(1046.50,0.22,'sine',0.045,t+0.05);
+            tone(1318.51,0.30,'sine',0.04,t+0.22);
+            tone(1567.98,0.38,'sine',0.035,t+0.42);
         }
 
         function checkAndShowBirthdayCelebration() {
