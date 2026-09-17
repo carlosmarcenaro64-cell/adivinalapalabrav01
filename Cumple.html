@@ -407,15 +407,15 @@
         ];
 
         let currentFilter = 'all';
-        let googleSheetsUrl = localStorage.getItem('birthday_sheets_url') || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRIS56Nu-Eeh2jb1eyYu_7uqOGl8Qb_LXh5c48gD8iJYZw4RlCEsKidBaZ1zorpbjlpoeLOegNPucQS/pub?gid=0&single=true&output=csv';
-        if (!localStorage.getItem('birthday_sheets_url')) {
-            localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
-        }
-        // URL de tu Web App de Google Apps Script. Pega aquí la URL que termina en /exec.
-        let googleAppsScriptUrl = localStorage.getItem('birthday_apps_script_url') || 'https://script.google.com/macros/s/AKfycbw8FGHTWAOODHJkCAwLDuGe_Bxaubr62CXMvhcloHMAsU2gHRuTuQ0WbBAFv779ngTM/exec';
-        if (!localStorage.getItem('birthday_apps_script_url')) {
-            localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
-        }
+        // ==================== CONEXIÓN GOOGLE SHEETS ====================
+        // Lectura: CSV publicado de Google Sheets.
+        // Escritura: Web App de Google Apps Script.
+        const googleSheetsUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRIS56Nu-Eeh2jb1eyYu_7uqOGl8Qb_LXh5c48gD8iJYZw4RlCEsKidBaZ1zorpbjlpoeLOegNPucQS/pub?gid=0&single=true&output=csv';
+        const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbw3JYwWOhmpVhPo3PZn2Qmz2GEWyqhRhZq5wk5ESUeFxAHhcjOiTKUAIyhQUm2XaGEG/exec';
+
+        // Sobrescribe cualquier URL vieja guardada por versiones anteriores.
+        localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
+        localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
 
         function createBirthdayId() {
             if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
