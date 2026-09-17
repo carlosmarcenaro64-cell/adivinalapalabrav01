@@ -1092,6 +1092,8 @@
                 });
                 if (!sent && googleAppsScriptUrl) {
                     showCustomModal('Guardado localmente', 'No se pudo confirmar el envío a Google Sheets. Revisa la conexión y vuelve a sincronizar.');
+                } else if (sent) {
+                    setTimeout(() => syncFromGoogleSheets(true), 1500);
                 }
             } else {
                 const birthday = birthdays[index];
@@ -1126,6 +1128,7 @@
                 closeModal();
                 refreshAllViews();
                 showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
+                setTimeout(() => syncFromGoogleSheets(true), 1500);
             }
         }
 
@@ -1164,6 +1167,8 @@
             });
             if (!sent && googleAppsScriptUrl) {
                 showCustomModal('Eliminado localmente', 'No se pudo confirmar el borrado en Google Sheets.');
+            } else if (sent) {
+                setTimeout(() => syncFromGoogleSheets(true), 1500);
             }
         }
 
