@@ -1758,5 +1758,215 @@
         });
     </script>
 
+
+    <!-- ===== AVISO INICIAL MÓVIL: INSTALAR APP + ACTIVAR NOTIFICACIONES ===== -->
+    <div id="mobileSetupOverlay"
+         style="
+            position:fixed;
+            inset:0;
+            z-index:10050;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            padding:18px;
+            background:rgba(2,6,23,.72);
+            backdrop-filter:blur(8px);
+         ">
+        <div style="
+            width:min(410px,100%);
+            border-radius:26px;
+            background:white;
+            padding:22px;
+            box-shadow:0 25px 80px rgba(0,0,0,.35);
+            font-family:Inter,sans-serif;
+         ">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+                <div style="
+                    width:48px;height:48px;border-radius:15px;
+                    display:flex;align-items:center;justify-content:center;
+                    background:linear-gradient(135deg,#ec4899,#f43f5e);
+                    color:white;font-size:22px;
+                 ">🎂</div>
+                <div>
+                    <div style="font-weight:900;font-size:19px;color:#0f172a;">Prepara CumpleApp</div>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:2px;">
+                        Para recibir los avisos aunque cierres la página.
+                    </div>
+                </div>
+            </div>
+
+            <p style="font-size:13px;line-height:1.5;color:#64748b;margin:12px 0 16px;">
+                Solo necesitas completar los pasos que aparezcan pendientes.
+            </p>
+
+            <div id="mobileSetupInstallRow"
+                 style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid #e2e8f0;border-radius:16px;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="font-size:22px;">📲</div>
+                    <div>
+                        <div style="font-weight:800;font-size:14px;color:#0f172a;">Instalar como app</div>
+                        <div id="mobileSetupInstallText" style="font-size:11px;color:#94a3b8;margin-top:2px;">
+                            Agrégala a tu teléfono.
+                        </div>
+                    </div>
+                </div>
+                <button id="mobileSetupInstallBtn" type="button"
+                        style="border:none;border-radius:12px;padding:9px 12px;background:#ec4899;color:white;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">
+                    Instalar
+                </button>
+            </div>
+
+            <div id="mobileSetupNotifRow"
+                 style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid #e2e8f0;border-radius:16px;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="font-size:22px;">🔔</div>
+                    <div>
+                        <div style="font-weight:800;font-size:14px;color:#0f172a;">Activar notificaciones</div>
+                        <div id="mobileSetupNotifText" style="font-size:11px;color:#94a3b8;margin-top:2px;">
+                            Recibe avisos de cumpleaños con la app cerrada.
+                        </div>
+                    </div>
+                </div>
+                <button id="mobileSetupNotifBtn" type="button"
+                        style="border:none;border-radius:12px;padding:9px 12px;background:#4f46e5;color:white;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;">
+                    Activar
+                </button>
+            </div>
+
+            <div id="mobileSetupReady"
+                 style="display:none;padding:13px;border-radius:16px;background:#ecfdf5;color:#047857;font-weight:800;font-size:13px;text-align:center;margin-bottom:10px;">
+                ✅ Todo listo. CumpleApp puede avisarte en segundo plano.
+            </div>
+
+            <button id="mobileSetupLaterBtn" type="button"
+                    style="width:100%;border:none;background:#f1f5f9;color:#64748b;border-radius:13px;padding:10px;font-weight:800;font-size:12px;cursor:pointer;margin-top:4px;">
+                Ahora no
+            </button>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            function isMobileDevice() {
+                return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+            }
+
+            function isInstalledAsApp() {
+                return window.matchMedia('(display-mode: standalone)').matches ||
+                       window.navigator.standalone === true;
+            }
+
+            function notificationsAreActive() {
+                return ('Notification' in window) && Notification.permission === 'granted';
+            }
+
+            function updateMobileSetupStatus() {
+                if (!isMobileDevice()) return;
+
+                const overlay = document.getElementById('mobileSetupOverlay');
+                const installRow = document.getElementById('mobileSetupInstallRow');
+                const notifRow = document.getElementById('mobileSetupNotifRow');
+                const ready = document.getElementById('mobileSetupReady');
+
+                if (!overlay || !installRow || !notifRow || !ready) return;
+
+                const installed = isInstalledAsApp();
+                const notificationsActive = notificationsAreActive();
+
+                installRow.style.display = installed ? 'none' : 'flex';
+                notifRow.style.display = notificationsActive ? 'none' : 'flex';
+
+                if (installed && notificationsActive) {
+                    ready.style.display = 'block';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 900);
+                } else {
+                    ready.style.display = 'none';
+                    overlay.style.display = 'flex';
+                }
+            }
+
+            async function installFromSetup() {
+                const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+
+                // Android/Chrome: usa el aviso nativo si ya está disponible.
+                if (typeof deferredPrompt !== 'undefined' && deferredPrompt) {
+                    try {
+                        deferredPrompt.prompt();
+                        const choice = await deferredPrompt.userChoice;
+                        if (choice && choice.outcome === 'accepted') {
+                            deferredPrompt = null;
+                            setTimeout(updateMobileSetupStatus, 1200);
+                        }
+                        return;
+                    } catch (e) {
+                        console.warn('Instalación:', e);
+                    }
+                }
+
+                // iPhone o navegadores sin beforeinstallprompt:
+                // reutiliza el modal de instalación que CumpleApp ya tenía.
+                if (typeof openInstallModal === 'function') {
+                    document.getElementById('mobileSetupOverlay').style.display = 'none';
+                    openInstallModal();
+                    return;
+                }
+
+                if (isIOS) {
+                    alert('En iPhone: toca Compartir y luego "Agregar a pantalla de inicio".');
+                }
+            }
+
+            async function enableNotificationsFromSetup() {
+                try {
+                    if (typeof requestNotificationPermission === 'function') {
+                        await requestNotificationPermission();
+                    } else if ('Notification' in window) {
+                        await Notification.requestPermission();
+                    }
+
+                    if (Notification.permission === 'granted' &&
+                        typeof window.enableBackgroundPushNotifications === 'function') {
+                        await window.enableBackgroundPushNotifications();
+                    }
+
+                    setTimeout(updateMobileSetupStatus, 900);
+                } catch (e) {
+                    console.error('Notificaciones:', e);
+                    setTimeout(updateMobileSetupStatus, 500);
+                }
+            }
+
+            window.addEventListener('load', function () {
+                if (!isMobileDevice()) return;
+
+                const installBtn = document.getElementById('mobileSetupInstallBtn');
+                const notifBtn = document.getElementById('mobileSetupNotifBtn');
+                const laterBtn = document.getElementById('mobileSetupLaterBtn');
+
+                if (installBtn) installBtn.addEventListener('click', installFromSetup);
+                if (notifBtn) notifBtn.addEventListener('click', enableNotificationsFromSetup);
+                if (laterBtn) laterBtn.addEventListener('click', function () {
+                    const overlay = document.getElementById('mobileSetupOverlay');
+                    if (overlay) overlay.style.display = 'none';
+                });
+
+                // Espera un poco para que Chrome tenga tiempo de disparar beforeinstallprompt.
+                setTimeout(updateMobileSetupStatus, 1400);
+            });
+
+            window.addEventListener('appinstalled', function () {
+                setTimeout(updateMobileSetupStatus, 500);
+            });
+
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden && isMobileDevice()) {
+                    setTimeout(updateMobileSetupStatus, 500);
+                }
+            });
+        })();
+    </script>
+
 </body>
 </html>
