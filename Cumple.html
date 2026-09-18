@@ -953,26 +953,108 @@
             container.innerHTML = html;
         }
 
-        function checkTodayBirthdays() {
-            const todayStr = new Date().toISOString().slice(5, 10);
-            const todayBdays = birthdays.filter(b => b.date.slice(5, 10) === todayStr);
-            const container = document.getElementById('todayAlertsContainer');
+        let birthdayCountdownTimer = null;
 
+        function getLocalMonthDay(date = new Date()) {
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${month}-${day}`;
+        }
+
+        function checkTodayBirthdays() {
+            const container = document.getElementById('todayAlertsContainer');
+            if (!container) return;
+
+            if (birthdayCountdownTimer) {
+                clearInterval(birthdayCountdownTimer);
+                birthdayCountdownTimer = null;
+            }
+
+            const now = new Date();
+            const todayStr = getLocalMonthDay(now);
+            const todayBdays = birthdays.filter(b => String(b.date || '').slice(5, 10) === todayStr);
+
+            // Cumpleaños REALMENTE hoy, usando la hora local del dispositivo.
             if (todayBdays.length > 0) {
-                let names = todayBdays.map(b => `<strong class="font-bold underline">${b.name}</strong>`).join(', ');
+                const names = todayBdays
+                    .map(b => `<strong class="font-bold underline">${b.name}</strong>`)
+                    .join(', ');
+
                 container.innerHTML = `
                     <div class="bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white p-4 rounded-2xl shadow-xl led-border flex items-center space-x-3.5 animate-fade-in shimmer-gradient cursor-pointer" onclick="triggerPartyConfetti()">
                         <div class="w-11 h-11 rounded-xl bg-white/25 backdrop-blur-md flex items-center justify-center text-xl shrink-0 animate-bounce">
                             <i class="fa-solid fa-cake-candles"></i>
                         </div>
                         <div class="flex-1 text-sm sm:text-base font-medium">
-                            <span class="font-black text-amber-200">¡Felicidad Total! 🥳</span> Es cumpleaños hoy de: ${names}. ¡Haz clic aquí para celebrar con confeti!
+                            <span class="font-black text-amber-200">¡Felicidad Total! 🥳</span>
+                            Es cumpleaños hoy de: ${names}. ¡Haz clic aquí para celebrar con confeti!
                         </div>
                     </div>
                 `;
-            } else {
-                container.innerHTML = '';
+                return;
             }
+
+            // Si el siguiente cumpleaños es mañana, mostrar contador SOLO
+            // cuando falten 12 horas o menos para llegar a medianoche.
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+
+            const tomorrowStr = getLocalMonthDay(tomorrow);
+            const tomorrowBdays = birthdays.filter(b => String(b.date || '').slice(5, 10) === tomorrowStr);
+
+            const msUntilTomorrow = tomorrow.getTime() - now.getTime();
+            const twelveHours = 12 * 60 * 60 * 1000;
+
+            if (tomorrowBdays.length > 0 && msUntilTomorrow > 0 && msUntilTomorrow <= twelveHours) {
+                const names = tomorrowBdays
+                    .map(b => `<strong class="font-bold underline">${b.name}</strong>`)
+                    .join(', ');
+
+                container.innerHTML = `
+                    <div class="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 text-white p-4 rounded-2xl shadow-xl led-border flex items-center space-x-3.5 animate-fade-in shimmer-gradient">
+                        <div class="w-11 h-11 rounded-xl bg-white/25 backdrop-blur-md flex items-center justify-center text-xl shrink-0 animate-pulse">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <div class="flex-1 text-sm sm:text-base font-medium">
+                            <span class="font-black text-amber-200">⏳ Cuenta regresiva:</span>
+                            faltan <strong id="birthdayCountdownClock" class="font-black tabular-nums"></strong>
+                            para el cumpleaños de ${names}.
+                        </div>
+                    </div>
+                `;
+
+                const updateClock = () => {
+                    const remaining = tomorrow.getTime() - Date.now();
+
+                    if (remaining <= 0) {
+                        clearInterval(birthdayCountdownTimer);
+                        birthdayCountdownTimer = null;
+                        refreshAllViews();
+                        checkAndShowBirthdayCelebration();
+                        return;
+                    }
+
+                    const totalSeconds = Math.floor(remaining / 1000);
+                    const hours = Math.floor(totalSeconds / 3600);
+                    const minutes = Math.floor((totalSeconds % 3600) / 60);
+                    const seconds = totalSeconds % 60;
+
+                    const clock = document.getElementById('birthdayCountdownClock');
+                    if (clock) {
+                        clock.textContent =
+                            `${String(hours).padStart(2, '0')}:` +
+                            `${String(minutes).padStart(2, '0')}:` +
+                            `${String(seconds).padStart(2, '0')}`;
+                    }
+                };
+
+                updateClock();
+                birthdayCountdownTimer = setInterval(updateClock, 1000);
+                return;
+            }
+
+            container.innerHTML = '';
         }
 
         function updateStats() {
@@ -1235,7 +1317,7 @@
 
         function getBirthdayForAlert() {
             if (!birthdays || !birthdays.length) return null;
-            const today = new Date().toISOString().slice(5,10);
+            const today = getLocalMonthDay(new Date());
             const todayPerson = birthdays.find(b => String(b.date || '').slice(5,10) === today);
             if (todayPerson) return todayPerson;
             return [...birthdays].sort((a,b) => getNextBirthdayDetails(a.date).diffDays - getNextBirthdayDetails(b.date).diffDays)[0] || null;
@@ -1311,12 +1393,22 @@
         }
 
         function checkAndShowBirthdayCelebration() {
-            const today = new Date().toISOString().slice(0,10);
+            const now = new Date();
+            const todayMonthDay = getLocalMonthDay(now);
+            const localDateKey =
+                `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
             if (!birthdays || !birthdays.length) return;
-            const todayPerson = birthdays.find(b => String(b.date || '').slice(5,10) === today.slice(5,10));
+
+            const todayPerson = birthdays.find(
+                b => String(b.date || '').slice(5,10) === todayMonthDay
+            );
+
             if (!todayPerson) return;
-            const key = 'birthday_celebration_shown_' + today;
+
+            const key = 'birthday_celebration_shown_' + localDateKey;
             if (localStorage.getItem(key) === '1') return;
+
             setTimeout(() => openBirthdayCelebration(todayPerson), 900);
             localStorage.setItem(key,'1');
         }
