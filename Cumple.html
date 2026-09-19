@@ -680,10 +680,12 @@
 
         function checkNotificationPermissionUI() {
             const badge = document.getElementById('notifBadge');
-            if (!("Notification" in window)) {
+
+            if (!('Notification' in window)) {
                 if (badge) badge.classList.add('hidden');
                 return;
             }
+
             if (Notification.permission === 'granted') {
                 if (badge) badge.classList.add('hidden');
             } else {
@@ -692,42 +694,186 @@
         }
 
         async function requestNotificationPermission() {
-            if (!("Notification" in window)) {
+            if (!('Notification' in window)) {
                 showCustomModal('Aviso', 'Tu navegador no soporta notificaciones.');
-                return;
+                return false;
             }
+
             if (Notification.permission === 'granted') {
-                showCustomModal('Notificaciones Activas', 'Ya tienes activadas las alertas para 1 día antes y el día del cumpleaños.');
-                return;
+                checkNotificationPermissionUI();
+
+                if (typeof window.enableBackgroundPushNotifications === 'function') {
+                    await window.enableBackgroundPushNotifications();
+                }
+
+                showCustomModal(
+                    'Notificaciones Activas',
+                    'Ya tienes activados los recordatorios de cumpleaños y las notificaciones en segundo plano.'
+                );
+                return true;
             }
+
+            if (Notification.permission === 'denied') {
+                showCustomModal(
+                    'Notificaciones Bloqueadas',
+                    'Las notificaciones están bloqueadas para este sitio. Actívalas desde la configuración del navegador y vuelve a intentarlo.'
+                );
+                return false;
+            }
+
             const permission = await Notification.requestPermission();
             checkNotificationPermissionUI();
+
             if (permission === 'granted') {
+                if (typeof window.enableBackgroundPushNotifications === 'function') {
+                    await window.enableBackgroundPushNotifications();
+                }
+
                 triggerPartyConfetti();
-                showCustomModal('¡Notificaciones Activadas!', 'Ahora recibirás una notificación 1 día antes y el mismo día.');
-            } else {
-                showCustomModal('Aviso', 'Has denegado el permiso de notificaciones.');
+                showCustomModal(
+                    '¡Notificaciones Activadas!',
+                    'Recibirás recordatorios 7 días antes, 3 días antes, el día anterior, 12 horas antes y el mismo día.'
+                );
+
+                checkAndTriggerAlerts();
+                return true;
+            }
+
+            showCustomModal(
+                'Aviso',
+                'No se activaron las notificaciones. Puedes habilitarlas después desde el icono de la campana.'
+            );
+            return false;
+        }
+
+        function getLocalDateKey(date = new Date()) {
+            return [
+                date.getFullYear(),
+                String(date.getMonth() + 1).padStart(2, '0'),
+                String(date.getDate()).padStart(2, '0')
+            ].join('-');
+        }
+
+        function getBirthdayNotificationId(birthday) {
+            return String(
+                birthday.id ||
+                `${birthday.name || 'persona'}-${birthday.date || 'fecha'}`
+            )
+            .trim()
+            .replace(/[^a-zA-Z0-9_-]+/g, '-')
+            .slice(0, 80);
+        }
+
+        function showBirthdaySystemNotification(birthday, type, title, body) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                return false;
+            }
+
+            const todayKey = getLocalDateKey(new Date());
+            const personId = getBirthdayNotificationId(birthday);
+            const storageKey = `cumpleapp_notice_${personId}_${type}_${todayKey}`;
+
+            if (localStorage.getItem(storageKey) === '1') {
+                return false;
+            }
+
+            const tag = `cumple-${personId}-${type}-${todayKey}`;
+            const icon = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>';
+
+            try {
+                const notification = new Notification(title, {
+                    body,
+                    icon,
+                    tag,
+                    renotify: false
+                });
+
+                notification.onclick = function() {
+                    window.focus();
+                    notification.close();
+                };
+
+                localStorage.setItem(storageKey, '1');
+                return true;
+            } catch (error) {
+                console.warn('Notificación local:', error);
+                return false;
             }
         }
 
         function checkAndTriggerAlerts() {
-            if (!("Notification" in window) || Notification.permission !== 'granted') return;
-            const lastCheckedKey = 'birthday_last_notified_date';
-            const todayStr = new Date().toISOString().slice(0, 10);
-            if (localStorage.getItem(lastCheckedKey) === todayStr) return;
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                return;
+            }
 
-            birthdays.forEach(b => {
-                const details = getNextBirthdayDetails(b.date);
+            if (!Array.isArray(birthdays) || birthdays.length === 0) {
+                return;
+            }
+
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+
+            const hoursUntilTomorrow =
+                (tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+            birthdays.forEach(birthday => {
+                if (!birthday || !birthday.date) return;
+
+                const details = getNextBirthdayDetails(birthday.date);
+                const name = birthday.name || 'una persona';
+                const category = birthday.category ? ` (${birthday.category})` : '';
+
+                if (details.diffDays === 7) {
+                    showBirthdaySystemNotification(
+                        birthday,
+                        '7d',
+                        '🎁 Cumpleaños en una semana',
+                        `Faltan 7 días para el cumpleaños de ${name}${category}.`
+                    );
+                    return;
+                }
+
+                if (details.diffDays === 3) {
+                    showBirthdaySystemNotification(
+                        birthday,
+                        '3d',
+                        '🎈 Cumpleaños en 3 días',
+                        `Faltan 3 días para el cumpleaños de ${name}${category}.`
+                    );
+                    return;
+                }
+
+                if (details.diffDays === 1) {
+                    showBirthdaySystemNotification(
+                        birthday,
+                        '1d',
+                        '⏰ Cumpleaños mañana',
+                        `Mañana cumple años ${name}${category}.`
+                    );
+
+                    // Aviso adicional durante las últimas 12 horas del día anterior.
+                    if (hoursUntilTomorrow > 0 && hoursUntilTomorrow <= 12) {
+                        showBirthdaySystemNotification(
+                            birthday,
+                            '12h',
+                            '⏳ Faltan menos de 12 horas',
+                            `Ya faltan menos de 12 horas para el cumpleaños de ${name}.`
+                        );
+                    }
+                    return;
+                }
+
                 if (details.diffDays === 0) {
-                    try {
-                        new Notification('🎉 ¡Es HOY el Cumpleaños!', {
-                            body: `¡Hoy está cumpliendo años ${b.name}! (${b.category})`,
-                            icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>'
-                        });
-                    } catch(e) {}
+                    showBirthdaySystemNotification(
+                        birthday,
+                        'hoy',
+                        '🎂 ¡Es HOY el cumpleaños!',
+                        `¡Hoy está cumpliendo años ${name}${category}! 🎉`
+                    );
                 }
             });
-            localStorage.setItem(lastCheckedKey, todayStr);
         }
 
         function toggleDarkMode() {
@@ -877,6 +1023,10 @@
             checkTodayBirthdays();
             renderBirthdays();
             updateStats();
+
+            // Revisa recordatorios locales después de cada sincronización.
+            // Las claves de deduplicación evitan avisos repetidos.
+            checkAndTriggerAlerts();
         }
 
         function renderFeaturedTopBanner() {
@@ -1578,27 +1728,67 @@
             justify-content:center;
             padding:20px;
          ">
-        <div style="width:min(360px,100%);background:#ffffff;border-radius:22px;padding:22px;box-shadow:0 25px 70px rgba(0,0,0,.28);font-family:Inter,sans-serif;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;">
+        <div style="
+            width:min(520px,100%);
+            max-height:88vh;
+            overflow-y:auto;
+            background:#ffffff;
+            border-radius:22px;
+            padding:22px;
+            box-shadow:0 25px 70px rgba(0,0,0,.28);
+            font-family:Inter,sans-serif;
+        ">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;position:sticky;top:-22px;background:#fff;padding-top:22px;padding-bottom:8px;z-index:2;">
                 <div>
-                    <div style="font-weight:800;font-size:17px;color:#0f172a;">Panel de pruebas</div>
-                    <div style="font-size:12px;color:#94a3b8;margin-top:3px;">Configuración privada de CumpleApp</div>
+                    <div style="font-weight:800;font-size:18px;color:#0f172a;">Panel de pruebas</div>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:3px;">Diagnóstico y pruebas privadas de CumpleApp</div>
                 </div>
-                <button id="closeTestSettingsBtn" type="button" style="border:none;background:#f1f5f9;width:32px;height:32px;border-radius:50%;cursor:pointer;color:#64748b;">
+                <button id="closeTestSettingsBtn" type="button" style="border:none;background:#f1f5f9;width:34px;height:34px;border-radius:50%;cursor:pointer;color:#64748b;flex:0 0 auto;">
                     <i class="fa-solid fa-xmark" style="pointer-events:none;"></i>
                 </button>
             </div>
 
-            <div style="display:grid;gap:10px;">
-                <button id="testCakeBtn" type="button" style="border:none;border-radius:14px;padding:12px 14px;background:#fdf2f8;color:#be185d;font-weight:700;cursor:pointer;text-align:left;">
-                    🎂 Probar pastelito
-                </button>
-                <button id="testNotificationBtn" type="button" style="border:none;border-radius:14px;padding:12px 14px;background:#eef2ff;color:#4338ca;font-weight:700;cursor:pointer;text-align:left;">
-                    🔔 Probar notificación
-                </button>
-                <button id="testConfettiBtn" type="button" style="border:none;border-radius:14px;padding:12px 14px;background:#fffbeb;color:#b45309;font-weight:700;cursor:pointer;text-align:left;">
-                    🎉 Probar confeti
-                </button>
+            <div id="testPanelStatusBox"
+                 style="padding:11px 12px;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-size:12px;line-height:1.45;margin-bottom:14px;">
+                Pulsa <strong>Estado del sistema</strong> para revisar todo.
+            </div>
+
+            <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:12px 0 7px;">Estado y Push</div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+                <button id="testSystemStatusBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#f1f5f9;color:#334155;font-weight:750;cursor:pointer;text-align:left;">🩺 Estado del sistema</button>
+                <button id="testPushRegisterBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#ecfeff;color:#0e7490;font-weight:750;cursor:pointer;text-align:left;">📡 Registrar/Revisar Push</button>
+                <button id="testBackgroundNotificationBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#eef2ff;color:#4338ca;font-weight:750;cursor:pointer;text-align:left;">📲 Notificación Service Worker</button>
+                <button id="testServiceWorkerBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#eff6ff;color:#1d4ed8;font-weight:750;cursor:pointer;text-align:left;">🔄 Actualizar Service Worker</button>
+            </div>
+
+            <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 7px;">Pruebas de recordatorios</div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+                <button data-reminder-test="7d" type="button" style="border:none;border-radius:13px;padding:11px;background:#fefce8;color:#a16207;font-weight:750;cursor:pointer;text-align:left;">🎁 Aviso 7 días antes</button>
+                <button data-reminder-test="3d" type="button" style="border:none;border-radius:13px;padding:11px;background:#fff7ed;color:#c2410c;font-weight:750;cursor:pointer;text-align:left;">🎈 Aviso 3 días antes</button>
+                <button data-reminder-test="1d" type="button" style="border:none;border-radius:13px;padding:11px;background:#f0fdf4;color:#15803d;font-weight:750;cursor:pointer;text-align:left;">⏰ Aviso mañana</button>
+                <button data-reminder-test="12h" type="button" style="border:none;border-radius:13px;padding:11px;background:#faf5ff;color:#7e22ce;font-weight:750;cursor:pointer;text-align:left;">⏳ Aviso 12 horas</button>
+                <button data-reminder-test="hoy" type="button" style="border:none;border-radius:13px;padding:11px;background:#fdf2f8;color:#be185d;font-weight:750;cursor:pointer;text-align:left;">🎂 Aviso cumpleaños hoy</button>
+                <button id="testCountdownBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#f5f3ff;color:#6d28d9;font-weight:750;cursor:pointer;text-align:left;">⏱️ Simular contador</button>
+            </div>
+
+            <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 7px;">Celebración y sonido</div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+                <button id="testCakeBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#fdf2f8;color:#be185d;font-weight:750;cursor:pointer;text-align:left;">🎂 Probar pastelito</button>
+                <button id="testMelodyBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#eef2ff;color:#4338ca;font-weight:750;cursor:pointer;text-align:left;">🎵 Probar melodía</button>
+                <button id="testSoundBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#ecfdf5;color:#047857;font-weight:750;cursor:pointer;text-align:left;">🔊 Probar sonido</button>
+                <button id="testConfettiBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#fffbeb;color:#b45309;font-weight:750;cursor:pointer;text-align:left;">🎉 Probar confeti</button>
+            </div>
+
+            <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 7px;">Datos y aplicación</div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+                <button id="testGoogleSyncBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#ecfdf5;color:#047857;font-weight:750;cursor:pointer;text-align:left;">☁️ Probar Google Sheets</button>
+                <button id="testInstallBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#fff1f2;color:#be123c;font-weight:750;cursor:pointer;text-align:left;">📲 Probar instalación</button>
+                <button id="clearTestMarksBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#f8fafc;color:#475569;font-weight:750;cursor:pointer;text-align:left;">🧹 Reiniciar pruebas</button>
+                <button id="refreshTestPanelBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#f1f5f9;color:#334155;font-weight:750;cursor:pointer;text-align:left;">♻️ Actualizar estado</button>
+            </div>
+
+            <div style="margin-top:14px;padding:10px 12px;border-radius:13px;background:#fff7ed;color:#9a3412;font-size:11px;line-height:1.45;">
+                <strong>Nota:</strong> estas pruebas no modifican tus cumpleaños. La prueba de Service Worker verifica el aviso del dispositivo; el envío Firebase real desde el servidor sigue dependiendo de Apps Script.
             </div>
         </div>
     </div>
@@ -1606,6 +1796,7 @@
     <script>
         (function () {
             const CONFIG_CODE = '2403';
+            let panelCountdownTimer = null;
 
             function showFlex(id) {
                 const el = document.getElementById(id);
@@ -1615,6 +1806,86 @@
             function hide(id) {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
+            }
+
+            function setPanelStatus(message, type = 'info') {
+                const box = document.getElementById('testPanelStatusBox');
+                if (!box) return;
+
+                const styles = {
+                    info: ['#f8fafc', '#475569', '#e2e8f0'],
+                    ok: ['#ecfdf5', '#047857', '#a7f3d0'],
+                    warn: ['#fffbeb', '#92400e', '#fde68a'],
+                    error: ['#fef2f2', '#b91c1c', '#fecaca']
+                };
+
+                const s = styles[type] || styles.info;
+                box.style.background = s[0];
+                box.style.color = s[1];
+                box.style.borderColor = s[2];
+                box.innerHTML = message;
+            }
+
+            function isInstalledTest() {
+                return window.matchMedia('(display-mode: standalone)').matches ||
+                       window.navigator.standalone === true;
+            }
+
+            async function getServiceWorkerStatus() {
+                if (!('serviceWorker' in navigator)) return { supported: false, active: false };
+
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration('./');
+                    return {
+                        supported: true,
+                        active: Boolean(registration && registration.active),
+                        registration
+                    };
+                } catch (error) {
+                    return { supported: true, active: false, error };
+                }
+            }
+
+            async function updateSystemStatus() {
+                const sw = await getServiceWorkerStatus();
+
+                const permission =
+                    ('Notification' in window)
+                        ? Notification.permission
+                        : 'no compatible';
+
+                const firebaseConfig =
+                    Boolean(
+                        window.CUMPLEAPP_FIREBASE_CONFIG &&
+                        window.CUMPLEAPP_FIREBASE_CONFIG.projectId
+                    );
+
+                const pushReady = window.cumplePushReady === true;
+                const installed = isInstalledTest();
+                const online = navigator.onLine;
+                const count = Array.isArray(window.birthdays) ? window.birthdays.length :
+                              (typeof birthdays !== 'undefined' && Array.isArray(birthdays) ? birthdays.length : 0);
+
+                const okCount = [
+                    online,
+                    permission === 'granted',
+                    sw.active,
+                    firebaseConfig,
+                    pushReady
+                ].filter(Boolean).length;
+
+                const type = okCount === 5 ? 'ok' : (okCount >= 3 ? 'warn' : 'error');
+
+                setPanelStatus(`
+                    <div style="font-weight:900;margin-bottom:5px;">Estado actual</div>
+                    🌐 Internet: <strong>${online ? 'OK' : 'Sin conexión'}</strong><br>
+                    🔔 Permiso: <strong>${permission}</strong><br>
+                    ⚙️ Service Worker: <strong>${sw.active ? 'Activo' : 'No activo'}</strong><br>
+                    🔥 Firebase config: <strong>${firebaseConfig ? 'Cargada' : 'No cargada'}</strong><br>
+                    📡 Push del dispositivo: <strong>${pushReady ? 'Registrado' : 'Pendiente / no confirmado'}</strong><br>
+                    📲 Modo app: <strong>${installed ? 'Instalada' : 'Navegador'}</strong><br>
+                    🎂 Cumpleaños cargados: <strong>${count}</strong>
+                `, type);
             }
 
             function openCodePanel() {
@@ -1635,39 +1906,252 @@
                     hide('configCodePanel');
                     if (error) error.style.display = 'none';
                     showFlex('testSettingsPanel');
+                    setTimeout(updateSystemStatus, 100);
                 } else {
                     if (error) error.style.display = 'block';
                     input.select();
                 }
             }
 
-            function testCakeNotificationFixed() {
-                hide('testSettingsPanel');
-                testBirthdayAlert();
+            async function ensureTestNotificationPermission() {
+                if (!('Notification' in window)) {
+                    setPanelStatus('❌ Este navegador no soporta notificaciones.', 'error');
+                    return false;
+                }
+
+                if (Notification.permission === 'granted') return true;
+
+                if (typeof requestNotificationPermission === 'function') {
+                    await requestNotificationPermission();
+                } else {
+                    await Notification.requestPermission();
+                }
+
+                return Notification.permission === 'granted';
             }
 
-            async function testBrowserNotificationFixed() {
-                hide('testSettingsPanel');
+            async function showPanelNotification(title, body, tag) {
+                const allowed = await ensureTestNotificationPermission();
+                if (!allowed) {
+                    setPanelStatus('⚠️ Activa el permiso de notificaciones para hacer esta prueba.', 'warn');
+                    return false;
+                }
 
-                if (!('Notification' in window)) {
-                    showCustomModal('Aviso', 'Tu navegador no soporta notificaciones.');
+                const options = {
+                    body,
+                    tag: tag + '-' + Date.now(),
+                    renotify: false,
+                    data: { url: location.href },
+                    icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>'
+                };
+
+                try {
+                    if ('serviceWorker' in navigator) {
+                        const registration = await navigator.serviceWorker.ready;
+                        await registration.showNotification(title, options);
+                    } else {
+                        new Notification(title, options);
+                    }
+
+                    setPanelStatus('✅ Notificación de prueba enviada a este dispositivo.', 'ok');
+                    return true;
+                } catch (error) {
+                    console.error('Prueba de notificación:', error);
+                    setPanelStatus('❌ No se pudo mostrar la notificación: ' + (error.message || error), 'error');
+                    return false;
+                }
+            }
+
+            async function testReminder(type) {
+                const samples = {
+                    '7d': ['🎁 Cumpleaños en una semana', 'Faltan 7 días para el cumpleaños de Cumpleañero/a.'],
+                    '3d': ['🎈 Cumpleaños en 3 días', 'Faltan 3 días para el cumpleaños de Cumpleañero/a.'],
+                    '1d': ['⏰ Cumpleaños mañana', 'Mañana cumple años Cumpleañero/a.'],
+                    '12h': ['⏳ Faltan menos de 12 horas', 'Ya faltan menos de 12 horas para el cumpleaños de Cumpleañero/a.'],
+                    'hoy': ['🎂 ¡Cumpleaños hoy!', 'Hoy cumple años Cumpleañero/a. 🎉']
+                };
+
+                const sample = samples[type];
+                if (!sample) return;
+                await showPanelNotification(sample[0], sample[1], 'panel-' + type);
+            }
+
+            async function testPushRegistration() {
+                const allowed = await ensureTestNotificationPermission();
+                if (!allowed) return;
+
+                if (typeof window.enableBackgroundPushNotifications !== 'function') {
+                    setPanelStatus('⚠️ La función de Firebase Push todavía no está disponible. Recarga la página y prueba otra vez.', 'warn');
                     return;
                 }
 
-                let permission = Notification.permission;
-                if (permission !== 'granted') {
-                    permission = await Notification.requestPermission();
-                    checkNotificationPermissionUI();
+                setPanelStatus('⏳ Registrando este dispositivo en Firebase Push...', 'info');
+
+                try {
+                    const ok = await window.enableBackgroundPushNotifications();
+                    if (ok) {
+                        setPanelStatus('✅ Firebase Push quedó registrado para este dispositivo.', 'ok');
+                    } else {
+                        setPanelStatus('⚠️ Firebase Push no confirmó el registro. Revisa el estado del sistema.', 'warn');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    setPanelStatus('❌ Error registrando Push: ' + (error.message || error), 'error');
+                }
+            }
+
+            async function testServiceWorkerNotification() {
+                if (!('serviceWorker' in navigator)) {
+                    setPanelStatus('❌ El navegador no soporta Service Worker.', 'error');
+                    return;
                 }
 
-                if (permission === 'granted') {
-                    new Notification('🎂 CumpleApp - Prueba', {
-                        body: 'Esta es una notificación de prueba.',
-                        icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>'
-                    });
-                } else {
-                    showCustomModal('Permiso requerido', 'Activa las notificaciones del navegador para hacer esta prueba.');
+                await showPanelNotification(
+                    '📲 CumpleApp - Segundo plano',
+                    'Esta prueba usa el Service Worker del dispositivo.',
+                    'panel-service-worker'
+                );
+            }
+
+            async function updateServiceWorkerTest() {
+                if (!('serviceWorker' in navigator)) {
+                    setPanelStatus('❌ El navegador no soporta Service Worker.', 'error');
+                    return;
                 }
+
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration('./');
+
+                    if (!registration) {
+                        await navigator.serviceWorker.register('./sw.js');
+                        await navigator.serviceWorker.ready;
+                        setPanelStatus('✅ Service Worker registrado correctamente.', 'ok');
+                    } else {
+                        await registration.update();
+                        setPanelStatus('✅ Service Worker actualizado correctamente.', 'ok');
+                    }
+
+                    setTimeout(updateSystemStatus, 500);
+                } catch (error) {
+                    console.error(error);
+                    setPanelStatus('❌ Error con Service Worker: ' + (error.message || error), 'error');
+                }
+            }
+
+            function testCakeNotificationFixed() {
+                hide('testSettingsPanel');
+                if (typeof testBirthdayAlert === 'function') {
+                    testBirthdayAlert();
+                }
+            }
+
+            function testMelody() {
+                try {
+                    if (typeof getAudioContext === 'function') getAudioContext();
+
+                    if (typeof playBirthdayMelody === 'function') {
+                        playBirthdayMelody();
+                        setPanelStatus('✅ Melodía de cumpleaños reproduciéndose.', 'ok');
+                    } else {
+                        setPanelStatus('⚠️ No encontré la función de melodía.', 'warn');
+                    }
+                } catch (error) {
+                    setPanelStatus('❌ No se pudo reproducir la melodía.', 'error');
+                }
+            }
+
+            function testInterfaceSound() {
+                try {
+                    if (typeof getAudioContext === 'function') getAudioContext();
+
+                    if (typeof playSuccessSound === 'function') {
+                        playSuccessSound();
+                        setPanelStatus('✅ Sonido de interfaz reproducido.', 'ok');
+                    } else {
+                        setPanelStatus('⚠️ No encontré el sonido de interfaz.', 'warn');
+                    }
+                } catch (error) {
+                    setPanelStatus('❌ No se pudo reproducir el sonido.', 'error');
+                }
+            }
+
+            function testCountdownPreview() {
+                if (panelCountdownTimer) {
+                    clearInterval(panelCountdownTimer);
+                    panelCountdownTimer = null;
+                }
+
+                let seconds = 12;
+
+                const render = () => {
+                    const hh = '00';
+                    const mm = '00';
+                    const ss = String(seconds).padStart(2, '0');
+
+                    setPanelStatus(
+                        `⏳ <strong>Simulación del contador:</strong> ${hh}:${mm}:${ss}<br>` +
+                        `En la app real este contador aparece cuando faltan 12 horas o menos.`,
+                        'info'
+                    );
+
+                    if (seconds <= 0) {
+                        clearInterval(panelCountdownTimer);
+                        panelCountdownTimer = null;
+                        setPanelStatus('✅ Simulación terminada. Al llegar a 00:00:00 el sistema cambia a cumpleaños de hoy.', 'ok');
+                        return;
+                    }
+
+                    seconds--;
+                };
+
+                render();
+                panelCountdownTimer = setInterval(render, 1000);
+            }
+
+            async function testGoogleSync() {
+                if (typeof syncFromGoogleSheets !== 'function') {
+                    setPanelStatus('❌ No encontré la función de sincronización.', 'error');
+                    return;
+                }
+
+                setPanelStatus('⏳ Probando conexión y sincronización con Google Sheets...', 'info');
+
+                try {
+                    await syncFromGoogleSheets(false);
+                    setPanelStatus('✅ Se ejecutó la sincronización con Google Sheets. Revisa los registros cargados.', 'ok');
+                } catch (error) {
+                    console.error(error);
+                    setPanelStatus('❌ Error sincronizando Google Sheets: ' + (error.message || error), 'error');
+                }
+            }
+
+            function testInstall() {
+                hide('testSettingsPanel');
+
+                if (typeof openInstallModal === 'function') {
+                    openInstallModal();
+                } else {
+                    showCustomModal('Instalación', 'No se encontró el asistente de instalación.');
+                }
+            }
+
+            function clearTestMarks() {
+                let removed = 0;
+
+                Object.keys(localStorage).forEach(key => {
+                    if (
+                        key.startsWith('cumpleapp_notice_') ||
+                        key.startsWith('birthday_celebration_shown_')
+                    ) {
+                        localStorage.removeItem(key);
+                        removed++;
+                    }
+                });
+
+                setPanelStatus(
+                    `✅ Pruebas reiniciadas. Se limpiaron ${removed} marcas locales de avisos/celebración. No se borró ningún cumpleaños.`,
+                    'ok'
+                );
             }
 
             const configBtn = document.getElementById('hiddenConfigBtn');
@@ -1675,9 +2159,6 @@
             const enterBtn = document.getElementById('configEnterBtn');
             const codeInput = document.getElementById('configAccessCode');
             const closeBtn = document.getElementById('closeTestSettingsBtn');
-            const cakeBtn = document.getElementById('testCakeBtn');
-            const notificationBtn = document.getElementById('testNotificationBtn');
-            const confettiBtn = document.getElementById('testConfettiBtn');
 
             if (configBtn) {
                 configBtn.addEventListener('click', openCodePanel);
@@ -1694,9 +2175,42 @@
             if (cancelBtn) cancelBtn.addEventListener('click', () => hide('configCodePanel'));
             if (enterBtn) enterBtn.addEventListener('click', validateConfigCode);
             if (closeBtn) closeBtn.addEventListener('click', () => hide('testSettingsPanel'));
+
+            const cakeBtn = document.getElementById('testCakeBtn');
+            const melodyBtn = document.getElementById('testMelodyBtn');
+            const soundBtn = document.getElementById('testSoundBtn');
+            const confettiBtn = document.getElementById('testConfettiBtn');
+            const statusBtn = document.getElementById('testSystemStatusBtn');
+            const pushBtn = document.getElementById('testPushRegisterBtn');
+            const backgroundBtn = document.getElementById('testBackgroundNotificationBtn');
+            const serviceWorkerBtn = document.getElementById('testServiceWorkerBtn');
+            const countdownBtn = document.getElementById('testCountdownBtn');
+            const googleBtn = document.getElementById('testGoogleSyncBtn');
+            const installBtn = document.getElementById('testInstallBtn');
+            const clearBtn = document.getElementById('clearTestMarksBtn');
+            const refreshBtn = document.getElementById('refreshTestPanelBtn');
+
             if (cakeBtn) cakeBtn.addEventListener('click', testCakeNotificationFixed);
-            if (notificationBtn) notificationBtn.addEventListener('click', testBrowserNotificationFixed);
-            if (confettiBtn) confettiBtn.addEventListener('click', triggerPartyConfetti);
+            if (melodyBtn) melodyBtn.addEventListener('click', testMelody);
+            if (soundBtn) soundBtn.addEventListener('click', testInterfaceSound);
+            if (confettiBtn) confettiBtn.addEventListener('click', () => {
+                if (typeof triggerPartyConfetti === 'function') triggerPartyConfetti();
+                setPanelStatus('✅ Confeti ejecutado.', 'ok');
+            });
+
+            if (statusBtn) statusBtn.addEventListener('click', updateSystemStatus);
+            if (pushBtn) pushBtn.addEventListener('click', testPushRegistration);
+            if (backgroundBtn) backgroundBtn.addEventListener('click', testServiceWorkerNotification);
+            if (serviceWorkerBtn) serviceWorkerBtn.addEventListener('click', updateServiceWorkerTest);
+            if (countdownBtn) countdownBtn.addEventListener('click', testCountdownPreview);
+            if (googleBtn) googleBtn.addEventListener('click', testGoogleSync);
+            if (installBtn) installBtn.addEventListener('click', testInstall);
+            if (clearBtn) clearBtn.addEventListener('click', clearTestMarks);
+            if (refreshBtn) refreshBtn.addEventListener('click', updateSystemStatus);
+
+            document.querySelectorAll('[data-reminder-test]').forEach(button => {
+                button.addEventListener('click', () => testReminder(button.dataset.reminderTest));
+            });
 
             if (codeInput) {
                 codeInput.addEventListener('keydown', (event) => {
@@ -1724,6 +2238,7 @@
         } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging.js";
 
         let cumplePushStarted = false;
+        window.cumplePushReady = false;
 
         function firebasePushConfigReady() {
             const cfg = window.CUMPLEAPP_FIREBASE_CONFIG || {};
@@ -1819,9 +2334,11 @@
                 });
 
                 cumplePushStarted = true;
+                window.cumplePushReady = true;
                 console.log('CumpleApp Push: notificaciones en segundo plano activadas.');
                 return true;
             } catch (error) {
+                window.cumplePushReady = false;
                 console.error('CumpleApp Push:', error);
                 return false;
             }
