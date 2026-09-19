@@ -732,7 +732,7 @@
                 triggerPartyConfetti();
                 showCustomModal(
                     '¡Notificaciones Activadas!',
-                    'Recibirás recordatorios 7 días antes, 3 días antes, el día anterior, 12 horas antes y el mismo día.'
+                    'Recibirás recordatorios personalizados 7 días antes, 3 días antes, el día anterior, 12 horas antes, el mismo día y un recordatorio por la noche.'
                 );
 
                 checkAndTriggerAlerts();
@@ -764,10 +764,63 @@
             .slice(0, 80);
         }
 
-        function showBirthdaySystemNotification(birthday, type, title, body) {
+        function getBirthdayNoteSnippet(birthday) {
+            const note = String((birthday && birthday.notes) || '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!note) return '';
+            return note.length > 90 ? note.slice(0, 87) + '...' : note;
+        }
+
+        function getBirthdayPhotoForNotification(birthday) {
+            const photo = String((birthday && birthday.photo) || '').trim();
+            return /^https?:\/\//i.test(photo) ? photo : '';
+        }
+
+        function buildPersonalizedBirthdayNotification(birthday, type) {
+            const name = String((birthday && birthday.name) || 'Cumpleañero/a').trim();
+            const note = getBirthdayNoteSnippet(birthday);
+            const photo = getBirthdayPhotoForNotification(birthday);
+
+            let title = '🎂 CumpleApp';
+            let body = '';
+
+            if (type === '7d') {
+                title = `🎁 En una semana: ${name}`;
+                body = `Faltan 7 días para el cumpleaños de ${name}. Ya puedes ir preparando un detalle especial.`;
+                if (note) body += ` 💡 Recuerda: ${note}`;
+            } else if (type === '3d') {
+                title = `🎈 ¡Se acerca el cumpleaños de ${name}!`;
+                body = `Solo faltan 3 días para celebrar a ${name}. 🥳`;
+                if (note) body += ` 💡 Idea/recordatorio: ${note}`;
+            } else if (type === '1d') {
+                title = `⏰ Mañana es el gran día de ${name}`;
+                body = `Mañana es el cumpleaños de ${name}. Que no se te pase felicitarle. 🎉`;
+                if (note) body += ` 💡 Recuerda: ${note}`;
+            } else if (type === '12h') {
+                title = `✨ ¡Ya casi, ${name}!`;
+                body = `Faltan menos de 12 horas para que comience el cumpleaños de ${name}. 🎂`;
+            } else if (type === 'hoy') {
+                title = `🥳 ¡Feliz cumpleaños, ${name}!`;
+                body = `Hoy celebramos a ${name}. ¡Que sea un día muy especial! 🎂🎉🎁`;
+            } else if (type === 'noche') {
+                title = `🌙 Antes de que termine el día…`;
+                body = `¿Ya felicitaste a ${name}? Todavía estás a tiempo de enviarle un bonito mensaje. 🎂💖`;
+            } else {
+                return null;
+            }
+
+            return { title, body, photo, name, type };
+        }
+
+        async function showBirthdaySystemNotification(birthday, type) {
             if (!('Notification' in window) || Notification.permission !== 'granted') {
                 return false;
             }
+
+            const content = buildPersonalizedBirthdayNotification(birthday, type);
+            if (!content) return false;
 
             const todayKey = getLocalDateKey(new Date());
             const personId = getBirthdayNotificationId(birthday);
@@ -778,20 +831,43 @@
             }
 
             const tag = `cumple-${personId}-${type}-${todayKey}`;
-            const icon = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>';
+            const options = {
+                body: content.body,
+                tag,
+                renotify: false,
+                data: {
+                    url: location.href,
+                    name: content.name,
+                    type: content.type
+                },
+                actions: [
+                    { action: 'open', title: 'Abrir CumpleApp' },
+                    { action: 'view', title: 'Ver cumpleaños' }
+                ]
+            };
+
+            if (content.photo) {
+                options.icon = content.photo;
+                options.image = content.photo;
+            }
 
             try {
-                const notification = new Notification(title, {
-                    body,
-                    icon,
-                    tag,
-                    renotify: false
-                });
+                // Si Firebase Push ya está registrado, el servidor es la fuente principal
+                // para evitar avisos duplicados. La notificación local queda como respaldo.
+                if (window.cumplePushReady === true) {
+                    return false;
+                }
 
-                notification.onclick = function() {
-                    window.focus();
-                    notification.close();
-                };
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.ready;
+                    await registration.showNotification(content.title, options);
+                } else {
+                    const notification = new Notification(content.title, options);
+                    notification.onclick = function() {
+                        window.focus();
+                        notification.close();
+                    };
+                }
 
                 localStorage.setItem(storageKey, '1');
                 return true;
@@ -822,56 +898,33 @@
                 if (!birthday || !birthday.date) return;
 
                 const details = getNextBirthdayDetails(birthday.date);
-                const name = birthday.name || 'una persona';
-                const category = birthday.category ? ` (${birthday.category})` : '';
 
                 if (details.diffDays === 7) {
-                    showBirthdaySystemNotification(
-                        birthday,
-                        '7d',
-                        '🎁 Cumpleaños en una semana',
-                        `Faltan 7 días para el cumpleaños de ${name}${category}.`
-                    );
+                    showBirthdaySystemNotification(birthday, '7d');
                     return;
                 }
 
                 if (details.diffDays === 3) {
-                    showBirthdaySystemNotification(
-                        birthday,
-                        '3d',
-                        '🎈 Cumpleaños en 3 días',
-                        `Faltan 3 días para el cumpleaños de ${name}${category}.`
-                    );
+                    showBirthdaySystemNotification(birthday, '3d');
                     return;
                 }
 
                 if (details.diffDays === 1) {
-                    showBirthdaySystemNotification(
-                        birthday,
-                        '1d',
-                        '⏰ Cumpleaños mañana',
-                        `Mañana cumple años ${name}${category}.`
-                    );
+                    showBirthdaySystemNotification(birthday, '1d');
 
-                    // Aviso adicional durante las últimas 12 horas del día anterior.
                     if (hoursUntilTomorrow > 0 && hoursUntilTomorrow <= 12) {
-                        showBirthdaySystemNotification(
-                            birthday,
-                            '12h',
-                            '⏳ Faltan menos de 12 horas',
-                            `Ya faltan menos de 12 horas para el cumpleaños de ${name}.`
-                        );
+                        showBirthdaySystemNotification(birthday, '12h');
                     }
                     return;
                 }
 
                 if (details.diffDays === 0) {
-                    showBirthdaySystemNotification(
-                        birthday,
-                        'hoy',
-                        '🎂 ¡Es HOY el cumpleaños!',
-                        `¡Hoy está cumpliendo años ${name}${category}! 🎉`
-                    );
+                    showBirthdaySystemNotification(birthday, 'hoy');
+
+                    // Recordatorio amable por la noche, sin usar categoría.
+                    if (now.getHours() >= 19) {
+                        showBirthdaySystemNotification(birthday, 'noche');
+                    }
                 }
             });
         }
@@ -1768,6 +1821,7 @@
                 <button data-reminder-test="1d" type="button" style="border:none;border-radius:13px;padding:11px;background:#f0fdf4;color:#15803d;font-weight:750;cursor:pointer;text-align:left;">⏰ Aviso mañana</button>
                 <button data-reminder-test="12h" type="button" style="border:none;border-radius:13px;padding:11px;background:#faf5ff;color:#7e22ce;font-weight:750;cursor:pointer;text-align:left;">⏳ Aviso 12 horas</button>
                 <button data-reminder-test="hoy" type="button" style="border:none;border-radius:13px;padding:11px;background:#fdf2f8;color:#be185d;font-weight:750;cursor:pointer;text-align:left;">🎂 Aviso cumpleaños hoy</button>
+                <button data-reminder-test="noche" type="button" style="border:none;border-radius:13px;padding:11px;background:#eef2ff;color:#3730a3;font-weight:750;cursor:pointer;text-align:left;">🌙 Aviso por la noche</button>
                 <button id="testCountdownBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#f5f3ff;color:#6d28d9;font-weight:750;cursor:pointer;text-align:left;">⏱️ Simular contador</button>
             </div>
 
@@ -1962,18 +2016,72 @@
                 }
             }
 
+            function getBirthdayForNotificationTest() {
+                if (typeof birthdays === 'undefined' || !Array.isArray(birthdays) || !birthdays.length) {
+                    return {
+                        name: 'Cumpleañero/a',
+                        notes: 'Un detalle que le guste',
+                        photo: ''
+                    };
+                }
+
+                try {
+                    return [...birthdays]
+                        .sort((a, b) =>
+                            getNextBirthdayDetails(a.date).diffDays -
+                            getNextBirthdayDetails(b.date).diffDays
+                        )[0] || birthdays[0];
+                } catch (_) {
+                    return birthdays[0];
+                }
+            }
+
             async function testReminder(type) {
-                const samples = {
-                    '7d': ['🎁 Cumpleaños en una semana', 'Faltan 7 días para el cumpleaños de Cumpleañero/a.'],
-                    '3d': ['🎈 Cumpleaños en 3 días', 'Faltan 3 días para el cumpleaños de Cumpleañero/a.'],
-                    '1d': ['⏰ Cumpleaños mañana', 'Mañana cumple años Cumpleañero/a.'],
-                    '12h': ['⏳ Faltan menos de 12 horas', 'Ya faltan menos de 12 horas para el cumpleaños de Cumpleañero/a.'],
-                    'hoy': ['🎂 ¡Cumpleaños hoy!', 'Hoy cumple años Cumpleañero/a. 🎉']
+                const person = getBirthdayForNotificationTest();
+
+                if (typeof buildPersonalizedBirthdayNotification !== 'function') {
+                    setPanelStatus('❌ No encontré el generador de notificaciones personalizadas.', 'error');
+                    return;
+                }
+
+                const content = buildPersonalizedBirthdayNotification(person, type);
+                if (!content) return;
+
+                const allowed = await ensureTestNotificationPermission();
+                if (!allowed) return;
+
+                const options = {
+                    body: content.body,
+                    tag: 'panel-' + type + '-' + Date.now(),
+                    renotify: false,
+                    data: { url: location.href, name: content.name, type: content.type },
+                    actions: [
+                        { action: 'open', title: 'Abrir CumpleApp' },
+                        { action: 'view', title: 'Ver cumpleaños' }
+                    ]
                 };
 
-                const sample = samples[type];
-                if (!sample) return;
-                await showPanelNotification(sample[0], sample[1], 'panel-' + type);
+                if (content.photo) {
+                    options.icon = content.photo;
+                    options.image = content.photo;
+                }
+
+                try {
+                    if ('serviceWorker' in navigator) {
+                        const registration = await navigator.serviceWorker.ready;
+                        await registration.showNotification(content.title, options);
+                    } else {
+                        new Notification(content.title, options);
+                    }
+
+                    setPanelStatus(
+                        `✅ Aviso personalizado <strong>${type}</strong> enviado usando a <strong>${content.name}</strong>.`,
+                        'ok'
+                    );
+                } catch (error) {
+                    console.error(error);
+                    setPanelStatus('❌ No se pudo mostrar el aviso personalizado.', 'error');
+                }
             }
 
             async function testPushRegistration() {
