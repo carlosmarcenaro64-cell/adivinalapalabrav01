@@ -192,6 +192,278 @@
 @keyframes decorFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-16px) rotate(8deg)}}
 @media(max-width:640px){.birthday-celebration-card{max-height:94vh;border-radius:24px}.birthday-celebration-inner{padding:22px 16px 18px;border-radius:19px}.birthday-photo-wrap{width:118px;height:118px}.birthday-close{right:10px;top:10px;width:38px;height:38px}.birthday-title{font-size:42px}.birthday-message{font-size:15px}.birthday-action{width:100%}}
 
+
+
+        /* ===== BIENVENIDA ESPECIAL DEL CUMPLEAÑERO ===== */
+        .birthday-entry-overlay{
+            position:fixed;
+            inset:0;
+            z-index:120;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:18px;
+            background:
+                radial-gradient(circle at 20% 15%,rgba(255,0,170,.30),transparent 30%),
+                radial-gradient(circle at 80% 20%,rgba(0,229,255,.22),transparent 30%),
+                radial-gradient(circle at 50% 100%,rgba(139,92,246,.28),transparent 42%),
+                rgba(2,6,23,.94);
+            backdrop-filter:blur(12px);
+            opacity:0;
+            visibility:hidden;
+            transition:opacity .4s ease,visibility .4s ease;
+            overflow:hidden;
+        }
+        .birthday-entry-overlay.show{opacity:1;visibility:visible}
+
+        .birthday-entry-card{
+            position:relative;
+            width:min(720px,96vw);
+            min-height:520px;
+            overflow:hidden;
+            border-radius:34px;
+            padding:34px 24px 28px;
+            color:#fff;
+            text-align:center;
+            background:
+                radial-gradient(circle at 50% 5%,rgba(236,72,153,.34),transparent 33%),
+                linear-gradient(145deg,#111827 0%,#111334 45%,#071526 100%);
+            border:3px solid transparent;
+            box-shadow:
+                0 0 0 3px rgba(255,255,255,.06),
+                0 30px 90px rgba(0,0,0,.55),
+                0 0 50px rgba(236,72,153,.30);
+            animation:birthdayEntryCardIn .85s cubic-bezier(.16,1,.3,1);
+        }
+
+        .birthday-entry-card::before{
+            content:"";
+            position:absolute;
+            inset:-4px;
+            border-radius:36px;
+            padding:4px;
+            background:linear-gradient(90deg,#00e5ff,#7c3aed,#ff1493,#ffd600,#00e676,#00e5ff);
+            background-size:300% 300%;
+            animation:birthdayEntryBorder 5s linear infinite;
+            -webkit-mask:
+                linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+            -webkit-mask-composite:xor;
+            mask-composite:exclude;
+            pointer-events:none;
+        }
+
+        .birthday-entry-stars{
+            position:absolute;
+            inset:0;
+            pointer-events:none;
+            overflow:hidden;
+        }
+
+        .birthday-entry-stars span{
+            position:absolute;
+            font-size:clamp(20px,4vw,34px);
+            animation:birthdayEntryFloat 3.2s ease-in-out infinite;
+            filter:drop-shadow(0 0 8px rgba(255,255,255,.25));
+        }
+        .birthday-entry-stars span:nth-child(1){left:7%;top:12%}
+        .birthday-entry-stars span:nth-child(2){right:8%;top:15%;animation-delay:.5s}
+        .birthday-entry-stars span:nth-child(3){left:10%;bottom:17%;animation-delay:1s}
+        .birthday-entry-stars span:nth-child(4){right:9%;bottom:16%;animation-delay:1.5s}
+        .birthday-entry-stars span:nth-child(5){left:22%;top:42%;animation-delay:.8s}
+        .birthday-entry-stars span:nth-child(6){right:20%;top:45%;animation-delay:1.8s}
+
+        .birthday-entry-photo-wrap{
+            position:relative;
+            width:160px;
+            height:160px;
+            margin:6px auto 16px;
+            border-radius:50%;
+            padding:6px;
+            background:linear-gradient(135deg,#ffd600,#ff2dbd,#00e5ff);
+            box-shadow:0 0 24px rgba(255,45,189,.55),0 0 52px rgba(0,229,255,.25);
+            animation:birthdayEntryPhoto 2.8s ease-in-out infinite;
+            z-index:2;
+        }
+
+        .birthday-entry-photo{
+            width:100%;
+            height:100%;
+            border-radius:50%;
+            object-fit:cover;
+            border:4px solid rgba(2,6,23,.9);
+            background:#111827;
+        }
+
+        .birthday-entry-avatar{
+            width:100%;
+            height:100%;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border:4px solid rgba(2,6,23,.9);
+            background:linear-gradient(135deg,#ec4899,#8b5cf6,#06b6d4);
+            color:#fff;
+            font-size:72px;
+            font-weight:1000;
+        }
+
+        .birthday-entry-crown{
+            position:absolute;
+            left:50%;
+            top:-34px;
+            transform:translateX(-50%) rotate(-5deg);
+            font-size:54px;
+            filter:drop-shadow(0 8px 10px rgba(255,214,0,.35));
+            z-index:3;
+            animation:birthdayEntryCrown 1.8s ease-in-out infinite;
+        }
+
+        .birthday-entry-kicker{
+            position:relative;
+            z-index:2;
+            font-size:12px;
+            font-weight:900;
+            text-transform:uppercase;
+            letter-spacing:.20em;
+            color:#f9a8d4;
+            margin-bottom:7px;
+        }
+
+        .birthday-entry-title{
+            position:relative;
+            z-index:2;
+            margin:0;
+            font-size:clamp(38px,7vw,72px);
+            line-height:.98;
+            font-weight:1000;
+            letter-spacing:-2px;
+            background:linear-gradient(180deg,#fff 0%,#fff1a8 28%,#ffd43b 48%,#ff4fc3 76%,#ff00a8 100%);
+            -webkit-background-clip:text;
+            background-clip:text;
+            color:transparent;
+            text-shadow:0 8px 28px rgba(255,0,170,.28);
+        }
+
+        .birthday-entry-name{
+            position:relative;
+            z-index:2;
+            margin:12px 0 8px;
+            font-size:clamp(26px,5vw,44px);
+            font-weight:1000;
+            color:#fff;
+            text-shadow:0 0 24px rgba(255,0,200,.6);
+        }
+
+        .birthday-entry-message{
+            position:relative;
+            z-index:2;
+            max-width:560px;
+            margin:0 auto;
+            color:#e2e8f0;
+            font-size:clamp(14px,2.4vw,18px);
+            line-height:1.55;
+        }
+
+        .birthday-entry-actions{
+            position:relative;
+            z-index:2;
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            gap:10px;
+            margin-top:20px;
+        }
+
+        .birthday-entry-btn{
+            border:0;
+            border-radius:16px;
+            padding:13px 22px;
+            color:#fff;
+            font-size:14px;
+            font-weight:900;
+            cursor:pointer;
+            background:linear-gradient(90deg,#ec4899,#f000b8,#ff3d8d);
+            box-shadow:0 12px 30px rgba(236,72,153,.38);
+            transition:transform .2s ease,box-shadow .2s ease;
+        }
+        .birthday-entry-btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 16px 36px rgba(236,72,153,.50)}
+
+        .birthday-entry-skip{
+            border:1px solid rgba(255,255,255,.16);
+            border-radius:16px;
+            padding:12px 18px;
+            color:#cbd5e1;
+            background:rgba(255,255,255,.06);
+            cursor:pointer;
+            font-weight:800;
+        }
+
+        .birthday-entry-progress{
+            position:relative;
+            z-index:2;
+            width:min(360px,78%);
+            height:5px;
+            margin:18px auto 0;
+            border-radius:999px;
+            background:rgba(255,255,255,.12);
+            overflow:hidden;
+        }
+        .birthday-entry-progress span{
+            display:block;
+            width:100%;
+            height:100%;
+            border-radius:999px;
+            background:linear-gradient(90deg,#00e5ff,#ff2dbd,#ffd600);
+            transform-origin:left;
+            animation:birthdayEntryProgress 6s linear forwards;
+        }
+
+        @keyframes birthdayEntryCardIn{
+            0%{opacity:0;transform:translateY(38px) scale(.80) rotate(-1deg)}
+            72%{opacity:1;transform:translateY(-5px) scale(1.015)}
+            100%{opacity:1;transform:translateY(0) scale(1)}
+        }
+        @keyframes birthdayEntryBorder{
+            0%{background-position:0% 50%}
+            100%{background-position:300% 50%}
+        }
+        @keyframes birthdayEntryFloat{
+            0%,100%{transform:translateY(0) rotate(-5deg)}
+            50%{transform:translateY(-16px) rotate(8deg)}
+        }
+        @keyframes birthdayEntryPhoto{
+            0%,100%{transform:translateY(0) scale(1)}
+            50%{transform:translateY(-8px) scale(1.025)}
+        }
+        @keyframes birthdayEntryCrown{
+            0%,100%{transform:translateX(-50%) rotate(-6deg) translateY(0)}
+            50%{transform:translateX(-50%) rotate(5deg) translateY(-5px)}
+        }
+        @keyframes birthdayEntryProgress{
+            from{transform:scaleX(1)}
+            to{transform:scaleX(0)}
+        }
+
+        @media(max-width:640px){
+            .birthday-entry-card{min-height:500px;padding:30px 16px 24px;border-radius:27px}
+            .birthday-entry-photo-wrap{width:132px;height:132px}
+            .birthday-entry-crown{font-size:44px;top:-28px}
+            .birthday-entry-actions{flex-direction:column}
+            .birthday-entry-btn,.birthday-entry-skip{width:100%}
+        }
+
+        @media(prefers-reduced-motion:reduce){
+            .birthday-entry-card,
+            .birthday-entry-stars span,
+            .birthday-entry-photo-wrap,
+            .birthday-entry-crown,
+            .birthday-entry-progress span{
+                animation:none!important;
+            }
+        }
+
 </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
@@ -365,6 +637,38 @@
     </div>
 
     <!-- Modal Personalizado para Mensajes -->
+
+    <!-- ===== BIENVENIDA ESPECIAL AL CUMPLEAÑERO ===== -->
+    <div id="birthdayEntryOverlay" class="birthday-entry-overlay" aria-hidden="true">
+        <div class="birthday-entry-card" role="dialog" aria-modal="true" aria-labelledby="birthdayEntryTitle">
+            <div class="birthday-entry-stars" aria-hidden="true">
+                <span>🎈</span><span>✨</span><span>🎁</span><span>🎉</span><span>💖</span><span>⭐</span>
+            </div>
+
+            <div id="birthdayEntryPhoto" class="birthday-entry-photo-wrap">
+                <div class="birthday-entry-crown">👑</div>
+            </div>
+
+            <div class="birthday-entry-kicker">🎉 Hoy tenemos algo que celebrar 🎉</div>
+            <h2 id="birthdayEntryTitle" class="birthday-entry-title">¡Feliz Cumpleaños!</h2>
+            <div id="birthdayEntryName" class="birthday-entry-name">Cumpleañero/a</div>
+            <p id="birthdayEntryMessage" class="birthday-entry-message">
+                Que hoy esté lleno de momentos bonitos, sonrisas y muchas razones para celebrar.
+            </p>
+
+            <div class="birthday-entry-actions">
+                <button type="button" class="birthday-entry-btn" onclick="enterBirthdayCelebration()">
+                    🎊 Entrar y celebrar
+                </button>
+                <button type="button" class="birthday-entry-skip" onclick="closeBirthdayEntry(false)">
+                    Entrar a CumpleApp
+                </button>
+            </div>
+
+            <div class="birthday-entry-progress" aria-hidden="true"><span></span></div>
+        </div>
+    </div>
+
     <!-- AVISO DE CUMPLEAÑOS PREMIUM -->
     <div id="birthdayCelebration" class="birthday-celebration-overlay" onclick="if(event.target===this) closeBirthdayCelebration()">
         <div class="birthday-celebration-card" role="dialog" aria-modal="true" aria-labelledby="birthdayCelebrationTitle">
@@ -1595,6 +1899,110 @@
             playTone(1567.98,0.38,'sine',0.035,t+0.42);
         }
 
+        let birthdayEntryTimer = null;
+        let birthdayEntryPerson = null;
+
+        function getTodayBirthdayPeople() {
+            const todayMonthDay = getLocalMonthDay(new Date());
+
+            return (Array.isArray(birthdays) ? birthdays : []).filter(
+                b => String(b.date || '').slice(5,10) === todayMonthDay
+            );
+        }
+
+        function showBirthdayEntry(person) {
+            const overlay = document.getElementById('birthdayEntryOverlay');
+            const photoBox = document.getElementById('birthdayEntryPhoto');
+            const nameBox = document.getElementById('birthdayEntryName');
+            const messageBox = document.getElementById('birthdayEntryMessage');
+
+            if (!overlay || !photoBox || !nameBox || !messageBox || !person) return;
+
+            birthdayEntryPerson = person;
+
+            const todayPeople = getTodayBirthdayPeople();
+            const extraCount = Math.max(0, todayPeople.length - 1);
+
+            nameBox.textContent = person.name || 'Cumpleañero/a';
+
+            messageBox.textContent = extraCount > 0
+                ? `Hoy también celebramos a ${extraCount} persona${extraCount === 1 ? '' : 's'} más. ¡Que sea un día lleno de alegría y momentos especiales!`
+                : 'Que hoy esté lleno de momentos bonitos, sonrisas y muchas razones para celebrar.';
+
+            const name = person.name || 'Cumpleañero/a';
+
+            if (person.photo && /^https?:\/\//i.test(person.photo)) {
+                photoBox.innerHTML = `
+                    <div class="birthday-entry-crown">👑</div>
+                    <img class="birthday-entry-photo"
+                         src="${person.photo}"
+                         alt="${name}"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="birthday-entry-avatar" style="display:none">${(name.charAt(0) || '?').toUpperCase()}</div>
+                `;
+            } else {
+                photoBox.innerHTML = `
+                    <div class="birthday-entry-crown">👑</div>
+                    <div class="birthday-entry-avatar">${(name.charAt(0) || '?').toUpperCase()}</div>
+                `;
+            }
+
+            overlay.classList.add('show');
+            overlay.setAttribute('aria-hidden', 'false');
+
+            // Efecto visual inmediato al entrar.
+            setTimeout(() => {
+                if (typeof triggerPartyConfetti === 'function') triggerPartyConfetti();
+            }, 300);
+
+            // Si el navegador ya permite audio por una interacción anterior, reproduce fanfarria.
+            try {
+                if (audioContext && audioContext.state === 'running' && soundEnabled) {
+                    playBirthdayFanfare();
+                }
+            } catch (_) {}
+
+            if (birthdayEntryTimer) clearTimeout(birthdayEntryTimer);
+
+            // Después de 6 segundos entra automáticamente a la celebración premium.
+            birthdayEntryTimer = setTimeout(() => {
+                enterBirthdayCelebration();
+            }, 6000);
+        }
+
+        function closeBirthdayEntry(openPremium = false) {
+            if (birthdayEntryTimer) {
+                clearTimeout(birthdayEntryTimer);
+                birthdayEntryTimer = null;
+            }
+
+            const overlay = document.getElementById('birthdayEntryOverlay');
+
+            if (overlay) {
+                overlay.classList.remove('show');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+
+            if (openPremium && birthdayEntryPerson) {
+                setTimeout(() => openBirthdayCelebration(birthdayEntryPerson), 320);
+            }
+        }
+
+        function enterBirthdayCelebration() {
+            // El clic permite desbloquear AudioContext en móviles y computadoras.
+            try {
+                getAudioContext();
+                if (soundEnabled) playBirthdayFanfare();
+            } catch (_) {}
+
+            const person = birthdayEntryPerson;
+            closeBirthdayEntry(false);
+
+            if (person) {
+                setTimeout(() => openBirthdayCelebration(person), 320);
+            }
+        }
+
         function checkAndShowBirthdayCelebration() {
             const now = new Date();
             const todayMonthDay = getLocalMonthDay(now);
@@ -1609,11 +2017,13 @@
 
             if (!todayPerson) return;
 
-            const key = 'birthday_celebration_shown_' + localDateKey;
+            const key = 'birthday_entry_shown_' + localDateKey;
+
+            // Se muestra una vez al día al entrar a la app.
             if (localStorage.getItem(key) === '1') return;
 
-            setTimeout(() => openBirthdayCelebration(todayPerson), 900);
-            localStorage.setItem(key,'1');
+            localStorage.setItem(key, '1');
+            setTimeout(() => showBirthdayEntry(todayPerson), 750);
         }
 
         function showCustomModal(title, text) {
@@ -1827,6 +2237,7 @@
 
             <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 7px;">Celebración y sonido</div>
             <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+                <button id="testBirthdayEntryBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#fff1f2;color:#be123c;font-weight:750;cursor:pointer;text-align:left;">🎆 Probar bienvenida cumpleaños</button>
                 <button id="testCakeBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#fdf2f8;color:#be185d;font-weight:750;cursor:pointer;text-align:left;">🎂 Probar pastelito</button>
                 <button id="testMelodyBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#eef2ff;color:#4338ca;font-weight:750;cursor:pointer;text-align:left;">🎵 Probar melodía</button>
                 <button id="testSoundBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#ecfdf5;color:#047857;font-weight:750;cursor:pointer;text-align:left;">🔊 Probar sonido</button>
@@ -2146,6 +2557,42 @@
                 }
             }
 
+
+            function testBirthdayEntryFixed() {
+                hide('testSettingsPanel');
+
+                let person = null;
+
+                if (typeof birthdays !== 'undefined' && Array.isArray(birthdays) && birthdays.length) {
+                    try {
+                        person = [...birthdays].sort((a, b) =>
+                            getNextBirthdayDetails(a.date).diffDays -
+                            getNextBirthdayDetails(b.date).diffDays
+                        )[0] || birthdays[0];
+                    } catch (_) {
+                        person = birthdays[0];
+                    }
+                }
+
+                if (!person) {
+                    person = {
+                        name: 'Cumpleañero/a',
+                        date: '2000-01-01',
+                        notes: '',
+                        photo: ''
+                    };
+                }
+
+                if (typeof showBirthdayEntry === 'function') {
+                    showBirthdayEntry(person);
+                } else {
+                    showCustomModal(
+                        'Aviso',
+                        'No se encontró la animación de bienvenida.'
+                    );
+                }
+            }
+
             function testCakeNotificationFixed() {
                 hide('testSettingsPanel');
                 if (typeof testBirthdayAlert === 'function') {
@@ -2284,6 +2731,7 @@
             if (enterBtn) enterBtn.addEventListener('click', validateConfigCode);
             if (closeBtn) closeBtn.addEventListener('click', () => hide('testSettingsPanel'));
 
+            const birthdayEntryBtn = document.getElementById('testBirthdayEntryBtn');
             const cakeBtn = document.getElementById('testCakeBtn');
             const melodyBtn = document.getElementById('testMelodyBtn');
             const soundBtn = document.getElementById('testSoundBtn');
@@ -2298,6 +2746,7 @@
             const clearBtn = document.getElementById('clearTestMarksBtn');
             const refreshBtn = document.getElementById('refreshTestPanelBtn');
 
+            if (birthdayEntryBtn) birthdayEntryBtn.addEventListener('click', testBirthdayEntryFixed);
             if (cakeBtn) cakeBtn.addEventListener('click', testCakeNotificationFixed);
             if (melodyBtn) melodyBtn.addEventListener('click', testMelody);
             if (soundBtn) soundBtn.addEventListener('click', testInterfaceSound);
