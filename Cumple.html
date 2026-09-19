@@ -1283,6 +1283,9 @@
                 <button onclick="triggerPartyConfetti()" class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 dark:hover:bg-amber-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="¡Lanzar Confeti!">
                     <i class="fa-solid fa-wand-magic-sparkles text-sm transition-transform group-hover:rotate-45 group-hover:scale-125"></i>
                 </button>
+                <button onclick="shareCumpleApp()" id="shareAppBtn" style="display:none;" class="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Compartir CumpleApp">
+                    <i class="fa-solid fa-share-nodes text-sm transition-transform group-hover:scale-125 group-hover:rotate-6"></i>
+                </button>
                 <button onclick="openInstallModal()" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Instalar App">
                     <i class="fa-solid fa-mobile-screen-button text-sm transition-transform group-hover:translate-y-[-2px]"></i>
                 </button>
@@ -1767,6 +1770,88 @@
                     origin: { x: 1, y: 0.7 }
                 });
             }, 250);
+        }
+
+        function updateShareButtonVisibility() {
+            const btn = document.getElementById('shareAppBtn');
+            if (!btn) return;
+
+            // Solo teléfonos: Android o iPhone/iPod.
+            // En PC permanece completamente oculto.
+            const ua = navigator.userAgent || '';
+            const isAndroidPhone =
+                /Android/i.test(ua) && /Mobile/i.test(ua);
+
+            const isIPhone =
+                /iPhone|iPod/i.test(ua);
+
+            const isPhone = isAndroidPhone || isIPhone;
+
+            btn.style.display = isPhone ? 'flex' : 'none';
+        }
+
+        window.addEventListener('load', updateShareButtonVisibility);
+        window.addEventListener('pageshow', updateShareButtonVisibility);
+
+        async function shareCumpleApp() {
+            playClickSound();
+
+            const appUrl = 'https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/Cumple.html';
+            const shareData = {
+                title: 'CumpleApp 🎂',
+                text: 'Te comparto CumpleApp, una app para recordar cumpleaños y fechas especiales. 🎉',
+                url: appUrl
+            };
+
+            // En Android/iPhone abre el menú nativo:
+            // WhatsApp, Messenger, Telegram, correo, copiar, etc.
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                    return;
+                } catch (error) {
+                    // Si el usuario cancela, no mostramos error.
+                    if (error && error.name === 'AbortError') return;
+                    console.warn('Compartir:', error);
+                }
+            }
+
+            // Respaldo para navegadores/equipos sin Web Share.
+            let copied = false;
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(appUrl);
+                    copied = true;
+                }
+            } catch (_) {}
+
+            if (!copied) {
+                try {
+                    const temp = document.createElement('textarea');
+                    temp.value = appUrl;
+                    temp.setAttribute('readonly', '');
+                    temp.style.position = 'fixed';
+                    temp.style.opacity = '0';
+                    document.body.appendChild(temp);
+                    temp.select();
+                    copied = document.execCommand('copy');
+                    temp.remove();
+                } catch (_) {}
+            }
+
+            if (copied) {
+                if (typeof playSuccessSound === 'function') playSuccessSound();
+                showCustomModal(
+                    '🔗 Enlace copiado',
+                    'El enlace de CumpleApp quedó copiado. Ahora puedes pegarlo en WhatsApp, Messenger, correo o donde quieras.'
+                );
+            } else {
+                showCustomModal(
+                    'Compartir CumpleApp',
+                    'Comparte este enlace: ' + appUrl
+                );
+            }
         }
 
         function openInstallModal() {
