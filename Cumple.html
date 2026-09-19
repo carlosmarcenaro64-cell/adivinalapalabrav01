@@ -991,6 +991,258 @@
             }
         }
 
+
+
+        /* ===== ANIMACIONES EXTRA DE LA FICHA DE PERSONA ===== */
+
+        .birthday-profile-inner::after{
+            content:"";
+            position:absolute;
+            top:-60%;
+            left:-38%;
+            width:34%;
+            height:230%;
+            z-index:1;
+            pointer-events:none;
+            background:linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,.10),
+                rgba(255,255,255,.22),
+                rgba(255,255,255,.08),
+                transparent
+            );
+            transform:rotate(18deg) translateX(-160%);
+            animation:profileShineSweep 5.8s ease-in-out infinite;
+        }
+
+        .birthday-profile-photo-shell::before,
+        .birthday-profile-photo-shell::after{
+            content:"";
+            position:absolute;
+            inset:-13px;
+            border-radius:42px;
+            pointer-events:none;
+        }
+
+        .birthday-profile-photo-shell::before{
+            border:2px dashed rgba(255,255,255,.34);
+            animation:profileOrbitRing 9s linear infinite;
+        }
+
+        .birthday-profile-photo-shell::after{
+            inset:-22px;
+            border:1px solid rgba(244,114,182,.20);
+            box-shadow:
+                0 0 18px rgba(236,72,153,.18),
+                inset 0 0 18px rgba(34,211,238,.12);
+            animation:profileHaloPulse 2.6s ease-in-out infinite;
+        }
+
+        .birthday-profile-badge{
+            animation:profileBadgePulse 2.5s ease-in-out infinite;
+        }
+
+        .birthday-profile-name{
+            background:linear-gradient(
+                90deg,
+                #ffffff 0%,
+                #fde68a 20%,
+                #f9a8d4 42%,
+                #c4b5fd 62%,
+                #67e8f9 82%,
+                #ffffff 100%
+            );
+            background-size:240% auto;
+            -webkit-background-clip:text;
+            background-clip:text;
+            color:transparent;
+            animation:profileNameGlow 5s linear infinite;
+        }
+
+        .birthday-profile-countdown{
+            animation:profileCountdownPulse 1.9s ease-in-out infinite;
+        }
+
+        .birthday-profile-overlay.show .birthday-profile-info{
+            opacity:0;
+            transform:translateY(16px) scale(.96);
+            animation:profileInfoIn .48s cubic-bezier(.16,1,.3,1) forwards;
+        }
+
+        .birthday-profile-overlay.show .birthday-profile-info:nth-child(1){animation-delay:.12s}
+        .birthday-profile-overlay.show .birthday-profile-info:nth-child(2){animation-delay:.19s}
+        .birthday-profile-overlay.show .birthday-profile-info:nth-child(3){animation-delay:.26s}
+        .birthday-profile-overlay.show .birthday-profile-info:nth-child(4){animation-delay:.33s}
+        .birthday-profile-overlay.show .birthday-profile-info:nth-child(5){animation-delay:.40s}
+
+        .birthday-profile-info{
+            position:relative;
+            overflow:hidden;
+            transition:
+                transform .22s ease,
+                border-color .22s ease,
+                background .22s ease,
+                box-shadow .22s ease;
+        }
+
+        .birthday-profile-info::after{
+            content:"";
+            position:absolute;
+            inset:0;
+            pointer-events:none;
+            background:linear-gradient(
+                110deg,
+                transparent 0 38%,
+                rgba(255,255,255,.08) 48%,
+                transparent 58% 100%
+            );
+            transform:translateX(-120%);
+            transition:transform .65s ease;
+        }
+
+        .birthday-profile-info:hover{
+            transform:translateY(-3px);
+            border-color:rgba(244,114,182,.25);
+            background:rgba(255,255,255,.09);
+            box-shadow:0 12px 26px rgba(2,6,23,.20);
+        }
+
+        .birthday-profile-info:hover::after{
+            transform:translateX(120%);
+        }
+
+        .birthday-profile-overlay.show .birthday-profile-actions{
+            animation:profileActionsIn .55s .48s cubic-bezier(.16,1,.3,1) both;
+        }
+
+        .birthday-profile-action.primary{
+            position:relative;
+            overflow:hidden;
+            animation:profilePrimaryGlow 2.2s ease-in-out infinite;
+        }
+
+        .birthday-profile-action.primary::after{
+            content:"";
+            position:absolute;
+            top:-80%;
+            left:-35%;
+            width:30%;
+            height:250%;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+            transform:rotate(18deg);
+            animation:profileButtonShine 3.6s ease-in-out infinite;
+            pointer-events:none;
+        }
+
+        .birthday-profile-particle{
+            position:absolute;
+            z-index:4;
+            pointer-events:none;
+            user-select:none;
+            font-size:18px;
+            opacity:0;
+            animation:profileParticleFly var(--particle-duration,1.6s) ease-out forwards;
+        }
+
+        .birthday-card-selectable{
+            transition:
+                transform .22s ease,
+                box-shadow .22s ease,
+                filter .22s ease;
+        }
+
+        .birthday-card-selectable:active{
+            transform:scale(.985)!important;
+            filter:brightness(1.04);
+        }
+
+        @keyframes profileShineSweep{
+            0%,18%{transform:rotate(18deg) translateX(-190%)}
+            42%,100%{transform:rotate(18deg) translateX(520%)}
+        }
+
+        @keyframes profileOrbitRing{
+            from{transform:rotate(0deg)}
+            to{transform:rotate(360deg)}
+        }
+
+        @keyframes profileHaloPulse{
+            0%,100%{transform:scale(.96);opacity:.45}
+            50%{transform:scale(1.05);opacity:1}
+        }
+
+        @keyframes profileBadgePulse{
+            0%,100%{
+                transform:scale(1);
+                box-shadow:0 0 0 rgba(236,72,153,0);
+            }
+            50%{
+                transform:scale(1.035);
+                box-shadow:0 0 22px rgba(236,72,153,.18);
+            }
+        }
+
+        @keyframes profileNameGlow{
+            from{background-position:0% center}
+            to{background-position:240% center}
+        }
+
+        @keyframes profileCountdownPulse{
+            0%,100%{transform:translateY(0);filter:brightness(1)}
+            50%{transform:translateY(-2px);filter:brightness(1.18)}
+        }
+
+        @keyframes profileInfoIn{
+            to{
+                opacity:1;
+                transform:translateY(0) scale(1);
+            }
+        }
+
+        @keyframes profileActionsIn{
+            from{opacity:0;transform:translateY(14px)}
+            to{opacity:1;transform:translateY(0)}
+        }
+
+        @keyframes profilePrimaryGlow{
+            0%,100%{box-shadow:0 10px 28px rgba(236,72,153,.30)}
+            50%{box-shadow:0 12px 36px rgba(236,72,153,.52)}
+        }
+
+        @keyframes profileButtonShine{
+            0%,22%{transform:translateX(-170%) rotate(18deg)}
+            48%,100%{transform:translateX(550%) rotate(18deg)}
+        }
+
+        @keyframes profileParticleFly{
+            0%{
+                opacity:0;
+                transform:translate(0,12px) scale(.45) rotate(0deg);
+            }
+            25%{opacity:1}
+            100%{
+                opacity:0;
+                transform:translate(var(--particle-x,0px),var(--particle-y,-80px)) scale(1.25) rotate(var(--particle-r,90deg));
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce){
+            .birthday-profile-inner::after,
+            .birthday-profile-photo-shell::before,
+            .birthday-profile-photo-shell::after,
+            .birthday-profile-badge,
+            .birthday-profile-name,
+            .birthday-profile-countdown,
+            .birthday-profile-info,
+            .birthday-profile-actions,
+            .birthday-profile-action.primary,
+            .birthday-profile-action.primary::after,
+            .birthday-profile-particle{
+                animation:none!important;
+            }
+        }
+
 </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
@@ -2179,7 +2431,7 @@
             nextBday.setHours(0, 0, 0, 0);
 
             let turnsAge = today.getFullYear() - year;
-            let hasRealYear = year > 2005;
+            let hasRealYear = year >= 1900 && year <= today.getFullYear();
 
             if (nextBday < today) {
                 nextBday.setFullYear(today.getFullYear() + 1);
@@ -2416,11 +2668,42 @@
             ];
 
             const monthName = months[month - 1] || '';
-            const hasRealYear = year > 2005;
+            const hasRealYear = year >= 1900 && year <= new Date().getFullYear();
 
             return hasRealYear
                 ? `${day} de ${monthName} de ${year}`
                 : `${day} de ${monthName}`;
+        }
+
+        function launchBirthdayProfileParticles() {
+            const overlay = document.getElementById('birthdayProfileOverlay');
+            const inner = overlay ? overlay.querySelector('.birthday-profile-inner') : null;
+            if (!inner) return;
+
+            inner.querySelectorAll('.birthday-profile-particle').forEach(el => el.remove());
+
+            const symbols = ['✨','⭐','🎈','🎉','💖','🎁'];
+            const count = window.matchMedia('(max-width: 640px)').matches ? 10 : 16;
+
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    if (!inner || !inner.isConnected) return;
+
+                    const particle = document.createElement('span');
+                    particle.className = 'birthday-profile-particle';
+                    particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+                    particle.style.left = (8 + Math.random() * 84) + '%';
+                    particle.style.top = (58 + Math.random() * 30) + '%';
+                    particle.style.setProperty('--particle-x', (-45 + Math.random() * 90) + 'px');
+                    particle.style.setProperty('--particle-y', (-65 - Math.random() * 90) + 'px');
+                    particle.style.setProperty('--particle-r', (-120 + Math.random() * 240) + 'deg');
+                    particle.style.setProperty('--particle-duration', (1.25 + Math.random() * .9) + 's');
+
+                    inner.appendChild(particle);
+                    setTimeout(() => particle.remove(), 2400);
+                }, i * 55);
+            }
         }
 
         function openBirthdayInfoPopup(index) {
@@ -2488,6 +2771,13 @@
 
             overlay.classList.add('show');
             overlay.setAttribute('aria-hidden', 'false');
+
+            // Animaciones extra de entrada.
+            setTimeout(launchBirthdayProfileParticles, 120);
+
+            try {
+                if (typeof playClickSound === 'function') playClickSound();
+            } catch (_) {}
 
             if (details.diffDays === 0 && typeof triggerPartyConfetti === 'function') {
                 setTimeout(triggerPartyConfetti, 180);
