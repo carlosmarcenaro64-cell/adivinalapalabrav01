@@ -4177,6 +4177,22 @@
                 } catch (_) {}
 
                 const localId = Boolean(getLocalPushInstallationId());
+
+                // Autoreparación: si el teléfono tiene ID local pero el servidor
+                // no lo reconoce, reenviar el registro y comprobar una vez más.
+                if (
+                    localId &&
+                    server &&
+                    !server.installationRegistered &&
+                    typeof window.resyncCumplePushDevice === 'function'
+                ) {
+                    try {
+                        await window.resyncCumplePushDevice();
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        server = await getServerPushDiagnostics();
+                    } catch (_) {}
+                }
+
                 const serverRegistered = Boolean(server && server.installationRegistered);
                 const trigger = server && server.trigger ? server.trigger : {};
                 const trigger5 = Boolean(trigger.exists && trigger.intervalMinutes === 5);
@@ -4428,14 +4444,43 @@
                     return;
                 }
 
-                setPanelStatus('⏳ Registrando este dispositivo en Firebase Push...', 'info');
+                setPanelStatus('⏳ Registrando y sincronizando este teléfono con Firebase y Apps Script...', 'info');
 
                 try {
                     const ok = await window.enableBackgroundPushNotifications();
-                    if (ok) {
-                        setPanelStatus('✅ Firebase Push quedó registrado para este dispositivo.', 'ok');
+
+                    if (!ok) {
+                        setPanelStatus('⚠️ Firebase Push no confirmó el registro. Revisa el estado del dispositivo.', 'warn');
+                        return;
+                    }
+
+                    const id = await waitForLocalPushInstallationId(7000);
+
+                    if (!id) {
+                        setPanelStatus('❌ Firebase no entregó un identificador Push para este teléfono.', 'error');
+                        return;
+                    }
+
+                    if (typeof window.resyncCumplePushDevice === 'function') {
+                        await window.resyncCumplePushDevice();
+                    }
+
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    const server = await getServerPushDiagnostics();
+
+                    if (server && server.installationRegistered) {
+                        setPanelStatus(
+                            '✅ <strong>Teléfono registrado correctamente.</strong><br>' +
+                            'Firebase y Apps Script reconocen este mismo dispositivo. Ya puedes ejecutar el diagnóstico completo.',
+                            'ok'
+                        );
                     } else {
-                        setPanelStatus('⚠️ Firebase Push no confirmó el registro. Revisa el estado del sistema.', 'warn');
+                        setPanelStatus(
+                            '⚠️ El teléfono tiene ID Push local, pero Apps Script todavía no lo ve. ' +
+                            'Pulsa otra vez <strong>Registrar/Revisar Push</strong> con Internet activo y vuelve a comprobar.',
+                            'warn'
+                        );
                     }
                 } catch (error) {
                     console.error(error);
@@ -4849,7 +4894,25 @@
         }
 
         async function enableBackgroundPushNotifications() {
-            if (cumplePushStarted) return true;
+            // En móvil/PWA puede existir un ID local válido aunque el servidor
+            // todavía no tenga ese dispositivo. Cada vez que se revise Push,
+            // volvemos a sincronizarlo para autoreparar ese caso.
+            if (cumplePushStarted) {
+                const storedInstallationId =
+                    localStorage.getItem('cumpleapp_fcm_installation_id') || '';
+
+                if (storedInstallationId) {
+                    try {
+                        await saveInstallationIdToServer(storedInstallationId);
+                    } catch (error) {
+                        console.warn('CumpleApp Push: no se pudo resincronizar el dispositivo.', error);
+                    }
+                }
+
+                window.cumplePushReady = Boolean(storedInstallationId);
+                return true;
+            }
+
             if (!firebasePushConfigReady()) {
                 console.warn('CumpleApp Push: falta configurar firebase-config.js.');
                 return false;
@@ -4901,8 +4964,20 @@
                     serviceWorkerRegistration: swRegistration
                 });
 
+                // Si el SDK ya tenía un registro previo, onRegistered puede no
+                // volver a dispararse inmediatamente. Resincronizamos el ID
+                // que ya existe en localStorage para que el servidor lo tenga.
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const storedInstallationId =
+                    localStorage.getItem('cumpleapp_fcm_installation_id') || '';
+
+                if (storedInstallationId) {
+                    await saveInstallationIdToServer(storedInstallationId);
+                }
+
                 cumplePushStarted = true;
-                window.cumplePushReady = true;
+                window.cumplePushReady = Boolean(storedInstallationId);
                 console.log('CumpleApp Push: notificaciones en segundo plano activadas.');
                 return true;
             } catch (error) {
@@ -4911,6 +4986,19 @@
                 return false;
             }
         }
+
+        window.resyncCumplePushDevice = async function() {
+            const id = localStorage.getItem('cumpleapp_fcm_installation_id') || '';
+            if (!id) return false;
+
+            try {
+                await saveInstallationIdToServer(id);
+                return true;
+            } catch (error) {
+                console.warn('CumpleApp Push: resincronización falló.', error);
+                return false;
+            }
+        };
 
         window.enableBackgroundPushNotifications = enableBackgroundPushNotifications;
         window.checkFirebaseMessagingSupport = async function() {
@@ -5233,6 +5321,50 @@
             document.addEventListener('visibilitychange', function () {
                 if (!document.hidden && isMobileDevice()) {
                     setTimeout(updateMobileSetupStatus, 500);
+                }
+            });
+        })();
+    </script>
+
+
+    <script>
+        (function () {
+            async function autoResyncPushDevice() {
+                if (!navigator.onLine) return;
+                if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+                const id = localStorage.getItem('cumpleapp_fcm_installation_id') || '';
+                if (!id) return;
+
+                const last = Number(localStorage.getItem('cumpleapp_push_last_server_sync') || 0);
+                const sixHours = 6 * 60 * 60 * 1000;
+
+                if (Date.now() - last < sixHours) return;
+
+                try {
+                    if (typeof window.resyncCumplePushDevice === 'function') {
+                        const ok = await window.resyncCumplePushDevice();
+                        if (ok) {
+                            localStorage.setItem(
+                                'cumpleapp_push_last_server_sync',
+                                String(Date.now())
+                            );
+                        }
+                    }
+                } catch (_) {}
+            }
+
+            window.addEventListener('load', function () {
+                setTimeout(autoResyncPushDevice, 1800);
+            });
+
+            window.addEventListener('pageshow', function () {
+                setTimeout(autoResyncPushDevice, 1000);
+            });
+
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden) {
+                    setTimeout(autoResyncPushDevice, 800);
                 }
             });
         })();
