@@ -12,6 +12,12 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CumpleApp">
+    <meta name="application-name" content="CumpleApp">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-TileColor" content="#ec4899">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts Inter -->
@@ -1586,28 +1592,67 @@
                 </button>
             </div>
 
+            <div id="installDetectedBrowser"
+                 class="mb-4 px-3.5 py-3 rounded-2xl bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-100 dark:border-cyan-900/50 text-xs text-cyan-700 dark:text-cyan-300 font-semibold">
+                Detectando tu navegador...
+            </div>
+
             <div class="space-y-3 mb-6">
-                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/80">
+                <div id="installIosInstructions" class="hidden p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/80">
                     <div class="flex items-center space-x-2.5 mb-1.5 text-slate-800 dark:text-white font-semibold text-sm">
                         <i class="fa-brands fa-apple text-lg text-slate-700 dark:text-slate-300"></i>
-                        <span>Para iPhone / iPad (Safari):</span>
+                        <span>iPhone / iPad</span>
                     </div>
                     <ol class="text-xs text-slate-500 dark:text-slate-400 space-y-1 pl-6 list-decimal">
-                        <li>Toca el botón <strong>Compartir</strong> <i class="fa-solid fa-arrow-up-from-bracket inline text-blue-500"></i> en la barra inferior.</li>
-                        <li>Selecciona <strong>"Agregar a Inicio"</strong> <i class="fa-solid fa-square-plus inline text-slate-700 dark:text-slate-300"></i>.</li>
-                        <li>Confirma tocando <strong>Agregar</strong>.</li>
+                        <li>Toca <strong>Compartir</strong> <i class="fa-solid fa-arrow-up-from-bracket inline text-blue-500"></i>.</li>
+                        <li>Busca <strong>Agregar a pantalla de inicio</strong>.</li>
+                        <li>Toca <strong>Agregar</strong> y luego abre CumpleApp desde el nuevo icono.</li>
+                        <li>Ya dentro de la app, activa las <strong>notificaciones</strong>.</li>
+                    </ol>
+                    <p class="text-[11px] text-slate-400 mt-2">
+                        Funciona desde Safari y navegadores modernos de iPhone/iPad que muestran “Agregar a pantalla de inicio” en Compartir. Si no aparece, abre la página en Safari.
+                    </p>
+                </div>
+
+                <div id="installChromeInstructions" class="hidden p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/80">
+                    <div class="flex items-center space-x-2.5 mb-1.5 text-slate-800 dark:text-white font-semibold text-sm">
+                        <i class="fa-brands fa-chrome text-lg text-blue-500"></i>
+                        <span>Android · Google Chrome</span>
+                    </div>
+                    <ol class="text-xs text-slate-500 dark:text-slate-400 space-y-1 pl-6 list-decimal">
+                        <li>Si aparece <strong>Instalar ahora</strong>, úsalo.</li>
+                        <li>Si no aparece: menú <strong>⋮</strong> de Chrome.</li>
+                        <li>Selecciona <strong>Instalar aplicación</strong> o <strong>Agregar a pantalla de inicio</strong>.</li>
                     </ol>
                 </div>
 
-                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/80">
+                <div id="installSamsungInstructions" class="hidden p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/80">
                     <div class="flex items-center space-x-2.5 mb-1.5 text-slate-800 dark:text-white font-semibold text-sm">
-                        <i class="fa-brands fa-android text-lg text-emerald-500"></i>
-                        <span>Para Android (Chrome):</span>
+                        <i class="fa-solid fa-mobile-screen text-lg text-violet-500"></i>
+                        <span>Android · Samsung Internet</span>
                     </div>
                     <ol class="text-xs text-slate-500 dark:text-slate-400 space-y-1 pl-6 list-decimal">
-                        <li>Toca el menú de los 3 puntos <i class="fa-solid fa-ellipsis-vertical inline"></i>.</li>
-                        <li>Selecciona <strong>"Instalar aplicación"</strong>.</li>
+                        <li>Busca el icono de <strong>instalar</strong> en la barra del navegador.</li>
+                        <li>También puedes abrir el menú <strong>☰</strong> y elegir <strong>Agregar página a</strong>.</li>
+                        <li>Selecciona <strong>Pantalla de inicio / Apps</strong> y confirma.</li>
                     </ol>
+                </div>
+
+                <div id="installAndroidGenericInstructions" class="hidden p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/80">
+                    <div class="flex items-center space-x-2.5 mb-1.5 text-slate-800 dark:text-white font-semibold text-sm">
+                        <i class="fa-brands fa-android text-lg text-emerald-500"></i>
+                        <span>Android</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        Abre el menú de tu navegador y busca <strong>Instalar aplicación</strong>,
+                        <strong>Agregar a pantalla de inicio</strong> o una opción similar.
+                    </p>
+                </div>
+
+                <div id="installAlreadyInstalled" class="hidden p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 text-center">
+                    <div class="text-2xl mb-1">✅</div>
+                    <div class="text-sm font-bold text-emerald-700 dark:text-emerald-300">CumpleApp ya está abierta como aplicación</div>
+                    <div class="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-1">Ya puedes activar las notificaciones.</div>
                 </div>
             </div>
 
@@ -1726,24 +1771,132 @@
             if (btn) btn.title = soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
         }
 
+        function getCumpleBrowserInfo() {
+            const ua = navigator.userAgent || '';
+            const isIPadDesktopUA =
+                /Macintosh/i.test(ua) &&
+                navigator.maxTouchPoints &&
+                navigator.maxTouchPoints > 1;
+
+            const isIOS = /iPhone|iPad|iPod/i.test(ua) || isIPadDesktopUA;
+            const isAndroid = /Android/i.test(ua);
+            const isSamsung = /SamsungBrowser/i.test(ua);
+            const isChrome =
+                /Chrome|CriOS/i.test(ua) &&
+                !isSamsung &&
+                !/EdgA|OPR|Opera/i.test(ua);
+
+            const isStandalone =
+                window.matchMedia('(display-mode: standalone)').matches ||
+                window.navigator.standalone === true;
+
+            let browser = 'Navegador';
+            if (isIOS && /CriOS/i.test(ua)) browser = 'Chrome en iPhone/iPad';
+            else if (isIOS) browser = 'Safari en iPhone/iPad';
+            else if (isSamsung) browser = 'Samsung Internet';
+            else if (isAndroid && isChrome) browser = 'Google Chrome';
+            else if (isAndroid) browser = 'Navegador Android';
+
+            return {
+                ua,
+                isIOS,
+                isAndroid,
+                isSamsung,
+                isChrome,
+                isStandalone,
+                browser
+            };
+        }
+
+        function updateInstallHelpUI() {
+            const info = getCumpleBrowserInfo();
+
+            const detected = document.getElementById('installDetectedBrowser');
+            const nativeSection = document.getElementById('nativeInstallSection');
+            const ios = document.getElementById('installIosInstructions');
+            const chrome = document.getElementById('installChromeInstructions');
+            const samsung = document.getElementById('installSamsungInstructions');
+            const generic = document.getElementById('installAndroidGenericInstructions');
+            const installed = document.getElementById('installAlreadyInstalled');
+
+            [ios, chrome, samsung, generic, installed].forEach(el => {
+                if (el) el.classList.add('hidden');
+            });
+
+            if (detected) {
+                detected.innerHTML =
+                    info.isStandalone
+                        ? '📱 <strong>CumpleApp está en modo aplicación.</strong>'
+                        : `🌐 Navegador detectado: <strong>${info.browser}</strong>`;
+            }
+
+            if (nativeSection) {
+                if (!info.isStandalone && deferredPrompt && !info.isIOS) {
+                    nativeSection.classList.remove('hidden');
+                } else {
+                    nativeSection.classList.add('hidden');
+                }
+            }
+
+            if (info.isStandalone) {
+                if (installed) installed.classList.remove('hidden');
+                return;
+            }
+
+            if (info.isIOS) {
+                if (ios) ios.classList.remove('hidden');
+                return;
+            }
+
+            if (info.isSamsung) {
+                if (samsung) samsung.classList.remove('hidden');
+                return;
+            }
+
+            if (info.isAndroid && info.isChrome) {
+                if (chrome) chrome.classList.remove('hidden');
+                return;
+            }
+
+            if (info.isAndroid && generic) {
+                generic.classList.remove('hidden');
+            }
+        }
+
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            const nativeSection = document.getElementById('nativeInstallSection');
-            if (nativeSection) nativeSection.classList.remove('hidden');
+            updateInstallHelpUI();
         });
 
         window.addEventListener('appinstalled', () => {
             deferredPrompt = null;
             playInstallSound();
-            const nativeSection = document.getElementById('nativeInstallSection');
-            if (nativeSection) nativeSection.classList.add('hidden');
+            updateInstallHelpUI();
+
+            if (typeof triggerPartyConfetti === 'function') {
+                triggerPartyConfetti();
+            }
+
+            if (typeof showCustomModal === 'function') {
+                showCustomModal(
+                    '🎉 CumpleApp instalada',
+                    'Ya puedes abrir CumpleApp desde tu pantalla de inicio como una aplicación.'
+                );
+            }
         });
 
-        // Registra el Service Worker necesario para que CumpleApp sea una PWA instalable.
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service Worker:', err));
+        // Registra y actualiza el Service Worker con un scope explícito.
+        if ('serviceWorker' in navigator && window.isSecureContext) {
+            window.addEventListener('load', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('./sw.js', {
+                        scope: './'
+                    });
+                    registration.update().catch(() => {});
+                } catch (err) {
+                    console.warn('Service Worker:', err);
+                }
             });
         }
 
@@ -1856,14 +2009,20 @@
 
         function openInstallModal() {
             playClickSound();
-            // En Android/Chrome y navegadores compatibles, el botón abre directamente
-            // el aviso nativo de instalación. El usuario debe confirmar la instalación.
-            if (deferredPrompt) {
+
+            const info = getCumpleBrowserInfo();
+
+            // Chrome/Samsung/Android compatibles: intentar primero el diálogo nativo.
+            if (!info.isIOS && !info.isStandalone && deferredPrompt) {
                 triggerNativeInstall();
                 return;
             }
+
             const modal = document.getElementById('installModal');
             modal.classList.remove('hidden');
+
+            updateInstallHelpUI();
+
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 document.getElementById('installModalContent').classList.remove('scale-90');
@@ -1878,19 +2037,47 @@
         }
 
         async function triggerNativeInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    playInstallSound();
-                    showCustomModal('¡Gracias!', 'La aplicación se está instalando en tu dispositivo.');
-                    triggerPartyConfetti();
+            const info = getCumpleBrowserInfo();
+
+            if (info.isStandalone) {
+                showCustomModal('✅ Ya está instalada', 'CumpleApp ya está abierta como aplicación.');
+                return;
+            }
+
+            if (deferredPrompt && !info.isIOS) {
+                try {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+
+                    if (outcome === 'accepted') {
+                        playInstallSound();
+                        showCustomModal(
+                            '📲 Instalando CumpleApp',
+                            'Confirma la instalación y luego podrás abrirla desde tu pantalla de inicio.'
+                        );
+                    }
+
+                    deferredPrompt = null;
+                    updateInstallHelpUI();
+                    closeInstallModal();
+                    return;
+                } catch (error) {
+                    console.warn('Instalación nativa:', error);
+                    deferredPrompt = null;
                 }
-                deferredPrompt = null;
-                document.getElementById('nativeInstallSection').classList.add('hidden');
-                closeInstallModal();
-            } else {
-                showCustomModal('Aviso', 'Sigue las instrucciones detalladas abajo para tu dispositivo.');
+            }
+
+            // iOS y navegadores que no exponen beforeinstallprompt:
+            // mostrar instrucciones específicas del navegador.
+            const modal = document.getElementById('installModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                updateInstallHelpUI();
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    const content = document.getElementById('installModalContent');
+                    if (content) content.classList.remove('scale-90');
+                }, 10);
             }
         }
 
@@ -4398,9 +4585,13 @@
                 </div>
             </div>
 
-            <p style="font-size:13px;line-height:1.5;color:#64748b;margin:12px 0 16px;">
+            <p style="font-size:13px;line-height:1.5;color:#64748b;margin:12px 0 8px;">
                 Solo necesitas completar los pasos que aparezcan pendientes.
             </p>
+            <div id="mobileSetupBrowserInfo"
+                 style="font-size:11px;line-height:1.4;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;margin-bottom:14px;">
+                Detectando navegador...
+            </div>
 
             <div id="mobileSetupInstallRow"
                  style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid #e2e8f0;border-radius:16px;margin-bottom:10px;">
@@ -4451,33 +4642,91 @@
     <script>
         (function () {
             function isMobileDevice() {
-                return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+                const info = getCumpleBrowserInfo();
+                return info.isAndroid || info.isIOS;
             }
 
             function isInstalledAsApp() {
-                return window.matchMedia('(display-mode: standalone)').matches ||
-                       window.navigator.standalone === true;
+                return getCumpleBrowserInfo().isStandalone;
             }
 
             function notificationsAreActive() {
                 return ('Notification' in window) && Notification.permission === 'granted';
             }
 
+            function getInstallInstructionText(info) {
+                if (info.isStandalone) return '✅ CumpleApp ya está instalada.';
+
+                if (info.isIOS) {
+                    return '🍎 iPhone/iPad: toca Compartir → Agregar a pantalla de inicio.';
+                }
+
+                if (info.isSamsung) {
+                    return '📱 Samsung Internet: usa el icono Instalar o Menú ☰ → Agregar página a → Pantalla de inicio.';
+                }
+
+                if (info.isChrome && info.isAndroid) {
+                    return deferredPrompt
+                        ? '🌐 Chrome: instalación directa disponible.'
+                        : '🌐 Chrome: menú ⋮ → Instalar aplicación / Agregar a pantalla de inicio.';
+                }
+
+                return '📲 Abre el menú del navegador y busca Instalar aplicación o Agregar a pantalla de inicio.';
+            }
+
             function updateMobileSetupStatus() {
                 if (!isMobileDevice()) return;
 
+                const info = getCumpleBrowserInfo();
                 const overlay = document.getElementById('mobileSetupOverlay');
                 const installRow = document.getElementById('mobileSetupInstallRow');
+                const installText = document.getElementById('mobileSetupInstallText');
+                const installBtn = document.getElementById('mobileSetupInstallBtn');
                 const notifRow = document.getElementById('mobileSetupNotifRow');
+                const notifText = document.getElementById('mobileSetupNotifText');
+                const notifBtn = document.getElementById('mobileSetupNotifBtn');
                 const ready = document.getElementById('mobileSetupReady');
+                const browserInfo = document.getElementById('mobileSetupBrowserInfo');
 
                 if (!overlay || !installRow || !notifRow || !ready) return;
 
-                const installed = isInstalledAsApp();
+                const installed = info.isStandalone;
                 const notificationsActive = notificationsAreActive();
 
+                if (browserInfo) {
+                    browserInfo.innerHTML =
+                        `Navegador: <strong>${info.browser}</strong>` +
+                        (installed ? ' · <strong>modo app</strong>' : '');
+                }
+
+                if (installText) {
+                    installText.textContent = getInstallInstructionText(info);
+                }
+
+                if (installBtn) {
+                    installBtn.textContent =
+                        (!info.isIOS && deferredPrompt) ? 'Instalar ahora' : 'Ver pasos';
+                }
+
                 installRow.style.display = installed ? 'none' : 'flex';
+
+                // En iPhone/iPad el Web Push debe activarse desde la app de pantalla de inicio.
+                const iosNeedsInstallFirst = info.isIOS && !installed;
+
                 notifRow.style.display = notificationsActive ? 'none' : 'flex';
+
+                if (notifBtn) {
+                    notifBtn.disabled = iosNeedsInstallFirst;
+                    notifBtn.style.opacity = iosNeedsInstallFirst ? '.55' : '1';
+                    notifBtn.style.cursor = iosNeedsInstallFirst ? 'not-allowed' : 'pointer';
+                    notifBtn.textContent = iosNeedsInstallFirst ? 'Instala primero' : 'Activar';
+                }
+
+                if (notifText) {
+                    notifText.textContent = iosNeedsInstallFirst
+                        ? 'En iPhone/iPad instala CumpleApp primero; luego abre el icono y activa las notificaciones.'
+                        : 'Recibe avisos de cumpleaños aunque cierres CumpleApp.';
+                }
 
                 if (installed && notificationsActive) {
                     ready.style.display = 'block';
@@ -4491,37 +4740,44 @@
             }
 
             async function installFromSetup() {
-                const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+                const info = getCumpleBrowserInfo();
 
-                // Android/Chrome: usa el aviso nativo si ya está disponible.
-                if (typeof deferredPrompt !== 'undefined' && deferredPrompt) {
+                // Chrome/Samsung/Android con prompt nativo.
+                if (!info.isIOS && deferredPrompt) {
                     try {
                         deferredPrompt.prompt();
                         const choice = await deferredPrompt.userChoice;
+
                         if (choice && choice.outcome === 'accepted') {
                             deferredPrompt = null;
-                            setTimeout(updateMobileSetupStatus, 1200);
                         }
+
+                        setTimeout(updateMobileSetupStatus, 1200);
                         return;
                     } catch (e) {
                         console.warn('Instalación:', e);
                     }
                 }
 
-                // iPhone o navegadores sin beforeinstallprompt:
-                // reutiliza el modal de instalación que CumpleApp ya tenía.
-                if (typeof openInstallModal === 'function') {
-                    document.getElementById('mobileSetupOverlay').style.display = 'none';
-                    openInstallModal();
-                    return;
-                }
+                // iOS, Samsung sin prompt o cualquier navegador sin instalación directa.
+                const overlay = document.getElementById('mobileSetupOverlay');
+                if (overlay) overlay.style.display = 'none';
 
-                if (isIOS) {
-                    alert('En iPhone: toca Compartir y luego "Agregar a pantalla de inicio".');
+                if (typeof openInstallModal === 'function') {
+                    openInstallModal();
                 }
             }
 
             async function enableNotificationsFromSetup() {
+                const info = getCumpleBrowserInfo();
+
+                if (info.isIOS && !info.isStandalone) {
+                    const overlay = document.getElementById('mobileSetupOverlay');
+                    if (overlay) overlay.style.display = 'none';
+                    openInstallModal();
+                    return;
+                }
+
                 try {
                     if (typeof requestNotificationPermission === 'function') {
                         await requestNotificationPermission();
@@ -4529,8 +4785,11 @@
                         await Notification.requestPermission();
                     }
 
-                    if (Notification.permission === 'granted' &&
-                        typeof window.enableBackgroundPushNotifications === 'function') {
+                    if (
+                        'Notification' in window &&
+                        Notification.permission === 'granted' &&
+                        typeof window.enableBackgroundPushNotifications === 'function'
+                    ) {
                         await window.enableBackgroundPushNotifications();
                     }
 
@@ -4550,17 +4809,30 @@
 
                 if (installBtn) installBtn.addEventListener('click', installFromSetup);
                 if (notifBtn) notifBtn.addEventListener('click', enableNotificationsFromSetup);
-                if (laterBtn) laterBtn.addEventListener('click', function () {
-                    const overlay = document.getElementById('mobileSetupOverlay');
-                    if (overlay) overlay.style.display = 'none';
-                });
 
-                // Espera un poco para que Chrome tenga tiempo de disparar beforeinstallprompt.
-                setTimeout(updateMobileSetupStatus, 1400);
+                if (laterBtn) {
+                    laterBtn.addEventListener('click', function () {
+                        const overlay = document.getElementById('mobileSetupOverlay');
+                        if (overlay) overlay.style.display = 'none';
+                    });
+                }
+
+                // Da tiempo a Chrome/Samsung para disparar beforeinstallprompt.
+                setTimeout(updateMobileSetupStatus, 1500);
+            });
+
+            window.addEventListener('beforeinstallprompt', function () {
+                setTimeout(updateMobileSetupStatus, 80);
             });
 
             window.addEventListener('appinstalled', function () {
                 setTimeout(updateMobileSetupStatus, 500);
+            });
+
+            window.addEventListener('pageshow', function () {
+                if (isMobileDevice()) {
+                    setTimeout(updateMobileSetupStatus, 450);
+                }
             });
 
             document.addEventListener('visibilitychange', function () {

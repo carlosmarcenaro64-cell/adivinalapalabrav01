@@ -1,11 +1,8 @@
 // CumpleApp Service Worker + Firebase Cloud Messaging
-// Notificaciones personalizadas con la web cerrada.
+// Permite recibir notificaciones incluso con la página cerrada.
 
 self.addEventListener('notificationclick', function(event) {
-  const action = event.action || 'open';
   event.notification.close();
-
-  if (action === 'dismiss') return;
 
   const targetUrl =
     (event.notification.data && event.notification.data.url) ||
@@ -15,16 +12,11 @@ self.addEventListener('notificationclick', function(event) {
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
       for (const client of windowClients) {
         if ('focus' in client) {
-          try {
-            client.navigate(targetUrl);
-          } catch (_) {}
+          client.navigate(targetUrl).catch(function(){});
           return client.focus();
         }
       }
-
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
+      if (clients.openWindow) return clients.openWindow(targetUrl);
     })
   );
 });
@@ -45,41 +37,26 @@ if (
 
   const messaging = firebase.messaging();
 
+  // El servidor manda mensajes "data-only".
+  // Así evitamos notificaciones duplicadas y controlamos el aspecto aquí.
   messaging.onBackgroundMessage(function(payload) {
     const data = payload && payload.data ? payload.data : {};
 
     const title = data.title || '🎂 CumpleApp';
-    const photo =
-      data.photo && /^https?:\/\//i.test(data.photo)
-        ? data.photo
-        : '';
-
     const options = {
       body: data.body || 'Tienes un recordatorio de cumpleaños.',
       tag: data.tag || 'cumpleapp-push',
-      renotify: false,
+      renotify: true,
       data: {
-        url: data.link || './Cumple.html',
-        name: data.name || '',
-        type: data.type || ''
-      },
-      actions: [
-        { action: 'open', title: 'Abrir CumpleApp' },
-        { action: 'view', title: 'Ver cumpleaños' }
-      ],
-      vibrate: [180, 90, 180]
+        url: data.link || './Cumple.html'
+      }
     };
-
-    // Cuando el navegador lo admite, usa la foto real del cumpleañero.
-    if (photo) {
-      options.icon = photo;
-      options.image = photo;
-    }
 
     return self.registration.showNotification(title, options);
   });
 }
 
+// Service worker básico para que siga siendo compatible con el registro existente.
 self.addEventListener('install', function() {
   self.skipWaiting();
 });
