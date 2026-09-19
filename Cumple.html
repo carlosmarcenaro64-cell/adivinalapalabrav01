@@ -464,9 +464,541 @@
             }
         }
 
+
+
+        /* ===== NOTIFICACIONES POP-UP DENTRO DE CUMPLEAPP ===== */
+        #birthdayInAppPopupHost{
+            position:fixed;
+            top:78px;
+            right:18px;
+            z-index:115;
+            width:min(410px,calc(100vw - 28px));
+            pointer-events:none;
+        }
+
+        .birthday-inapp-popup{
+            --popup-accent:#ec4899;
+            position:relative;
+            overflow:hidden;
+            display:grid;
+            grid-template-columns:auto 1fr auto;
+            gap:12px;
+            align-items:center;
+            width:100%;
+            padding:14px 14px 12px;
+            border-radius:22px;
+            color:#f8fafc;
+            background:
+                radial-gradient(circle at 95% 0%,rgba(255,255,255,.12),transparent 30%),
+                linear-gradient(145deg,rgba(15,23,42,.98),rgba(30,41,59,.98));
+            border:1px solid rgba(255,255,255,.12);
+            box-shadow:
+                0 18px 55px rgba(2,6,23,.36),
+                0 0 28px color-mix(in srgb,var(--popup-accent) 22%,transparent);
+            backdrop-filter:blur(16px);
+            pointer-events:auto;
+            opacity:0;
+            transform:translateX(34px) scale(.94);
+            animation:inAppPopupIn .48s cubic-bezier(.16,1,.3,1) forwards;
+        }
+
+        .birthday-inapp-popup.leaving{
+            animation:inAppPopupOut .34s ease forwards;
+        }
+
+        .birthday-inapp-photo{
+            width:58px;
+            height:58px;
+            border-radius:17px;
+            object-fit:cover;
+            border:2px solid rgba(255,255,255,.78);
+            box-shadow:0 0 0 3px color-mix(in srgb,var(--popup-accent) 32%,transparent);
+            background:#0f172a;
+        }
+
+        .birthday-inapp-icon{
+            width:58px;
+            height:58px;
+            border-radius:17px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:28px;
+            background:color-mix(in srgb,var(--popup-accent) 24%,#111827);
+            border:1px solid color-mix(in srgb,var(--popup-accent) 45%,transparent);
+            box-shadow:inset 0 0 24px rgba(255,255,255,.05);
+            animation:inAppIconFloat 2.3s ease-in-out infinite;
+        }
+
+        .birthday-inapp-content{
+            min-width:0;
+        }
+
+        .birthday-inapp-eyebrow{
+            font-size:10px;
+            line-height:1.2;
+            font-weight:900;
+            letter-spacing:.12em;
+            text-transform:uppercase;
+            color:#cbd5e1;
+            margin-bottom:4px;
+        }
+
+        .birthday-inapp-title{
+            margin:0;
+            font-size:14px;
+            line-height:1.25;
+            font-weight:900;
+            color:#fff;
+            overflow-wrap:anywhere;
+        }
+
+        .birthday-inapp-body{
+            margin:5px 0 0;
+            font-size:12px;
+            line-height:1.45;
+            color:#cbd5e1;
+            overflow-wrap:anywhere;
+        }
+
+        .birthday-inapp-close{
+            align-self:start;
+            width:30px;
+            height:30px;
+            border:0;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#cbd5e1;
+            background:rgba(255,255,255,.08);
+            cursor:pointer;
+            transition:.2s;
+        }
+        .birthday-inapp-close:hover{
+            color:#fff;
+            background:rgba(255,255,255,.16);
+            transform:rotate(90deg);
+        }
+
+        .birthday-inapp-actions{
+            grid-column:2 / 4;
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            margin-top:2px;
+        }
+
+        .birthday-inapp-action{
+            border:0;
+            border-radius:11px;
+            padding:8px 11px;
+            font-size:11px;
+            font-weight:900;
+            cursor:pointer;
+            transition:transform .18s ease,filter .18s ease;
+        }
+        .birthday-inapp-action.primary{
+            color:#fff;
+            background:var(--popup-accent);
+        }
+        .birthday-inapp-action.secondary{
+            color:#e2e8f0;
+            background:rgba(255,255,255,.09);
+            border:1px solid rgba(255,255,255,.10);
+        }
+        .birthday-inapp-action:hover{
+            transform:translateY(-1px);
+            filter:brightness(1.08);
+        }
+
+        .birthday-inapp-progress{
+            position:absolute;
+            left:0;
+            bottom:0;
+            width:100%;
+            height:4px;
+            background:rgba(255,255,255,.08);
+        }
+        .birthday-inapp-progress span{
+            display:block;
+            width:100%;
+            height:100%;
+            transform-origin:left center;
+            background:linear-gradient(90deg,var(--popup-accent),#fff59d);
+            animation:inAppPopupProgress 8s linear forwards;
+        }
+
+        .birthday-inapp-sparkle{
+            position:absolute;
+            pointer-events:none;
+            font-size:14px;
+            opacity:0;
+            animation:inAppSparkle 1.25s ease-out forwards;
+        }
+
+        @keyframes inAppPopupIn{
+            from{opacity:0;transform:translateX(34px) scale(.94)}
+            to{opacity:1;transform:translateX(0) scale(1)}
+        }
+        @keyframes inAppPopupOut{
+            from{opacity:1;transform:translateX(0) scale(1)}
+            to{opacity:0;transform:translateX(30px) scale(.96)}
+        }
+        @keyframes inAppIconFloat{
+            0%,100%{transform:translateY(0) rotate(-2deg)}
+            50%{transform:translateY(-4px) rotate(3deg)}
+        }
+        @keyframes inAppPopupProgress{
+            from{transform:scaleX(1)}
+            to{transform:scaleX(0)}
+        }
+        @keyframes inAppSparkle{
+            0%{opacity:0;transform:translateY(8px) scale(.4) rotate(0)}
+            35%{opacity:1}
+            100%{opacity:0;transform:translateY(-34px) scale(1.15) rotate(90deg)}
+        }
+
+        @media(max-width:640px){
+            #birthdayInAppPopupHost{
+                top:12px;
+                left:14px;
+                right:14px;
+                width:auto;
+            }
+            .birthday-inapp-popup{
+                grid-template-columns:auto 1fr auto;
+                border-radius:20px;
+                padding:13px 12px 11px;
+                transform:translateY(-22px) scale(.94);
+                animation-name:inAppPopupInMobile;
+            }
+            .birthday-inapp-popup.leaving{
+                animation-name:inAppPopupOutMobile;
+            }
+            .birthday-inapp-photo,.birthday-inapp-icon{
+                width:52px;
+                height:52px;
+                border-radius:15px;
+            }
+            .birthday-inapp-icon{font-size:25px}
+        }
+
+        @keyframes inAppPopupInMobile{
+            from{opacity:0;transform:translateY(-22px) scale(.94)}
+            to{opacity:1;transform:translateY(0) scale(1)}
+        }
+        @keyframes inAppPopupOutMobile{
+            from{opacity:1;transform:translateY(0) scale(1)}
+            to{opacity:0;transform:translateY(-18px) scale(.97)}
+        }
+
+        @media(prefers-reduced-motion:reduce){
+            .birthday-inapp-popup,
+            .birthday-inapp-popup.leaving,
+            .birthday-inapp-icon,
+            .birthday-inapp-progress span,
+            .birthday-inapp-sparkle{
+                animation:none!important;
+            }
+        }
+
+
+
+        /* ===== FICHA ANIMADA AL SELECCIONAR UNA PERSONA ===== */
+        .birthday-card-selectable{
+            cursor:pointer;
+        }
+        .birthday-card-selectable:focus-visible{
+            outline:3px solid rgba(236,72,153,.45);
+            outline-offset:4px;
+        }
+
+        .birthday-profile-overlay{
+            position:fixed;
+            inset:0;
+            z-index:118;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:18px;
+            background:rgba(2,6,23,.78);
+            backdrop-filter:blur(12px);
+            opacity:0;
+            visibility:hidden;
+            transition:opacity .32s ease,visibility .32s ease;
+        }
+        .birthday-profile-overlay.show{
+            opacity:1;
+            visibility:visible;
+        }
+
+        .birthday-profile-card{
+            position:relative;
+            width:min(620px,96vw);
+            max-height:92vh;
+            overflow:auto;
+            border-radius:32px;
+            padding:5px;
+            background:linear-gradient(120deg,#00e5ff,#7c3aed,#ff1493,#ffd600,#00e676,#00e5ff);
+            background-size:300% 300%;
+            animation:profileRgb 6s linear infinite,profileCardIn .55s cubic-bezier(.16,1,.3,1);
+            box-shadow:0 28px 85px rgba(0,0,0,.52),0 0 42px rgba(236,72,153,.28);
+        }
+
+        .birthday-profile-inner{
+            position:relative;
+            overflow:hidden;
+            border-radius:27px;
+            background:
+                radial-gradient(circle at 50% -10%,rgba(236,72,153,.30),transparent 35%),
+                linear-gradient(160deg,#111827,#0f172a 52%,#111936);
+            color:#fff;
+            padding:30px 26px 24px;
+        }
+
+        .birthday-profile-inner::before{
+            content:"";
+            position:absolute;
+            inset:-45%;
+            background:
+                conic-gradient(from 0deg,
+                    transparent 0 20%,
+                    rgba(255,255,255,.055) 22%,
+                    transparent 25% 48%,
+                    rgba(255,255,255,.04) 51%,
+                    transparent 54% 100%);
+            animation:profileLightSpin 14s linear infinite;
+            pointer-events:none;
+        }
+
+        .birthday-profile-close{
+            position:absolute;
+            right:16px;
+            top:16px;
+            z-index:5;
+            width:40px;
+            height:40px;
+            border-radius:50%;
+            border:1px solid rgba(255,255,255,.20);
+            background:rgba(15,23,42,.70);
+            color:#fff;
+            font-size:21px;
+            cursor:pointer;
+            transition:.22s;
+        }
+        .birthday-profile-close:hover{
+            transform:rotate(90deg) scale(1.06);
+            background:rgba(255,255,255,.14);
+        }
+
+        .birthday-profile-top{
+            position:relative;
+            z-index:2;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            text-align:center;
+        }
+
+        .birthday-profile-photo-shell{
+            position:relative;
+            width:150px;
+            height:150px;
+            border-radius:34px;
+            padding:5px;
+            background:linear-gradient(135deg,#ffd600,#ff2dbd,#00e5ff);
+            box-shadow:0 0 22px rgba(255,45,189,.45),0 0 44px rgba(0,229,255,.22);
+            animation:profilePhotoFloat 3s ease-in-out infinite;
+        }
+
+        .birthday-profile-photo{
+            width:100%;
+            height:100%;
+            border-radius:29px;
+            object-fit:cover;
+            background:#0f172a;
+            border:3px solid #0f172a;
+        }
+
+        .birthday-profile-avatar{
+            width:100%;
+            height:100%;
+            border-radius:29px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:linear-gradient(135deg,#ec4899,#8b5cf6,#06b6d4);
+            color:#fff;
+            font-size:64px;
+            font-weight:1000;
+            border:3px solid #0f172a;
+        }
+
+        .birthday-profile-badge{
+            margin-top:16px;
+            display:inline-flex;
+            align-items:center;
+            gap:7px;
+            padding:7px 12px;
+            border-radius:999px;
+            background:rgba(236,72,153,.16);
+            border:1px solid rgba(244,114,182,.24);
+            color:#f9a8d4;
+            font-size:11px;
+            font-weight:900;
+            letter-spacing:.08em;
+            text-transform:uppercase;
+        }
+
+        .birthday-profile-name{
+            margin:9px 0 3px;
+            font-size:clamp(28px,5vw,44px);
+            line-height:1.05;
+            font-weight:1000;
+            color:#fff;
+            text-shadow:0 0 25px rgba(236,72,153,.35);
+            overflow-wrap:anywhere;
+        }
+
+        .birthday-profile-countdown{
+            margin-top:8px;
+            font-size:14px;
+            font-weight:800;
+            color:#fde68a;
+        }
+
+        .birthday-profile-grid{
+            position:relative;
+            z-index:2;
+            display:grid;
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            gap:10px;
+            margin-top:22px;
+        }
+
+        .birthday-profile-info{
+            min-width:0;
+            padding:13px;
+            border-radius:17px;
+            background:rgba(255,255,255,.065);
+            border:1px solid rgba(255,255,255,.09);
+        }
+        .birthday-profile-info.full{
+            grid-column:1/-1;
+        }
+        .birthday-profile-label{
+            font-size:10px;
+            font-weight:900;
+            letter-spacing:.08em;
+            text-transform:uppercase;
+            color:#94a3b8;
+            margin-bottom:5px;
+        }
+        .birthday-profile-value{
+            color:#f8fafc;
+            font-size:13px;
+            font-weight:750;
+            line-height:1.45;
+            overflow-wrap:anywhere;
+        }
+
+        .birthday-profile-note{
+            display:flex;
+            align-items:flex-start;
+            gap:9px;
+        }
+
+        .birthday-profile-actions{
+            position:relative;
+            z-index:2;
+            display:flex;
+            justify-content:center;
+            flex-wrap:wrap;
+            gap:9px;
+            margin-top:18px;
+        }
+
+        .birthday-profile-action{
+            border:0;
+            border-radius:14px;
+            padding:11px 16px;
+            font-size:12px;
+            font-weight:900;
+            cursor:pointer;
+            transition:transform .2s ease,filter .2s ease;
+        }
+        .birthday-profile-action:hover{
+            transform:translateY(-2px);
+            filter:brightness(1.08);
+        }
+        .birthday-profile-action.primary{
+            color:#fff;
+            background:linear-gradient(90deg,#ec4899,#f43f5e);
+            box-shadow:0 10px 28px rgba(236,72,153,.30);
+        }
+        .birthday-profile-action.secondary{
+            color:#e2e8f0;
+            background:rgba(255,255,255,.08);
+            border:1px solid rgba(255,255,255,.10);
+        }
+
+        .birthday-profile-mini-sparkle{
+            position:absolute;
+            pointer-events:none;
+            z-index:1;
+            font-size:20px;
+            animation:profileSparkle 2.7s ease-in-out infinite;
+        }
+
+        @keyframes profileRgb{
+            0%{background-position:0% 50%}
+            100%{background-position:300% 50%}
+        }
+        @keyframes profileCardIn{
+            0%{opacity:0;transform:translateY(28px) scale(.90)}
+            75%{opacity:1;transform:translateY(-4px) scale(1.012)}
+            100%{opacity:1;transform:translateY(0) scale(1)}
+        }
+        @keyframes profilePhotoFloat{
+            0%,100%{transform:translateY(0) rotate(-1deg)}
+            50%{transform:translateY(-7px) rotate(1deg)}
+        }
+        @keyframes profileLightSpin{
+            to{transform:rotate(360deg)}
+        }
+        @keyframes profileSparkle{
+            0%,100%{opacity:.35;transform:translateY(0) scale(.85) rotate(0)}
+            50%{opacity:1;transform:translateY(-10px) scale(1.12) rotate(30deg)}
+        }
+
+        @media(max-width:640px){
+            .birthday-profile-card{border-radius:25px}
+            .birthday-profile-inner{padding:25px 16px 18px;border-radius:20px}
+            .birthday-profile-photo-shell{width:124px;height:124px;border-radius:28px}
+            .birthday-profile-photo,.birthday-profile-avatar{border-radius:23px}
+            .birthday-profile-grid{grid-template-columns:1fr}
+            .birthday-profile-info.full{grid-column:auto}
+            .birthday-profile-action{flex:1 1 140px}
+        }
+
+        @media(prefers-reduced-motion:reduce){
+            .birthday-profile-card,
+            .birthday-profile-inner::before,
+            .birthday-profile-photo-shell,
+            .birthday-profile-mini-sparkle{
+                animation:none!important;
+            }
+        }
+
 </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
+
+    <!-- ===== POP-UPS ANIMADOS DENTRO DE LA WEB / APP ===== -->
+    <div id="birthdayInAppPopupHost" aria-live="polite" aria-atomic="true"></div>
+
+
 
     <!-- Globos y elementos flotantes decorativos en el fondo -->
     <div class="ambient-particle text-5xl top-12 left-[8%] animate-float" style="animation-delay: 0s;">🎈</div>
@@ -587,6 +1119,73 @@
             </div>
         </div>
     </main>
+
+
+    <!-- ===== FICHA ANIMADA DE INFORMACIÓN DEL CUMPLEAÑOS ===== -->
+    <div id="birthdayProfileOverlay"
+         class="birthday-profile-overlay"
+         aria-hidden="true"
+         onclick="if(event.target===this) closeBirthdayInfoPopup()">
+        <div class="birthday-profile-card" role="dialog" aria-modal="true" aria-labelledby="birthdayProfileName">
+            <div class="birthday-profile-inner">
+                <button type="button" class="birthday-profile-close" onclick="closeBirthdayInfoPopup()" aria-label="Cerrar">×</button>
+
+                <span class="birthday-profile-mini-sparkle" style="left:7%;top:13%;">✨</span>
+                <span class="birthday-profile-mini-sparkle" style="right:9%;top:20%;animation-delay:.7s;">🎈</span>
+                <span class="birthday-profile-mini-sparkle" style="left:10%;bottom:14%;animation-delay:1.2s;">⭐</span>
+                <span class="birthday-profile-mini-sparkle" style="right:8%;bottom:12%;animation-delay:1.8s;">🎁</span>
+
+                <div class="birthday-profile-top">
+                    <div id="birthdayProfilePhoto" class="birthday-profile-photo-shell"></div>
+                    <div id="birthdayProfileBadge" class="birthday-profile-badge">🎂 Cumpleaños</div>
+                    <h2 id="birthdayProfileName" class="birthday-profile-name">Nombre</h2>
+                    <div id="birthdayProfileCountdown" class="birthday-profile-countdown"></div>
+                </div>
+
+                <div class="birthday-profile-grid">
+                    <div class="birthday-profile-info">
+                        <div class="birthday-profile-label">📅 Fecha</div>
+                        <div id="birthdayProfileDate" class="birthday-profile-value">-</div>
+                    </div>
+
+                    <div class="birthday-profile-info">
+                        <div class="birthday-profile-label">🎉 Próximo cumpleaños</div>
+                        <div id="birthdayProfileAge" class="birthday-profile-value">-</div>
+                    </div>
+
+                    <div class="birthday-profile-info">
+                        <div class="birthday-profile-label">🏷️ Categoría</div>
+                        <div id="birthdayProfileCategory" class="birthday-profile-value">-</div>
+                    </div>
+
+                    <div class="birthday-profile-info">
+                        <div class="birthday-profile-label">⏳ Estado</div>
+                        <div id="birthdayProfileStatus" class="birthday-profile-value">-</div>
+                    </div>
+
+                    <div class="birthday-profile-info full">
+                        <div class="birthday-profile-label">📝 Nota / regalo</div>
+                        <div class="birthday-profile-note">
+                            <span>💡</span>
+                            <div id="birthdayProfileNotes" class="birthday-profile-value">Sin nota registrada.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="birthday-profile-actions">
+                    <button type="button" class="birthday-profile-action primary" onclick="celebrateProfileBirthday()">
+                        🎉 Celebrar
+                    </button>
+                    <button type="button" class="birthday-profile-action secondary" onclick="editBirthdayFromProfile()">
+                        ✏️ Editar información
+                    </button>
+                    <button type="button" class="birthday-profile-action secondary" onclick="closeBirthdayInfoPopup()">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal para Agregar/Editar -->
     <div id="birthdayModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
@@ -1118,6 +1717,222 @@
             return { title, body, photo, name, type };
         }
 
+        const birthdayInAppPopupQueue = [];
+        let birthdayInAppPopupBusy = false;
+        let birthdayInAppPopupTimer = null;
+
+        function getInAppPopupTheme(type) {
+            const themes = {
+                '7d':    { icon:'🎁', accent:'#eab308', eyebrow:'PREPÁRATE CON TIEMPO' },
+                '3d':    { icon:'🎈', accent:'#f97316', eyebrow:'YA SE ACERCA' },
+                '1d':    { icon:'⏰', accent:'#10b981', eyebrow:'ES MAÑANA' },
+                '12h':   { icon:'⏳', accent:'#8b5cf6', eyebrow:'CUENTA REGRESIVA' },
+                'hoy':   { icon:'🎂', accent:'#ec4899', eyebrow:'HOY CELEBRAMOS' },
+                'noche': { icon:'🌙', accent:'#6366f1', eyebrow:'ANTES DE QUE TERMINE EL DÍA' }
+            };
+            return themes[type] || { icon:'🔔', accent:'#ec4899', eyebrow:'CUMPLEAPP' };
+        }
+
+        function getInAppPopupKey(birthday, type) {
+            return `cumpleapp_popup_${getBirthdayNotificationId(birthday)}_${type}_${getLocalDateKey(new Date())}`;
+        }
+
+        function isCelebrationOverlayBusy() {
+            const entry = document.getElementById('birthdayEntryOverlay');
+            const premium = document.getElementById('birthdayCelebration');
+            const config = document.getElementById('configCodePanel');
+            const tests = document.getElementById('testSettingsPanel');
+
+            return Boolean(
+                (entry && entry.classList.contains('show')) ||
+                (premium && premium.classList.contains('show')) ||
+                (config && config.style.display === 'flex') ||
+                (tests && tests.style.display === 'flex')
+            );
+        }
+
+        function createPopupSparkles(popup) {
+            const symbols = ['✨','⭐','💖','🎉'];
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    if (!popup || !popup.isConnected) return;
+                    const s = document.createElement('span');
+                    s.className = 'birthday-inapp-sparkle';
+                    s.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    s.style.left = (12 + Math.random() * 76) + '%';
+                    s.style.bottom = (5 + Math.random() * 35) + '%';
+                    popup.appendChild(s);
+                    setTimeout(() => s.remove(), 1400);
+                }, i * 110);
+            }
+        }
+
+        function focusBirthdayFromPopup(birthday) {
+            closeCurrentBirthdayInAppPopup();
+
+            const search = document.getElementById('searchInput');
+            if (search) search.value = birthday && birthday.name ? birthday.name : '';
+
+            try {
+                if (typeof currentFilter !== 'undefined') currentFilter = 'all';
+                if (typeof renderBirthdays === 'function') renderBirthdays();
+            } catch (_) {}
+
+            const list = document.getElementById('birthdayList');
+            if (list) {
+                setTimeout(() => {
+                    list.scrollIntoView({ behavior:'smooth', block:'start' });
+                }, 180);
+            }
+
+            if (birthday && getNextBirthdayDetails(birthday.date).diffDays === 0) {
+                setTimeout(() => {
+                    if (typeof triggerPartyConfetti === 'function') triggerPartyConfetti();
+                }, 350);
+            }
+        }
+
+        function closeCurrentBirthdayInAppPopup() {
+            if (birthdayInAppPopupTimer) {
+                clearTimeout(birthdayInAppPopupTimer);
+                birthdayInAppPopupTimer = null;
+            }
+
+            const host = document.getElementById('birthdayInAppPopupHost');
+            const popup = host ? host.querySelector('.birthday-inapp-popup') : null;
+
+            if (!popup) {
+                birthdayInAppPopupBusy = false;
+                processBirthdayInAppPopupQueue();
+                return;
+            }
+
+            popup.classList.add('leaving');
+
+            setTimeout(() => {
+                if (popup && popup.parentNode) popup.remove();
+                birthdayInAppPopupBusy = false;
+                processBirthdayInAppPopupQueue();
+            }, 360);
+        }
+
+        function processBirthdayInAppPopupQueue() {
+            if (birthdayInAppPopupBusy || birthdayInAppPopupQueue.length === 0) return;
+
+            const item = birthdayInAppPopupQueue.shift();
+
+            // Las pruebas se muestran inmediatamente.
+            // Los avisos reales esperan si hay una celebración/modal encima.
+            if (!item.force && isCelebrationOverlayBusy()) {
+                birthdayInAppPopupQueue.unshift(item);
+                setTimeout(processBirthdayInAppPopupQueue, 1400);
+                return;
+            }
+
+            birthdayInAppPopupBusy = true;
+
+            const host = document.getElementById('birthdayInAppPopupHost');
+            if (!host) {
+                birthdayInAppPopupBusy = false;
+                return;
+            }
+
+            const content = buildPersonalizedBirthdayNotification(item.birthday, item.type);
+            if (!content) {
+                birthdayInAppPopupBusy = false;
+                processBirthdayInAppPopupQueue();
+                return;
+            }
+
+            const theme = getInAppPopupTheme(item.type);
+            const popup = document.createElement('div');
+            popup.className = 'birthday-inapp-popup';
+            popup.style.setProperty('--popup-accent', theme.accent);
+
+            const safeName = content.name || 'Cumpleañero/a';
+            const initial = (safeName.charAt(0) || '?').toUpperCase();
+
+            const media = content.photo
+                ? `<img class="birthday-inapp-photo" src="${content.photo}" alt="${safeName}" onerror="this.outerHTML='<div class=&quot;birthday-inapp-icon&quot;>${theme.icon}</div>'">`
+                : `<div class="birthday-inapp-icon">${theme.icon}</div>`;
+
+            popup.innerHTML = `
+                ${media}
+                <div class="birthday-inapp-content">
+                    <div class="birthday-inapp-eyebrow">${theme.eyebrow}</div>
+                    <h4 class="birthday-inapp-title">${content.title}</h4>
+                    <p class="birthday-inapp-body">${content.body}</p>
+                </div>
+                <button type="button" class="birthday-inapp-close" aria-label="Cerrar">×</button>
+                <div class="birthday-inapp-actions">
+                    <button type="button" class="birthday-inapp-action primary">👀 Ver cumpleaños</button>
+                    <button type="button" class="birthday-inapp-action secondary">Entendido</button>
+                </div>
+                <div class="birthday-inapp-progress"><span></span></div>
+            `;
+
+            host.replaceChildren(popup);
+
+            const closeBtn = popup.querySelector('.birthday-inapp-close');
+            const actionButtons = popup.querySelectorAll('.birthday-inapp-action');
+            const viewBtn = actionButtons[0];
+            const okBtn = actionButtons[1];
+
+            if (closeBtn) closeBtn.addEventListener('click', closeCurrentBirthdayInAppPopup);
+            if (okBtn) okBtn.addEventListener('click', closeCurrentBirthdayInAppPopup);
+            if (viewBtn) viewBtn.addEventListener('click', () => focusBirthdayFromPopup(item.birthday));
+
+            // Pausar cierre automático mientras el usuario mantiene el dedo/mouse encima.
+            popup.addEventListener('mouseenter', () => {
+                if (birthdayInAppPopupTimer) {
+                    clearTimeout(birthdayInAppPopupTimer);
+                    birthdayInAppPopupTimer = null;
+                }
+            });
+
+            popup.addEventListener('mouseleave', () => {
+                if (!birthdayInAppPopupTimer) {
+                    birthdayInAppPopupTimer = setTimeout(closeCurrentBirthdayInAppPopup, 5000);
+                }
+            });
+
+            createPopupSparkles(popup);
+
+            if (item.type === 'hoy' && typeof triggerPartyConfetti === 'function') {
+                setTimeout(triggerPartyConfetti, 220);
+            }
+
+            birthdayInAppPopupTimer = setTimeout(closeCurrentBirthdayInAppPopup, 8000);
+        }
+
+        function showBirthdayInAppPopup(birthday, type, options = {}) {
+            if (!birthday) return false;
+
+            const force = options.force === true;
+            const storageKey = getInAppPopupKey(birthday, type);
+
+            if (!force && localStorage.getItem(storageKey) === '1') {
+                return false;
+            }
+
+            if (!force) {
+                localStorage.setItem(storageKey, '1');
+            }
+
+            birthdayInAppPopupQueue.push({ birthday, type, force });
+            processBirthdayInAppPopupQueue();
+            return true;
+        }
+
+        function showBirthdayPopupSequenceForTest(birthday) {
+            const types = ['7d','3d','1d','12h','hoy','noche'];
+            types.forEach((type, index) => {
+                setTimeout(() => {
+                    showBirthdayInAppPopup(birthday, type, { force:true });
+                }, index * 500);
+            });
+        }
+
         async function showBirthdaySystemNotification(birthday, type) {
             if (!('Notification' in window) || Notification.permission !== 'granted') {
                 return false;
@@ -1182,10 +1997,6 @@
         }
 
         function checkAndTriggerAlerts() {
-            if (!('Notification' in window) || Notification.permission !== 'granted') {
-                return;
-            }
-
             if (!Array.isArray(birthdays) || birthdays.length === 0) {
                 return;
             }
@@ -1204,29 +2015,35 @@
                 const details = getNextBirthdayDetails(birthday.date);
 
                 if (details.diffDays === 7) {
+                    showBirthdayInAppPopup(birthday, '7d');
                     showBirthdaySystemNotification(birthday, '7d');
                     return;
                 }
 
                 if (details.diffDays === 3) {
+                    showBirthdayInAppPopup(birthday, '3d');
                     showBirthdaySystemNotification(birthday, '3d');
                     return;
                 }
 
                 if (details.diffDays === 1) {
+                    showBirthdayInAppPopup(birthday, '1d');
                     showBirthdaySystemNotification(birthday, '1d');
 
                     if (hoursUntilTomorrow > 0 && hoursUntilTomorrow <= 12) {
+                        showBirthdayInAppPopup(birthday, '12h');
                         showBirthdaySystemNotification(birthday, '12h');
                     }
                     return;
                 }
 
                 if (details.diffDays === 0) {
+                    // El pop-up espera automáticamente si la bienvenida/pastelito está encima.
+                    showBirthdayInAppPopup(birthday, 'hoy');
                     showBirthdaySystemNotification(birthday, 'hoy');
 
-                    // Recordatorio amable por la noche, sin usar categoría.
                     if (now.getHours() >= 19) {
+                        showBirthdayInAppPopup(birthday, 'noche');
                         showBirthdaySystemNotification(birthday, 'noche');
                     }
                 }
@@ -1584,6 +2401,156 @@
             document.getElementById('statTotal').innerText = birthdays.length;
         }
 
+        let birthdayProfileCurrentIndex = null;
+
+        function formatBirthdayProfileDate(dateString) {
+            if (!dateString) return '-';
+
+            const parts = String(dateString).split('-').map(Number);
+            if (parts.length !== 3) return dateString;
+
+            const [year, month, day] = parts;
+            const months = [
+                'enero','febrero','marzo','abril','mayo','junio',
+                'julio','agosto','septiembre','octubre','noviembre','diciembre'
+            ];
+
+            const monthName = months[month - 1] || '';
+            const hasRealYear = year > 2005;
+
+            return hasRealYear
+                ? `${day} de ${monthName} de ${year}`
+                : `${day} de ${monthName}`;
+        }
+
+        function openBirthdayInfoPopup(index) {
+            const person = birthdays[index];
+            if (!person) return;
+
+            birthdayProfileCurrentIndex = index;
+
+            const overlay = document.getElementById('birthdayProfileOverlay');
+            const photoBox = document.getElementById('birthdayProfilePhoto');
+            const nameBox = document.getElementById('birthdayProfileName');
+            const badgeBox = document.getElementById('birthdayProfileBadge');
+            const dateBox = document.getElementById('birthdayProfileDate');
+            const ageBox = document.getElementById('birthdayProfileAge');
+            const categoryBox = document.getElementById('birthdayProfileCategory');
+            const statusBox = document.getElementById('birthdayProfileStatus');
+            const notesBox = document.getElementById('birthdayProfileNotes');
+            const countdownBox = document.getElementById('birthdayProfileCountdown');
+
+            if (!overlay || !photoBox || !nameBox) return;
+
+            const details = getNextBirthdayDetails(person.date);
+            const name = String(person.name || 'Cumpleañero/a').trim();
+            const initial = (name.charAt(0) || '?').toUpperCase();
+
+            if (person.photo && /^https?:\/\//i.test(person.photo)) {
+                photoBox.innerHTML = `
+                    <img class="birthday-profile-photo"
+                         src="${person.photo}"
+                         alt="${name}"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="birthday-profile-avatar" style="display:none">${initial}</div>
+                `;
+            } else {
+                photoBox.innerHTML = `<div class="birthday-profile-avatar">${initial}</div>`;
+            }
+
+            nameBox.textContent = name;
+            dateBox.textContent = formatBirthdayProfileDate(person.date);
+            categoryBox.textContent = person.category || 'Sin categoría';
+            notesBox.textContent = person.notes || 'Sin nota registrada.';
+
+            if (details.diffDays === 0) {
+                badgeBox.innerHTML = '🎉 ¡Cumpleaños hoy!';
+                countdownBox.textContent = '🥳 ¡Hoy es su día especial!';
+                statusBox.textContent = 'Es hoy 🎂';
+            } else if (details.diffDays === 1) {
+                badgeBox.innerHTML = '⏰ Cumpleaños mañana';
+                countdownBox.textContent = 'Falta exactamente 1 día';
+                statusBox.textContent = 'Mañana';
+            } else {
+                badgeBox.innerHTML = '🎂 Próximo cumpleaños';
+                countdownBox.textContent = `Faltan ${details.diffDays} días`;
+                statusBox.textContent = `${details.diffDays} días`;
+            }
+
+            if (details.hasRealYear) {
+                ageBox.textContent =
+                    details.diffDays === 0
+                        ? `Cumple ${details.turnsAge} años`
+                        : `Cumplirá ${details.turnsAge} años`;
+            } else {
+                ageBox.textContent = 'Edad no registrada';
+            }
+
+            overlay.classList.add('show');
+            overlay.setAttribute('aria-hidden', 'false');
+
+            if (details.diffDays === 0 && typeof triggerPartyConfetti === 'function') {
+                setTimeout(triggerPartyConfetti, 180);
+            }
+        }
+
+        function closeBirthdayInfoPopup() {
+            const overlay = document.getElementById('birthdayProfileOverlay');
+            if (!overlay) return;
+
+            overlay.classList.remove('show');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+
+        function celebrateProfileBirthday() {
+            const person =
+                birthdayProfileCurrentIndex !== null
+                    ? birthdays[birthdayProfileCurrentIndex]
+                    : null;
+
+            if (typeof triggerPartyConfetti === 'function') {
+                triggerPartyConfetti();
+            }
+
+            try {
+                if (typeof getAudioContext === 'function') getAudioContext();
+                if (typeof playSuccessSound === 'function') playSuccessSound();
+            } catch (_) {}
+
+            if (person && getNextBirthdayDetails(person.date).diffDays === 0) {
+                closeBirthdayInfoPopup();
+
+                setTimeout(() => {
+                    if (typeof openBirthdayCelebration === 'function') {
+                        openBirthdayCelebration(person);
+                    }
+                }, 280);
+            }
+        }
+
+        function editBirthdayFromProfile() {
+            if (birthdayProfileCurrentIndex === null) return;
+
+            const index = birthdayProfileCurrentIndex;
+            closeBirthdayInfoPopup();
+
+            setTimeout(() => {
+                if (typeof editBirthday === 'function') {
+                    editBirthday(index);
+                }
+            }, 240);
+        }
+
+        // Cerrar con Escape.
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const overlay = document.getElementById('birthdayProfileOverlay');
+                if (overlay && overlay.classList.contains('show')) {
+                    closeBirthdayInfoPopup();
+                }
+            }
+        });
+
         function renderBirthdays() {
             const listContainer = document.getElementById('birthdayList');
             const emptyState = document.getElementById('emptyState');
@@ -1641,7 +2608,15 @@
                 const cardLedClass = b.diffDays === 0 ? 'led-border bg-gradient-to-br from-pink-500/5 via-amber-500/5 to-transparent' : 'border border-slate-200/80 dark:border-slate-700';
 
                 html += `
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl ${cardLedClass} shadow-sm flex flex-col justify-between hover-scale-card relative group animate-fade-in" style="animation-delay: ${animDelay}s;">
+                    <div
+                        class="birthday-card-selectable bg-white dark:bg-slate-800 p-5 rounded-3xl ${cardLedClass} shadow-sm flex flex-col justify-between hover-scale-card relative group animate-fade-in"
+                        style="animation-delay: ${animDelay}s;"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Ver información de ${b.name}"
+                        onclick="openBirthdayInfoPopup(${b.originalIndex})"
+                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBirthdayInfoPopup(${b.originalIndex});}"
+                    >
                         <div class="flex items-start justify-between">
                             <div class="flex items-center space-x-3.5">
                                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200 font-black flex items-center justify-center text-lg shadow-inner overflow-hidden shrink-0 transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
@@ -1655,10 +2630,10 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-1 opacity-95 sm:opacity-40 group-hover:opacity-100 transition-opacity">
-                                <button onclick="editBirthday(${b.originalIndex})" class="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center transition-transform hover:scale-110" title="Editar">
+                                <button onclick="event.stopPropagation(); editBirthday(${b.originalIndex})" class="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center transition-transform hover:scale-110" title="Editar">
                                     <i class="fa-solid fa-pen text-xs"></i>
                                 </button>
-                                <button onclick="deleteBirthday(${b.originalIndex})" class="w-8 h-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center justify-center transition-transform hover:scale-110" title="Eliminar">
+                                <button onclick="event.stopPropagation(); deleteBirthday(${b.originalIndex})" class="w-8 h-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center justify-center transition-transform hover:scale-110" title="Eliminar">
                                     <i class="fa-solid fa-trash text-xs"></i>
                                 </button>
                             </div>
@@ -2235,6 +3210,17 @@
                 <button id="testCountdownBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#f5f3ff;color:#6d28d9;font-weight:750;cursor:pointer;text-align:left;">⏱️ Simular contador</button>
             </div>
 
+            <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 7px;">Pop-ups dentro de la web / app</div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+                <button data-popup-test="7d" type="button" style="border:none;border-radius:13px;padding:11px;background:#fefce8;color:#a16207;font-weight:750;cursor:pointer;text-align:left;">🎁 Popup 7 días</button>
+                <button data-popup-test="3d" type="button" style="border:none;border-radius:13px;padding:11px;background:#fff7ed;color:#c2410c;font-weight:750;cursor:pointer;text-align:left;">🎈 Popup 3 días</button>
+                <button data-popup-test="1d" type="button" style="border:none;border-radius:13px;padding:11px;background:#f0fdf4;color:#15803d;font-weight:750;cursor:pointer;text-align:left;">⏰ Popup mañana</button>
+                <button data-popup-test="12h" type="button" style="border:none;border-radius:13px;padding:11px;background:#faf5ff;color:#7e22ce;font-weight:750;cursor:pointer;text-align:left;">⏳ Popup 12 horas</button>
+                <button data-popup-test="hoy" type="button" style="border:none;border-radius:13px;padding:11px;background:#fdf2f8;color:#be185d;font-weight:750;cursor:pointer;text-align:left;">🎂 Popup cumpleaños hoy</button>
+                <button data-popup-test="noche" type="button" style="border:none;border-radius:13px;padding:11px;background:#eef2ff;color:#3730a3;font-weight:750;cursor:pointer;text-align:left;">🌙 Popup nocturno</button>
+                <button id="testAllPopupsBtn" type="button" style="grid-column:1/-1;border:none;border-radius:13px;padding:11px;background:linear-gradient(90deg,#fdf2f8,#eef2ff);color:#7c3aed;font-weight:850;cursor:pointer;text-align:left;">✨ Probar secuencia de todos los pop-ups</button>
+            </div>
+
             <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 7px;">Celebración y sonido</div>
             <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
                 <button id="testBirthdayEntryBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#fff1f2;color:#be123c;font-weight:750;cursor:pointer;text-align:left;">🎆 Probar bienvenida cumpleaños</button>
@@ -2246,6 +3232,7 @@
 
             <div style="font-size:11px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin:14px 0 7px;">Datos y aplicación</div>
             <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+                <button id="testBirthdayProfileBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#fdf2f8;color:#be185d;font-weight:750;cursor:pointer;text-align:left;">👤 Probar ficha de persona</button>
                 <button id="testGoogleSyncBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#ecfdf5;color:#047857;font-weight:750;cursor:pointer;text-align:left;">☁️ Probar Google Sheets</button>
                 <button id="testInstallBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#fff1f2;color:#be123c;font-weight:750;cursor:pointer;text-align:left;">📲 Probar instalación</button>
                 <button id="clearTestMarksBtn" type="button" style="border:none;border-radius:13px;padding:11px;background:#f8fafc;color:#475569;font-weight:750;cursor:pointer;text-align:left;">🧹 Reiniciar pruebas</button>
@@ -2558,6 +3545,72 @@
             }
 
 
+            function getPopupTestBirthday() {
+                if (typeof birthdays !== 'undefined' && Array.isArray(birthdays) && birthdays.length) {
+                    try {
+                        return [...birthdays].sort((a, b) =>
+                            getNextBirthdayDetails(a.date).diffDays -
+                            getNextBirthdayDetails(b.date).diffDays
+                        )[0] || birthdays[0];
+                    } catch (_) {
+                        return birthdays[0];
+                    }
+                }
+
+                return {
+                    name: 'Cumpleañero/a',
+                    date: '2000-01-01',
+                    notes: 'Un detalle especial',
+                    photo: ''
+                };
+            }
+
+            function testInAppPopup(type) {
+                hide('testSettingsPanel');
+                const person = getPopupTestBirthday();
+
+                if (typeof showBirthdayInAppPopup === 'function') {
+                    setTimeout(() => {
+                        showBirthdayInAppPopup(person, type, { force:true });
+                    }, 180);
+                } else {
+                    showCustomModal('Aviso', 'No se encontró el sistema de pop-ups internos.');
+                }
+            }
+
+            function testAllInAppPopups() {
+                hide('testSettingsPanel');
+                const person = getPopupTestBirthday();
+
+                if (typeof showBirthdayPopupSequenceForTest === 'function') {
+                    setTimeout(() => showBirthdayPopupSequenceForTest(person), 180);
+                } else {
+                    showCustomModal('Aviso', 'No se encontró la secuencia de pop-ups.');
+                }
+            }
+
+            function testBirthdayProfileFixed() {
+                hide('testSettingsPanel');
+
+                let index = 0;
+
+                if (typeof birthdays !== 'undefined' && Array.isArray(birthdays) && birthdays.length) {
+                    try {
+                        const nearest = birthdays
+                            .map((b, i) => ({ i, diff: getNextBirthdayDetails(b.date).diffDays }))
+                            .sort((a, b) => a.diff - b.diff)[0];
+
+                        if (nearest) index = nearest.i;
+                    } catch (_) {}
+                }
+
+                setTimeout(() => {
+                    if (typeof openBirthdayInfoPopup === 'function') {
+                        openBirthdayInfoPopup(index);
+                    }
+                }, 180);
+            }
+
             function testBirthdayEntryFixed() {
                 hide('testSettingsPanel');
 
@@ -2696,6 +3749,7 @@
                 Object.keys(localStorage).forEach(key => {
                     if (
                         key.startsWith('cumpleapp_notice_') ||
+                        key.startsWith('cumpleapp_popup_') ||
                         key.startsWith('birthday_celebration_shown_')
                     ) {
                         localStorage.removeItem(key);
@@ -2731,6 +3785,8 @@
             if (enterBtn) enterBtn.addEventListener('click', validateConfigCode);
             if (closeBtn) closeBtn.addEventListener('click', () => hide('testSettingsPanel'));
 
+            const testBirthdayProfileBtn = document.getElementById('testBirthdayProfileBtn');
+            const testAllPopupsBtn = document.getElementById('testAllPopupsBtn');
             const birthdayEntryBtn = document.getElementById('testBirthdayEntryBtn');
             const cakeBtn = document.getElementById('testCakeBtn');
             const melodyBtn = document.getElementById('testMelodyBtn');
@@ -2746,6 +3802,8 @@
             const clearBtn = document.getElementById('clearTestMarksBtn');
             const refreshBtn = document.getElementById('refreshTestPanelBtn');
 
+            if (testBirthdayProfileBtn) testBirthdayProfileBtn.addEventListener('click', testBirthdayProfileFixed);
+            if (testAllPopupsBtn) testAllPopupsBtn.addEventListener('click', testAllInAppPopups);
             if (birthdayEntryBtn) birthdayEntryBtn.addEventListener('click', testBirthdayEntryFixed);
             if (cakeBtn) cakeBtn.addEventListener('click', testCakeNotificationFixed);
             if (melodyBtn) melodyBtn.addEventListener('click', testMelody);
@@ -2764,6 +3822,10 @@
             if (installBtn) installBtn.addEventListener('click', testInstall);
             if (clearBtn) clearBtn.addEventListener('click', clearTestMarks);
             if (refreshBtn) refreshBtn.addEventListener('click', updateSystemStatus);
+
+            document.querySelectorAll('[data-popup-test]').forEach(button => {
+                button.addEventListener('click', () => testInAppPopup(button.dataset.popupTest));
+            });
 
             document.querySelectorAll('[data-reminder-test]').forEach(button => {
                 button.addEventListener('click', () => testReminder(button.dataset.reminderTest));
