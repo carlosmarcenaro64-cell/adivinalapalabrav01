@@ -39,6 +39,37 @@
         }
     </script>
     <style>
+        /* Carga de fotos: formulario con desplazamiento también al abrir el teclado. */
+        #modalContent{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
+        #birthdayModal button:disabled{opacity:.6;cursor:wait;transform:none}
+        .birthday-photo-editor{padding:14px;border:1px solid #fbcfe8;border-radius:16px;background:#fff7fb}
+        .birthday-photo-editor [hidden]{display:none!important}
+        .birthday-photo-label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:7px}
+        .birthday-photo-picker{display:flex;align-items:center;gap:14px}
+        .birthday-photo-preview{width:76px;height:76px;flex:0 0 76px;border-radius:18px;overflow:hidden;background:#fce7f3;display:grid;place-items:center;font-size:30px}
+        .birthday-photo-preview img{width:100%;height:100%;object-fit:cover}
+        .birthday-photo-picker-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+        .birthday-photo-choose{padding:11px 14px;border-radius:12px;background:#db2777;color:white;font-size:14px;font-weight:700;min-height:44px}
+        .birthday-photo-remove{color:#be185d;font-size:13px;padding:10px 4px;min-height:44px}
+        .birthday-photo-help{font-size:12px;line-height:1.5;color:#64748b;margin-top:9px}
+        .birthday-photo-key{margin-top:12px}
+        .birthday-photo-editor input:not([type=file]){box-sizing:border-box;width:100%;min-width:0;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:16px;color:#1e293b;background:white}
+        .birthday-photo-editor input:focus-visible,.birthday-photo-editor button:focus-visible,.birthday-photo-editor summary:focus-visible{outline:3px solid #f9a8d4;outline-offset:2px}
+        .birthday-photo-status{font-size:12px;line-height:1.5;color:#64748b;overflow-wrap:anywhere}
+        .birthday-photo-status:not(:empty){margin-top:10px}
+        .birthday-photo-status[data-state=error]{color:#be123c}
+        .birthday-photo-status[data-state=success]{color:#047857}
+        .birthday-photo-url{margin-top:11px;font-size:12px;color:#475569}
+        .birthday-photo-url summary{cursor:pointer;padding:4px 0}
+        .birthday-photo-url label{margin-top:10px}
+        .dark .birthday-photo-editor{border-color:#71304e;background:#291e2e}
+        .dark .birthday-photo-label,.dark .birthday-photo-url{color:#e2e8f0}
+        .dark .birthday-photo-preview{background:#502440}
+        .dark .birthday-photo-help,.dark .birthday-photo-status{color:#cbd5e1}
+        .dark .birthday-photo-status[data-state=error],.dark .birthday-photo-remove{color:#fda4af}
+        .dark .birthday-photo-status[data-state=success]{color:#6ee7b7}
+        .dark .birthday-photo-editor input:not([type=file]){border-color:#475569;background:#0f172a;color:#f8fafc}
+        @media(max-width:480px){#birthdayModal{padding:12px}#modalContent{padding:18px}.birthday-photo-picker{gap:10px}.birthday-photo-editor{padding:12px}}
         @keyframes fadeInScale {
             0% { opacity: 0; transform: scale(0.9) translateY(15px); filter: blur(4px); }
             100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
@@ -1480,9 +1511,31 @@
                         </select>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Foto (Link URL)</label>
-                    <input type="url" id="bPhoto" placeholder="https://ejemplo.com/foto.jpg" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
+                <div class="birthday-photo-editor">
+                    <label for="bPhotoFile" class="birthday-photo-label">Foto de cumpleaños</label>
+                    <div class="birthday-photo-picker">
+                        <div class="birthday-photo-preview" aria-hidden="true">
+                            <span id="bPhotoPlaceholder">📷</span>
+                            <img id="bPhotoPreview" alt="Vista previa de la foto" hidden>
+                        </div>
+                        <div class="birthday-photo-picker-actions">
+                            <button type="button" class="birthday-photo-choose" onclick="document.getElementById('bPhotoFile').click()">📷 Elegir foto</button>
+                            <button id="bPhotoRemove" type="button" class="birthday-photo-remove" onclick="removeBirthdayPhoto()" hidden>Quitar foto</button>
+                            <input id="bPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="selectBirthdayPhoto(event)" aria-describedby="bPhotoHelp bPhotoStatus" hidden>
+                        </div>
+                    </div>
+                    <p id="bPhotoHelp" class="birthday-photo-help">Elige de tu galería o computadora. JPG, PNG o WebP, hasta 12 MB. Se subirá a GitHub al guardar; el enlace será público.</p>
+                    <div id="bPhotoKeyBox" class="birthday-photo-key" hidden>
+                        <label for="bPhotoUploadKey" class="birthday-photo-label">Clave para subir fotos</label>
+                        <input type="password" id="bPhotoUploadKey" autocomplete="off" minlength="24" maxlength="160" spellcheck="false" placeholder="Clave de carga configurada en Apps Script" aria-describedby="bPhotoKeyHelp">
+                        <p id="bPhotoKeyHelp" class="birthday-photo-help">Usa la clave de carga de CumpleApp. No ingreses aquí tu token de GitHub.</p>
+                    </div>
+                    <p id="bPhotoStatus" class="birthday-photo-status" role="status" aria-live="polite"></p>
+                    <details id="bPhotoUrlDetails" class="birthday-photo-url">
+                        <summary>O usar el enlace de una foto</summary>
+                        <label for="bPhoto" class="birthday-photo-label">Enlace de la foto</label>
+                        <input type="url" id="bPhoto" placeholder="https://ejemplo.com/foto.jpg" oninput="useBirthdayPhotoUrl()">
+                    </details>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Notas o Regalos (Opcional)</label>
@@ -1490,7 +1543,7 @@
                 </div>
                 <div class="flex space-x-3 pt-2">
                     <button type="button" onclick="closeModal()" class="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 font-semibold py-2.5 rounded-xl text-sm transition-colors">Cancelar</button>
-                    <button type="submit" class="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-2.5 rounded-xl text-sm shadow-lg shadow-pink-500/25 transition-all transform hover:scale-105 active:scale-95">Guardar</button>
+                    <button id="birthdaySaveButton" type="submit" class="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-2.5 rounded-xl text-sm shadow-lg shadow-pink-500/25 transition-all transform hover:scale-105 active:scale-95">Guardar</button>
                 </div>
             </form>
         </div>
@@ -2618,6 +2671,7 @@
 
         async function syncFromGoogleSheets(isSilent = false) {
             if (!googleSheetsUrl) return;
+            if (birthdaySaveInProgress || !document.getElementById('birthdayModal').classList.contains('hidden')) return;
             const syncBtn = document.getElementById('syncDirectBtn');
             if (syncBtn && !isSilent) {
                 syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i><span>Actualizando...</span>';
@@ -2627,6 +2681,7 @@
                 const response = await fetch(`${googleSheetsUrl}${separator}_cb=${new Date().getTime()}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const text = await response.text();
+                if (birthdaySaveInProgress || !document.getElementById('birthdayModal').classList.contains('hidden')) return;
                 
                 const lines = text.split(/\r\n|\n/);
                 let newBirthdays = [];
@@ -3223,9 +3278,203 @@
             renderBirthdays();
         }
 
+        // El token de GitHub vive únicamente en las propiedades del servidor.
+        let pendingBirthdayPhoto = null;
+        let birthdayPhotoSelection = 0;
+        let birthdayPhotoProcessing = false;
+        let birthdaySaveInProgress = false;
+
+        function setBirthdayPhotoStatus(message, state = '') {
+            const box = document.getElementById('bPhotoStatus');
+            box.textContent = message;
+            box.dataset.state = state;
+        }
+
+        function updateBirthdayPhotoPreview(url = '') {
+            const image = document.getElementById('bPhotoPreview');
+            const placeholder = document.getElementById('bPhotoPlaceholder');
+            image.onerror = () => { image.hidden = true; placeholder.hidden = false; };
+            image.hidden = !url;
+            placeholder.hidden = Boolean(url);
+            if (url) image.src = url;
+            else image.removeAttribute('src');
+            document.getElementById('bPhotoRemove').hidden = !url;
+        }
+
+        function resetBirthdayPhotoEditor() {
+            birthdayPhotoSelection++;
+            birthdayPhotoProcessing = false;
+            pendingBirthdayPhoto = null;
+            document.getElementById('bPhotoFile').value = '';
+            document.getElementById('bPhotoUploadKey').value = '';
+            document.getElementById('bPhotoKeyBox').hidden = true;
+            document.getElementById('bPhotoUrlDetails').open = false;
+            document.getElementById('birthdaySaveButton').disabled = birthdaySaveInProgress;
+            setBirthdayPhotoStatus('');
+            const url = document.getElementById('bPhoto').value.trim();
+            updateBirthdayPhotoPreview(/^https?:\/\//i.test(url) ? url : '');
+        }
+
+        function removeBirthdayPhoto() {
+            if (birthdaySaveInProgress) return;
+            document.getElementById('bPhoto').value = '';
+            resetBirthdayPhotoEditor();
+            setBirthdayPhotoStatus('La foto se quitará de este cumpleaños al guardar.');
+        }
+
+        function useBirthdayPhotoUrl() {
+            if (birthdaySaveInProgress) return;
+            resetBirthdayPhotoEditor();
+            document.getElementById('bPhotoUrlDetails').open = true;
+        }
+
+        function setBirthdayFormBusy(busy) {
+            birthdaySaveInProgress = busy;
+            document.getElementById('birthdayForm').setAttribute('aria-busy', String(busy));
+            document.querySelectorAll('#birthdayForm input, #birthdayForm select, #birthdayForm textarea, #birthdayModal button').forEach(el => { el.disabled = busy; });
+            const saveButton = document.getElementById('birthdaySaveButton');
+            saveButton.textContent = busy ? 'Guardando…' : 'Guardar';
+            saveButton.disabled = busy || birthdayPhotoProcessing;
+        }
+
+        function createBirthdayPhotoUploadId() {
+            if (crypto.randomUUID) return crypto.randomUUID();
+            const bytes = crypto.getRandomValues(new Uint8Array(16));
+            bytes[6] = (bytes[6] & 15) | 64;
+            bytes[8] = (bytes[8] & 63) | 128;
+            const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+            return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+        }
+
+        async function prepareBirthdayPhoto(file) {
+            if (!file.size || file.size > 12 * 1024 * 1024) throw new Error('Elige una foto de hasta 12 MB.');
+            const validType = /^(image\/jpeg|image\/png|image\/webp)$/i.test(file.type);
+            if (!validType && (file.type || !/\.(jpe?g|png|webp)$/i.test(file.name))) {
+                throw new Error('Usa una foto JPG, PNG o WebP. Si está en HEIC, expórtala como JPG.');
+            }
+            const objectUrl = URL.createObjectURL(file);
+            const image = new Image();
+            const canvas = document.createElement('canvas');
+            try {
+                await new Promise((resolve, reject) => {
+                    image.onload = resolve;
+                    image.onerror = () => reject(new Error('No se pudo abrir esa imagen. Prueba con otra foto.'));
+                    image.src = objectUrl;
+                });
+                if (!image.naturalWidth || !image.naturalHeight || image.naturalWidth * image.naturalHeight > 60000000) {
+                    throw new Error('La resolución es demasiado grande. Elige una versión más pequeña de la foto.');
+                }
+                const scale = Math.min(1, 1200 / Math.max(image.naturalWidth, image.naturalHeight));
+                canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+                canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+                const context = canvas.getContext('2d');
+                if (!context) throw new Error('Tu navegador no pudo preparar la foto. Prueba con el enlace.');
+                context.fillStyle = '#ffffff';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                let blob;
+                for (const quality of [0.84, 0.72, 0.58]) {
+                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+                    if (!blob) throw new Error('No se pudo preparar la foto. Intenta con otra.');
+                    if (blob.size <= 900 * 1024) break;
+                }
+                if (blob.type !== 'image/jpeg' || blob.size > 900 * 1024) throw new Error('La foto aún pesa demasiado. Elige una imagen más pequeña.');
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(new Error('No se pudo leer la foto.'));
+                    reader.readAsDataURL(blob);
+                });
+                return { uploadId: createBirthdayPhotoUploadId(), dataUrl, size: blob.size, uploadedUrl: '' };
+            } finally {
+                URL.revokeObjectURL(objectUrl);
+                canvas.width = 0;
+                canvas.height = 0;
+            }
+        }
+
+        async function selectBirthdayPhoto(event) {
+            if (birthdaySaveInProgress) return;
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const selection = ++birthdayPhotoSelection;
+            pendingBirthdayPhoto = null;
+            birthdayPhotoProcessing = true;
+            document.getElementById('birthdaySaveButton').disabled = true;
+            document.getElementById('bPhotoKeyBox').hidden = true;
+            setBirthdayPhotoStatus('Preparando tu foto…');
+            try {
+                const prepared = await prepareBirthdayPhoto(file);
+                if (selection !== birthdayPhotoSelection) return;
+                pendingBirthdayPhoto = prepared;
+                document.getElementById('bPhoto').value = '';
+                updateBirthdayPhotoPreview(prepared.dataUrl);
+                document.getElementById('bPhotoKeyBox').hidden = false;
+                document.getElementById('bPhotoUrlDetails').open = false;
+                setBirthdayPhotoStatus(`Foto lista (${Math.ceil(prepared.size / 1024)} KB). Se subirá al guardar.`, 'success');
+            } catch (error) {
+                if (selection !== birthdayPhotoSelection) return;
+                document.getElementById('bPhotoFile').value = '';
+                const currentUrl = document.getElementById('bPhoto').value.trim();
+                updateBirthdayPhotoPreview(/^https?:\/\//i.test(currentUrl) ? currentUrl : '');
+                setBirthdayPhotoStatus(error.message || 'No se pudo preparar la foto.', 'error');
+            } finally {
+                if (selection === birthdayPhotoSelection) {
+                    birthdayPhotoProcessing = false;
+                    document.getElementById('birthdaySaveButton').disabled = birthdaySaveInProgress;
+                }
+            }
+        }
+
+        async function uploadBirthdayPhotoToGitHub() {
+            const pending = pendingBirthdayPhoto;
+            if (!pending) return document.getElementById('bPhoto').value.trim();
+            if (pending.uploadedUrl) return pending.uploadedUrl;
+            const uploadKey = document.getElementById('bPhotoUploadKey').value;
+            if (uploadKey.length < 24) throw new Error('Escribe la clave de carga de al menos 24 caracteres configurada en Apps Script.');
+            if (!navigator.onLine) throw new Error('Necesitas conexión a internet para subir la foto.');
+            if (!googleAppsScriptUrl) throw new Error('Falta configurar la conexión con Apps Script.');
+            setBirthdayPhotoStatus('Subiendo foto a GitHub… Mantén esta ventana abierta.');
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 60000);
+            try {
+                // Debemos poder leer la confirmación: una respuesta opaca no confirma la subida.
+                // No usar keepalive: la foto puede exceder el límite de ese modo.
+                const response = await fetch(googleAppsScriptUrl, {
+                    method: 'POST', mode: 'cors', credentials: 'omit', redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    signal: controller.signal,
+                    body: JSON.stringify({ action: 'uploadBirthdayPhoto', uploadId: pending.uploadId, uploadKey, imageBase64: pending.dataUrl.split(',')[1] })
+                });
+                if (!response.ok) throw new Error('Apps Script no respondió correctamente. Revisa la implementación y vuelve a intentar.');
+                let result;
+                try { result = await response.json(); }
+                catch { throw new Error('Activa el complemento FotosGitHub en Apps Script y publica una nueva versión.'); }
+                if (!result || result.action !== 'uploadBirthdayPhoto') throw new Error('Falta activar FotosGitHub en el doPost de Apps Script.');
+                if (!result.ok) throw new Error(result.error || 'GitHub no confirmó la subida.');
+                let url;
+                try { url = new URL(result.url); }
+                catch { throw new Error('La subida no devolvió un enlace válido.'); }
+                if (url.protocol !== 'https:' || url.hostname !== 'raw.githubusercontent.com' || url.username || url.password || url.search || url.hash || !/^\/[A-Za-z0-9_.\/-]+\.jpg$/.test(decodeURIComponent(url.pathname))) {
+                    throw new Error('La subida no devolvió un enlace de foto válido.');
+                }
+                pending.uploadedUrl = url.href;
+                document.getElementById('bPhoto').value = url.href;
+                document.getElementById('bPhotoUploadKey').value = '';
+                setBirthdayPhotoStatus('Foto confirmada en GitHub. Guardando el cumpleaños…', 'success');
+                return url.href;
+            } catch (error) {
+                if (error.name === 'AbortError') throw new Error('La subida tardó demasiado. Reintenta sin cambiar la foto para comprobar la misma carga.');
+                if (error instanceof TypeError) throw new Error('No se pudo confirmar la carga. Revisa tu conexión y que Apps Script esté publicado con acceso para Cualquier persona. Reintenta sin cambiar la foto.');
+                throw error;
+            } finally { clearTimeout(timer); }
+        }
+
         function openModal() {
+            if (birthdaySaveInProgress) return;
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-cake-candles text-pink-500 animate-bounce"></i> Nuevo Cumpleaños';
             document.getElementById('birthdayForm').reset();
+            resetBirthdayPhotoEditor();
             document.getElementById('editIndex').value = '';
             const modal = document.getElementById('birthdayModal');
             modal.classList.remove('hidden');
@@ -3235,7 +3484,9 @@
             }, 10);
         }
 
-        function closeModal() {
+        function closeModal(force = false) {
+            if (birthdaySaveInProgress && !force) return;
+            resetBirthdayPhotoEditor();
             const modal = document.getElementById('birthdayModal');
             modal.classList.add('opacity-0');
             document.getElementById('modalContent').classList.add('scale-90');
@@ -3244,11 +3495,12 @@
 
         async function saveBirthday(event) {
             event.preventDefault();
+            if (birthdaySaveInProgress || birthdayPhotoProcessing) return;
             const index = document.getElementById('editIndex').value;
             const name = document.getElementById('bName').value.trim();
             const date = document.getElementById('bDate').value;
             const category = document.getElementById('bCategory').value;
-            const photo = document.getElementById('bPhoto').value.trim();
+            let photo = document.getElementById('bPhoto').value.trim();
             const notes = document.getElementById('bNotes').value.trim();
 
             if (!name || !date) {
@@ -3256,67 +3508,80 @@
                 return;
             }
 
-            if (index === '') {
-                const birthday = { id: createBirthdayId(), name, date, category, photo, notes };
-                birthdays.push(birthday);
-                saveData();
-                closeModal();
-                refreshAllViews();
-                triggerPartyConfetti();
-                showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
+            if (!pendingBirthdayPhoto && photo && !/^https?:\/\//i.test(photo)) {
+                setBirthdayPhotoStatus('El enlace de la foto debe comenzar con https:// o http://.', 'error');
+                return;
+            }
+            setBirthdayFormBusy(true);
+            try {
+                photo = await uploadBirthdayPhotoToGitHub();
+                if (index === '') {
+                    const birthday = { id: createBirthdayId(), name, date, category, photo, notes };
+                    birthdays.push(birthday);
+                    saveData();
+                    closeModal(true);
+                    refreshAllViews();
+                    triggerPartyConfetti();
+                    showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
 
-                const sent = await sendToGoogleSheets({
-                    action: 'add',
-                    id: birthday.id,
-                    name: birthday.name,
-                    date: birthday.date,
-                    category: birthday.category,
-                    notes: birthday.notes,
-                    photo: birthday.photo
-                });
-                if (!sent && googleAppsScriptUrl) {
-                    showCustomModal('Guardado localmente', 'No se pudo confirmar el envío a Google Sheets. Revisa la conexión y vuelve a sincronizar.');
-                } else if (sent) {
+                    const sent = await sendToGoogleSheets({
+                        action: 'add',
+                        id: birthday.id,
+                        name: birthday.name,
+                        date: birthday.date,
+                        category: birthday.category,
+                        notes: birthday.notes,
+                        photo: birthday.photo
+                    });
+                    if (!sent && googleAppsScriptUrl) {
+                        showCustomModal('Guardado localmente', 'No se pudo confirmar el envío a Google Sheets. Revisa la conexión y vuelve a sincronizar.');
+                    } else if (sent) {
+                        setTimeout(() => syncFromGoogleSheets(true), 1500);
+                    }
+                } else {
+                    const birthday = birthdays[index];
+
+                    // Guardamos los datos originales para que Apps Script pueda
+                    // encontrar el registro aunque una versión antigua no tenga ID.
+                    const originalName = birthday.name || '';
+                    const originalDate = birthday.date || '';
+
+                    const updated = { ...birthday, name, date, category, photo, notes };
+
+                    const sent = await sendToGoogleSheets({
+                        action: 'update',
+                        id: birthday.id || '',
+                        row: birthday.row || '',
+                        originalName,
+                        originalDate,
+                        name: updated.name,
+                        date: updated.date,
+                        category: updated.category,
+                        notes: updated.notes,
+                        photo: updated.photo
+                    });
+
+                    if (!sent && googleAppsScriptUrl) {
+                        showCustomModal('Error al actualizar', 'No se pudo enviar la modificación a Google Sheets.');
+                        return;
+                    }
+
+                    birthdays[index] = updated;
+                    saveData();
+                    closeModal(true);
+                    refreshAllViews();
+                    showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
                     setTimeout(() => syncFromGoogleSheets(true), 1500);
                 }
-            } else {
-                const birthday = birthdays[index];
-
-                // Guardamos los datos originales para que Apps Script pueda
-                // encontrar el registro aunque una versión antigua no tenga ID.
-                const originalName = birthday.name || '';
-                const originalDate = birthday.date || '';
-
-                const updated = { ...birthday, name, date, category, photo, notes };
-
-                const sent = await sendToGoogleSheets({
-                    action: 'update',
-                    id: birthday.id || '',
-                    row: birthday.row || '',
-                    originalName,
-                    originalDate,
-                    name: updated.name,
-                    date: updated.date,
-                    category: updated.category,
-                    notes: updated.notes,
-                    photo: updated.photo
-                });
-
-                if (!sent && googleAppsScriptUrl) {
-                    showCustomModal('Error al actualizar', 'No se pudo enviar la modificación a Google Sheets.');
-                    return;
-                }
-
-                birthdays[index] = updated;
-                saveData();
-                closeModal();
-                refreshAllViews();
-                showCustomModal('¡Actualizado!', 'Los datos se han modificado con éxito.');
-                setTimeout(() => syncFromGoogleSheets(true), 1500);
+            } catch (error) {
+                setBirthdayPhotoStatus(error.message || 'No se pudo guardar. Revisa la conexión e inténtalo de nuevo.', 'error');
+            } finally {
+                setBirthdayFormBusy(false);
             }
         }
 
         function editBirthday(index) {
+            if (birthdaySaveInProgress) return;
             const b = birthdays[index];
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen text-pink-500 animate-pulse"></i> Editar Cumpleaños';
             document.getElementById('editIndex').value = index;
@@ -3325,6 +3590,7 @@
             document.getElementById('bCategory').value = b.category || 'Otro';
             document.getElementById('bPhoto').value = b.photo || '';
             document.getElementById('bNotes').value = b.notes || '';
+            resetBirthdayPhotoEditor();
 
             const modal = document.getElementById('birthdayModal');
             modal.classList.remove('hidden');
