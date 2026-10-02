@@ -1342,12 +1342,14 @@
 
     <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6 z-10">
         
-        <div class="bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+        <div id="cumplePushNotice" hidden>
+          <div class="bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
             <p id="cumplePushStatusText" role="status" aria-live="polite" class="text-sm text-slate-700 dark:text-slate-200 break-words">Activa los avisos de cumpleaños en este dispositivo.</p>
             <div class="flex flex-wrap gap-2 shrink-0">
                 <button type="button" onclick="requestNotificationPermission()" class="bg-pink-600 text-white text-sm font-semibold rounded-xl px-4 py-3">Activar avisos</button>
                 <button type="button" id="cumplePushTestButton" onclick="window.cumpleTestPush()" disabled class="bg-white dark:bg-slate-700 text-slate-700 dark:text-white border border-slate-300 text-sm font-semibold rounded-xl px-4 py-3 disabled:opacity-50">Probar aviso</button>
             </div>
+          </div>
         </div>
 
         <!-- Banner Superior -->
@@ -2261,7 +2263,7 @@
                     showCustomModal('Falta completar las notificaciones', birthdayPhotoAttribute(detail));
                     return false;
                 }
-                showCustomModal('Dispositivo registrado', 'El servidor confirmó este dispositivo y el envío automático. Pulsa Probar aviso para comprobar que aparece una notificación.');
+                showCustomModal('Avisos activados', 'Este dispositivo está registrado para recibir avisos. Puedes volver a este menú desde la campanita.<br><br><button type="button" onclick="window.cumpleTestPush()" class="bg-pink-600 text-white font-semibold rounded-xl px-4 py-3">Probar aviso</button>');
                 return true;
             } catch (_) {
                 showCustomModal('No se pudo activar', 'Revisa los permisos de notificaciones y la conexión a Internet.');
@@ -5167,9 +5169,19 @@
             window.cumplePushReady = false;
             window.cumplePushState = { phase: 'pending', message: 'Activa los avisos de cumpleaños en este dispositivo.' };
 
+            function hasConfirmedRegistration() {
+                if (!('Notification' in window) || Notification.permission !== 'granted') return false;
+                try {
+                    return Boolean(localStorage.getItem(ID_KEY)) && Number(localStorage.getItem(SYNC_KEY)) > 0;
+                } catch (_) { return false; }
+            }
+
             function updateState(phase, message) {
                 window.cumplePushReady = phase === 'ready';
                 window.cumplePushState = { phase, message };
+                const notice = document.getElementById('cumplePushNotice');
+                const checkingInBackground = ['pending', 'registering', 'offline'].includes(phase) && hasConfirmedRegistration();
+                if (notice) notice.hidden = phase === 'ready' || checkingInBackground;
                 const box = document.getElementById('cumplePushStatusText');
                 if (box) box.textContent = message;
                 const badge = document.getElementById('notifBadge');
@@ -5230,7 +5242,7 @@
                 if (!result.automaticReady) throw new Error(result.message || 'Falta activar el envío automático en Apps Script.');
                 localStorage.setItem(SYNC_KEY, String(Date.now()));
                 retryCount = 0; clearTimeout(retryTimer);
-                updateState('ready', 'Avisos configurados. Usa Probar aviso para comprobar la recepción.');
+                updateState('ready', 'Avisos activados en este dispositivo. Puedes probarlos desde la campanita.');
                 return true;
             }
 
@@ -5343,17 +5355,25 @@
                 catch (_) { return false; }
             };
             window.cumpleTestPush = async function () {
-                if (!(await window.enableBackgroundPushNotifications())) return;
-                try {
-                    const result = await postPush('testPushDevice', { installationId: localStorage.getItem(ID_KEY) });
-                    if (!result.sent) throw new Error(result.message || 'Firebase no aceptó la prueba.');
-                    updateState('ready', 'Firebase aceptó el aviso de prueba. Comprueba si aparece en las notificaciones del dispositivo.');
-                } catch (error) { updateState('error', error.message); }
+                if (await window.enableBackgroundPushNotifications()) {
+                    try {
+                        const result = await postPush('testPushDevice', { installationId: localStorage.getItem(ID_KEY) });
+                        if (!result.sent) throw new Error(result.message || 'Firebase no aceptó la prueba.');
+                        updateState('ready', 'Firebase aceptó el aviso de prueba. Comprueba si aparece en las notificaciones del dispositivo.');
+                    } catch (error) { updateState('error', error.message); }
+                }
+                if (typeof showCustomModal === 'function' && typeof birthdayPhotoAttribute === 'function') {
+                    showCustomModal('Prueba de notificaciones', birthdayPhotoAttribute(window.cumplePushState.message));
+                }
             };
 
             function resume() {
                 if (!('Notification' in window) || Notification.permission !== 'granted') {
-                    if (window.cumplePushReady) updateState('permission', 'Los avisos ya no tienen permiso. Revisa los ajustes del navegador.');
+                    if ('Notification' in window) {
+                        updateState('permission', Notification.permission === 'denied'
+                            ? 'Los avisos están bloqueados en los permisos del navegador.'
+                            : 'Pulsa Activar avisos y permite las notificaciones.');
+                    }
                     return;
                 }
                 const lastSync = Number(localStorage.getItem(SYNC_KEY) || 0);
@@ -5364,6 +5384,7 @@
             window.addEventListener('pageshow', resume);
             window.addEventListener('focus', resume);
             document.addEventListener('visibilitychange', () => { if (!document.hidden) resume(); });
+            updateState(window.cumplePushState.phase, window.cumplePushState.message);
             const problem = configProblem();
             if (problem) updateState('config', problem);
             else resume();
