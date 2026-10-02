@@ -1342,6 +1342,14 @@
 
     <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6 z-10">
         
+        <div class="bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+            <p id="cumplePushStatusText" role="status" aria-live="polite" class="text-sm text-slate-700 dark:text-slate-200 break-words">Activa los avisos de cumpleaños en este dispositivo.</p>
+            <div class="flex flex-wrap gap-2 shrink-0">
+                <button type="button" onclick="requestNotificationPermission()" class="bg-pink-600 text-white text-sm font-semibold rounded-xl px-4 py-3">Activar avisos</button>
+                <button type="button" id="cumplePushTestButton" onclick="window.cumpleTestPush()" disabled class="bg-white dark:bg-slate-700 text-slate-700 dark:text-white border border-slate-300 text-sm font-semibold rounded-xl px-4 py-3 disabled:opacity-50">Probar aviso</button>
+            </div>
+        </div>
+
         <!-- Banner Superior -->
         <div id="topFeaturedBirthdayContainer" class="flex flex-col gap-4"></div>
 
@@ -1524,7 +1532,7 @@
                             <input id="bPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="selectBirthdayPhoto(event)" aria-describedby="bPhotoHelp bPhotoStatus" hidden>
                         </div>
                     </div>
-                    <p id="bPhotoHelp" class="birthday-photo-help">Elige de tu galería o computadora. JPG, PNG o WebP, hasta 12 MB. Se subirá a GitHub al guardar; el enlace será público.</p>
+                    <p id="bPhotoHelp" class="birthday-photo-help">Elige de tu galería o computadora. JPG, PNG o WebP, hasta 12 MB. Se subirá a GitHub al guardar. La foto será pública.</p>
                     <div id="bPhotoKeyBox" class="birthday-photo-key" hidden>
                         <label for="bPhotoUploadKey" class="birthday-photo-label">Clave para subir fotos</label>
                         <input type="password" id="bPhotoUploadKey" autocomplete="off" minlength="24" maxlength="160" spellcheck="false" placeholder="Clave de carga configurada en Apps Script" aria-describedby="bPhotoKeyHelp">
@@ -1532,9 +1540,10 @@
                     </div>
                     <p id="bPhotoStatus" class="birthday-photo-status" role="status" aria-live="polite"></p>
                     <details id="bPhotoUrlDetails" class="birthday-photo-url">
-                        <summary>O usar el enlace de una foto</summary>
-                        <label for="bPhoto" class="birthday-photo-label">Enlace de la foto</label>
-                        <input type="url" id="bPhoto" placeholder="https://ejemplo.com/foto.jpg" oninput="useBirthdayPhotoUrl()">
+                        <summary>O usar una foto que ya está subida</summary>
+                        <label for="bPhoto" class="birthday-photo-label">Nombre de archivo o enlace</label>
+                        <input type="text" id="bPhoto" placeholder="11b9418f-3d87-4849-be3d-28e37ce3f699.jpg" spellcheck="false" oninput="useBirthdayPhotoUrl()" aria-describedby="bPhotoReferenceHelp">
+                        <p id="bPhotoReferenceHelp" class="birthday-photo-help">Escribe el nombre del archivo en fotos/cumpleanos. Si escribes solo el identificador, se añade .jpg. También puedes usar un enlace.</p>
                     </details>
                 </div>
                 <div>
@@ -1729,6 +1738,60 @@
         // Sobrescribe cualquier URL vieja guardada por versiones anteriores.
         localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
         localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
+
+        // La hoja guarda el nombre; la URL solo se construye al mostrar la imagen.
+        function getBirthdayPhotosBaseUrl() {
+            return 'https://raw.githubusercontent.com/carlosmarcenaro64-cell/adivinalapalabrav01/main/fotos/cumpleanos/';
+        }
+
+        function normalizeBirthdayPhotoFileName(value) {
+            let name = String(value || '').trim();
+            if (/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(name)) name += '.jpg';
+            // Un archivo de imagen, nunca una ruta ni una expresión de la hoja.
+            if (name.length > 200 || !/^[A-Za-z0-9À-ÿ][A-Za-z0-9À-ÿ._ ()-]*\.(?:jpe?g|png|webp|gif|avif)$/i.test(name)) return '';
+            return name;
+        }
+
+        function normalizeBirthdayPhotoReference(value) {
+            const photo = String(value || '').trim();
+            if (!photo) return '';
+            if (/^https?:\/\//i.test(photo)) {
+                // Conserva los enlaces anteriores y los de otros sitios.
+                if (!/^https?:\/\/[^\s/?#@<>"\\]+(?:[/?#][^\s<>"\\]*)?$/i.test(photo)) return '';
+                const base = getBirthdayPhotosBaseUrl();
+                const prefixes = [base];
+                const repository = base.match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/fotos\/cumpleanos\/$/);
+                if (repository) {
+                    prefixes.push('https://github.com/' + repository[1] + '/' + repository[2] + '/blob/' + repository[3] + '/fotos/cumpleanos/');
+                    prefixes.push('https://' + repository[1] + '.github.io/' + repository[2] + '/fotos/cumpleanos/');
+                }
+                for (const prefix of prefixes) {
+                    if (!photo.startsWith(prefix)) continue;
+                    const suffix = photo.slice(prefix.length);
+                    if (/[?#]/.test(suffix)) continue;
+                    try {
+                        const filename = normalizeBirthdayPhotoFileName(decodeURIComponent(suffix));
+                        if (filename) return filename;
+                    } catch (_) {}
+                }
+                return photo;
+            }
+            return normalizeBirthdayPhotoFileName(photo.replace(/^(?:\.\/)?fotos\/cumpleanos\//, ''));
+        }
+
+        function getBirthdayPhotoUrl(value) {
+            const reference = normalizeBirthdayPhotoReference(value);
+            if (!reference) return '';
+            return /^https?:\/\//i.test(reference)
+                ? reference
+                : getBirthdayPhotosBaseUrl() + encodeURIComponent(reference);
+        }
+
+        function birthdayPhotoAttribute(value) {
+            return String(value || '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[character]);
+        }
 
         function createBirthdayId() {
             if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -1944,7 +2007,7 @@
             window.addEventListener('load', async () => {
                 try {
                     const registration = await navigator.serviceWorker.register('./sw.js', {
-                        scope: './'
+                        scope: './', updateViaCache: 'none'
                     });
                     registration.update().catch(() => {});
                 } catch (err) {
@@ -2166,7 +2229,7 @@
                 return;
             }
 
-            if (Notification.permission === 'granted') {
+            if (Notification.permission === 'granted' && window.cumplePushReady === true) {
                 if (badge) badge.classList.add('hidden');
             } else {
                 if (badge) badge.classList.remove('hidden');
@@ -2174,56 +2237,36 @@
         }
 
         async function requestNotificationPermission() {
+            const browser = getCumpleBrowserInfo();
+            if (browser.isIOS && !browser.isStandalone) {
+                openInstallModal();
+                return false;
+            }
             if (!('Notification' in window)) {
-                showCustomModal('Aviso', 'Tu navegador no soporta notificaciones.');
+                showCustomModal('Avisos no disponibles', 'Este navegador no admite notificaciones. Prueba un navegador compatible o la app instalada.');
                 return false;
             }
-
-            if (Notification.permission === 'granted') {
-                checkNotificationPermissionUI();
-
-                if (typeof window.enableBackgroundPushNotifications === 'function') {
-                    await window.enableBackgroundPushNotifications();
-                }
-
-                showCustomModal(
-                    'Notificaciones Activas',
-                    'Ya tienes activados los recordatorios de cumpleaños y las notificaciones en segundo plano.'
-                );
-                return true;
-            }
-
             if (Notification.permission === 'denied') {
-                showCustomModal(
-                    'Notificaciones Bloqueadas',
-                    'Las notificaciones están bloqueadas para este sitio. Actívalas desde la configuración del navegador y vuelve a intentarlo.'
-                );
+                showCustomModal('Notificaciones bloqueadas', 'Permite las notificaciones en los ajustes de este sitio y vuelve a intentarlo.');
                 return false;
             }
-
-            const permission = await Notification.requestPermission();
-            checkNotificationPermissionUI();
-
-            if (permission === 'granted') {
-                if (typeof window.enableBackgroundPushNotifications === 'function') {
-                    await window.enableBackgroundPushNotifications();
+            try {
+                // Solicitar permiso dentro del toque, antes de cargar Firebase.
+                const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+                if (permission !== 'granted') return false;
+                const ready = typeof window.enableBackgroundPushNotifications === 'function' && await window.enableBackgroundPushNotifications();
+                checkNotificationPermissionUI();
+                if (!ready) {
+                    const detail = window.cumplePushState && window.cumplePushState.message || 'El módulo de notificaciones no terminó de cargar. Recarga la app.';
+                    showCustomModal('Falta completar las notificaciones', birthdayPhotoAttribute(detail));
+                    return false;
                 }
-
-                triggerPartyConfetti();
-                showCustomModal(
-                    '¡Notificaciones Activadas!',
-                    'Recibirás recordatorios personalizados 7 días antes, 3 días antes, el día anterior, 12 horas antes, el mismo día y un recordatorio por la noche.'
-                );
-
-                checkAndTriggerAlerts();
+                showCustomModal('Dispositivo registrado', 'El servidor confirmó este dispositivo y el envío automático. Pulsa Probar aviso para comprobar que aparece una notificación.');
                 return true;
+            } catch (_) {
+                showCustomModal('No se pudo activar', 'Revisa los permisos de notificaciones y la conexión a Internet.');
+                return false;
             }
-
-            showCustomModal(
-                'Aviso',
-                'No se activaron las notificaciones. Puedes habilitarlas después desde el icono de la campana.'
-            );
-            return false;
         }
 
         function getLocalDateKey(date = new Date()) {
@@ -2254,8 +2297,7 @@
         }
 
         function getBirthdayPhotoForNotification(birthday) {
-            const photo = String((birthday && birthday.photo) || '').trim();
-            return /^https?:\/\//i.test(photo) ? photo : '';
+            return getBirthdayPhotoUrl(birthday && birthday.photo);
         }
 
         function buildPersonalizedBirthdayNotification(birthday, type) {
@@ -2430,7 +2472,7 @@
             const initial = (safeName.charAt(0) || '?').toUpperCase();
 
             const media = content.photo
-                ? `<img class="birthday-inapp-photo" src="${content.photo}" alt="${safeName}" onerror="this.outerHTML='<div class=&quot;birthday-inapp-icon&quot;>${theme.icon}</div>'">`
+                ? `<img class="birthday-inapp-photo" src="${birthdayPhotoAttribute(content.photo)}" alt="${safeName}" onerror="this.outerHTML='<div class=&quot;birthday-inapp-icon&quot;>${theme.icon}</div>'">`
                 : `<div class="birthday-inapp-icon">${theme.icon}</div>`;
 
             popup.innerHTML = `
@@ -2819,8 +2861,9 @@
                 ];
                 const gradientClass = gradients[index % gradients.length];
 
-                let avatarContent = nextBday.photo && nextBday.photo.startsWith('http') ? 
-                    `<img src="${nextBday.photo}" alt="${nextBday.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${nextBday.name.charAt(0).toUpperCase()}';">` : 
+                const photoUrl = getBirthdayPhotoUrl(nextBday.photo);
+                let avatarContent = photoUrl ? 
+                    `<img src="${birthdayPhotoAttribute(photoUrl)}" alt="${nextBday.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${nextBday.name.charAt(0).toUpperCase()}';">` : 
                     nextBday.name.charAt(0).toUpperCase();
 
                 html += `
@@ -3056,10 +3099,11 @@
             const name = String(person.name || 'Cumpleañero/a').trim();
             const initial = (name.charAt(0) || '?').toUpperCase();
 
-            if (person.photo && /^https?:\/\//i.test(person.photo)) {
+            const photoUrl = getBirthdayPhotoUrl(person.photo);
+            if (photoUrl) {
                 photoBox.innerHTML = `
                     <img class="birthday-profile-photo"
-                         src="${person.photo}"
+                         src="${birthdayPhotoAttribute(photoUrl)}"
                          alt="${name}"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                     <div class="birthday-profile-avatar" style="display:none">${initial}</div>
@@ -3216,8 +3260,9 @@
                 const formattedDate = `${d} de ${monthNames[parseInt(m)-1]}`;
                 const ageSubText = b.hasRealYear ? ` (${b.turnsAge} años)` : '';
 
-                let avatarCardContent = b.photo && b.photo.startsWith('http') ?
-                    `<img src="${b.photo}" alt="${b.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${b.name.charAt(0).toUpperCase()}';">` :
+                const photoUrl = getBirthdayPhotoUrl(b.photo);
+                let avatarCardContent = photoUrl ?
+                    `<img src="${birthdayPhotoAttribute(photoUrl)}" alt="${b.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${b.name.charAt(0).toUpperCase()}';">` :
                     b.name.charAt(0).toUpperCase();
 
                 const animDelay = (idx % 6) * 0.05;
@@ -3312,7 +3357,7 @@
             document.getElementById('birthdaySaveButton').disabled = birthdaySaveInProgress;
             setBirthdayPhotoStatus('');
             const url = document.getElementById('bPhoto').value.trim();
-            updateBirthdayPhotoPreview(/^https?:\/\//i.test(url) ? url : '');
+            updateBirthdayPhotoPreview(getBirthdayPhotoUrl(url));
         }
 
         function removeBirthdayPhoto() {
@@ -3385,7 +3430,7 @@
                     reader.onerror = () => reject(new Error('No se pudo leer la foto.'));
                     reader.readAsDataURL(blob);
                 });
-                return { uploadId: createBirthdayPhotoUploadId(), dataUrl, size: blob.size, uploadedUrl: '' };
+                return { uploadId: createBirthdayPhotoUploadId(), dataUrl, size: blob.size, uploadedFileName: '' };
             } finally {
                 URL.revokeObjectURL(objectUrl);
                 canvas.width = 0;
@@ -3416,7 +3461,7 @@
                 if (selection !== birthdayPhotoSelection) return;
                 document.getElementById('bPhotoFile').value = '';
                 const currentUrl = document.getElementById('bPhoto').value.trim();
-                updateBirthdayPhotoPreview(/^https?:\/\//i.test(currentUrl) ? currentUrl : '');
+                updateBirthdayPhotoPreview(getBirthdayPhotoUrl(currentUrl));
                 setBirthdayPhotoStatus(error.message || 'No se pudo preparar la foto.', 'error');
             } finally {
                 if (selection === birthdayPhotoSelection) {
@@ -3428,8 +3473,8 @@
 
         async function uploadBirthdayPhotoToGitHub() {
             const pending = pendingBirthdayPhoto;
-            if (!pending) return document.getElementById('bPhoto').value.trim();
-            if (pending.uploadedUrl) return pending.uploadedUrl;
+            if (!pending) return normalizeBirthdayPhotoReference(document.getElementById('bPhoto').value);
+            if (pending.uploadedFileName) return pending.uploadedFileName;
             const uploadKey = document.getElementById('bPhotoUploadKey').value;
             if (uploadKey.length < 24) throw new Error('Escribe la clave de carga de al menos 24 caracteres configurada en Apps Script.');
             if (!navigator.onLine) throw new Error('Necesitas conexión a internet para subir la foto.');
@@ -3458,11 +3503,18 @@
                 if (url.protocol !== 'https:' || url.hostname !== 'raw.githubusercontent.com' || url.username || url.password || url.search || url.hash || !/^\/[A-Za-z0-9_.\/-]+\.jpg$/.test(decodeURIComponent(url.pathname))) {
                     throw new Error('La subida no devolvió un enlace de foto válido.');
                 }
-                pending.uploadedUrl = url.href;
-                document.getElementById('bPhoto').value = url.href;
+                const filename = pending.uploadId + '.jpg';
+                if (url.href !== getBirthdayPhotoUrl(filename) ||
+                    (result.filename && result.filename !== filename) ||
+                    (result.path && result.path !== 'fotos/cumpleanos/' + filename)) {
+                    throw new Error('La foto se guardó en otra carpeta. Revisa la configuración de fotos de CumpleApp antes de continuar.');
+                }
+                // Solo este nombre se guarda en la hoja y en los datos locales.
+                pending.uploadedFileName = filename;
+                document.getElementById('bPhoto').value = filename;
                 document.getElementById('bPhotoUploadKey').value = '';
                 setBirthdayPhotoStatus('Foto confirmada en GitHub. Guardando el cumpleaños…', 'success');
-                return url.href;
+                return filename;
             } catch (error) {
                 if (error.name === 'AbortError') throw new Error('La subida tardó demasiado. Reintenta sin cambiar la foto para comprobar la misma carga.');
                 if (error instanceof TypeError) throw new Error('No se pudo confirmar la carga. Revisa tu conexión y que Apps Script esté publicado con acceso para Cualquier persona. Reintenta sin cambiar la foto.');
@@ -3508,8 +3560,8 @@
                 return;
             }
 
-            if (!pendingBirthdayPhoto && photo && !/^https?:\/\//i.test(photo)) {
-                setBirthdayPhotoStatus('El enlace de la foto debe comenzar con https:// o http://.', 'error');
+            if (!pendingBirthdayPhoto && photo && !normalizeBirthdayPhotoReference(photo)) {
+                setBirthdayPhotoStatus('Escribe un nombre de imagen válido (por ejemplo, el identificador con .jpg) o un enlace http:// o https://.', 'error');
                 return;
             }
             setBirthdayFormBusy(true);
@@ -3588,7 +3640,7 @@
             document.getElementById('bName').value = b.name;
             document.getElementById('bDate').value = b.date;
             document.getElementById('bCategory').value = b.category || 'Otro';
-            document.getElementById('bPhoto').value = b.photo || '';
+            document.getElementById('bPhoto').value = normalizeBirthdayPhotoReference(b.photo) || b.photo || '';
             document.getElementById('bNotes').value = b.notes || '';
             resetBirthdayPhotoEditor();
 
@@ -3642,8 +3694,9 @@
             const photoBox = document.getElementById('birthdayCelebrationPhoto');
             const nameBox = document.getElementById('birthdayCelebrationName');
             nameBox.textContent = person.name || 'Cumpleañero/a';
-            if (person.photo && /^https?:\/\//i.test(person.photo)) {
-                photoBox.innerHTML = `<img class="birthday-photo" src="${person.photo}" alt="${person.name || 'Cumpleañero/a'}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"> <div class="birthday-avatar-fallback" style="display:none">${(person.name||'?').charAt(0).toUpperCase()}</div>`;
+            const photoUrl = getBirthdayPhotoUrl(person.photo);
+            if (photoUrl) {
+                photoBox.innerHTML = `<img class="birthday-photo" src="${birthdayPhotoAttribute(photoUrl)}" alt="${person.name || 'Cumpleañero/a'}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"> <div class="birthday-avatar-fallback" style="display:none">${(person.name||'?').charAt(0).toUpperCase()}</div>`;
             } else {
                 photoBox.innerHTML = `<div class="birthday-avatar-fallback">${(person.name||'?').charAt(0).toUpperCase()}</div>`;
             }
@@ -3734,11 +3787,12 @@
 
             const name = person.name || 'Cumpleañero/a';
 
-            if (person.photo && /^https?:\/\//i.test(person.photo)) {
+            const photoUrl = getBirthdayPhotoUrl(person.photo);
+            if (photoUrl) {
                 photoBox.innerHTML = `
                     <div class="birthday-entry-crown">👑</div>
                     <img class="birthday-entry-photo"
-                         src="${person.photo}"
+                         src="${birthdayPhotoAttribute(photoUrl)}"
                          alt="${name}"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                     <div class="birthday-entry-avatar" style="display:none">${(name.charAt(0) || '?').toUpperCase()}</div>
@@ -4268,7 +4322,8 @@
                         🕒 Trigger automático: <strong>${trigger.exists ? 'Activo' : 'No encontrado'}</strong><br>
                         ⏱️ Intervalo configurado: <strong>${trigger.intervalMinutes ? trigger.intervalMinutes + ' min' : 'Desconocido'}</strong><br>
                         💓 Última revisión automática: <strong>${heartbeat}</strong><br>
-                        🚀 Último Push enviado: <strong>${d.lastPushSentAt || 'Sin registro todavía'}</strong>
+                        🚀 Último Push aceptado por Firebase: <strong>${d.lastPushSentAt || 'Sin registro todavía'}</strong><br>
+                    🛠️ Último error: <strong>${birthdayPhotoAttribute(d.lastPushError || d.lastAutomaticError || 'Sin error registrado')}</strong>
                     `, d.installationRegistered && trigger.exists ? 'ok' : 'warn');
 
                     return d;
@@ -4292,7 +4347,8 @@
 
                 if (!id || window.cumplePushReady !== true) {
                     setPanelStatus('⏳ Registrando este dispositivo en Firebase...', 'info');
-                    await window.enableBackgroundPushNotifications();
+                    const ready = await window.enableBackgroundPushNotifications();
+                    if (!ready) { setPanelStatus(birthdayPhotoAttribute(window.cumplePushState && window.cumplePushState.message || 'Registro no confirmado.'), 'error'); return ''; }
                     id = await waitForLocalPushInstallationId();
                 }
 
@@ -4317,7 +4373,7 @@
 
                     if (result && result.status === 'success' && result.sent) {
                         setPanelStatus(
-                            '✅ <strong>Push real enviado.</strong><br>Debes recibir una notificación del sistema. Esta prueba usa el mismo camino servidor → Firebase → dispositivo que los recordatorios automáticos.',
+                            '✅ <strong>Firebase aceptó el aviso.</strong><br>Comprueba si aparece en las notificaciones del dispositivo. La aceptación del envío todavía no confirma que el navegador lo haya mostrado.',
                             'ok'
                         );
                     } else {
@@ -4424,11 +4480,7 @@
 
                 const secure = window.isSecureContext;
                 const pushApi = 'PushManager' in window;
-                const firebaseConfig = Boolean(
-                    window.CUMPLEAPP_FIREBASE_CONFIG &&
-                    window.CUMPLEAPP_FIREBASE_CONFIG.projectId &&
-                    window.CUMPLEAPP_VAPID_KEY
-                );
+                const firebaseConfig = typeof window.firebasePushConfigReadyForPanel === 'function' && window.firebasePushConfigReadyForPanel();
 
                 let firebaseSupported = false;
                 try {
@@ -4477,6 +4529,8 @@
                     sw.active &&
                     pushApi &&
                     firebaseConfig &&
+                    Boolean(server && server.firebaseConfigured && server.firebaseConfigured.projectId && server.firebaseConfigured.clientEmail && server.firebaseConfigured.privateKey) &&
+                    Boolean(server && server.lastAutomaticCheckAgeMinutes !== null && server.lastAutomaticCheckAgeMinutes <= 15) &&
                     firebaseSupported &&
                     localId &&
                     serverRegistered &&
@@ -4488,7 +4542,9 @@
                         ? `${server.lastAutomaticCheckAgeMinutes} min`
                         : 'sin registro';
 
+                const pushDetail = birthdayPhotoAttribute(window.cumplePushState && window.cumplePushState.message || 'Pendiente');
                 const lines = [
+                    `📋 Registro: <strong>${pushDetail}</strong>`,
                     `🌐 Navegador: <strong>${getBrowserPushLabel()}</strong>`,
                     `🔒 HTTPS/contexto seguro: <strong>${yesNo(secure)}</strong>`,
                     `🔔 Permiso de notificaciones: <strong>${permission}</strong>`,
@@ -4523,11 +4579,7 @@
                         ? Notification.permission
                         : 'no compatible';
 
-                const firebaseConfig =
-                    Boolean(
-                        window.CUMPLEAPP_FIREBASE_CONFIG &&
-                        window.CUMPLEAPP_FIREBASE_CONFIG.projectId
-                    );
+                const firebaseConfig = typeof window.firebasePushConfigReadyForPanel === 'function' && window.firebasePushConfigReadyForPanel();
 
                 const pushReady = window.cumplePushReady === true;
                 const installed = isInstalledTest();
@@ -4716,7 +4768,7 @@
                     const ok = await window.enableBackgroundPushNotifications();
 
                     if (!ok) {
-                        setPanelStatus('⚠️ Firebase Push no confirmó el registro. Revisa el estado del dispositivo.', 'warn');
+                        setPanelStatus('⚠️ ' + birthdayPhotoAttribute(window.cumplePushState && window.cumplePushState.message || 'Firebase Push no confirmó el registro.') + '', 'warn');
                         return;
                     }
 
@@ -4777,7 +4829,7 @@
                     const registration = await navigator.serviceWorker.getRegistration('./');
 
                     if (!registration) {
-                        await navigator.serviceWorker.register('./sw.js');
+                        await navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' });
                         await navigator.serviceWorker.ready;
                         setPanelStatus('✅ Service Worker registrado correctamente.', 'ok');
                     } else {
@@ -5104,197 +5156,218 @@
 
 
     <!-- ===== FIREBASE CLOUD MESSAGING: NOTIFICACIONES CON LA WEB CERRADA ===== -->
-    <script src="./firebase-config.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-        import {
-            getMessaging,
-            isSupported,
-            register as registerMessaging,
-            onRegistered,
-            onUnregistered,
-            onMessage
-        } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging.js";
+    <script src="./firebase-config.js?v=push-20261002"></script>
+    <script>
+        (function () {
+            const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
+            const ID_KEY = 'cumpleapp_fcm_installation_id';
+            const SYNC_KEY = 'cumpleapp_push_last_server_sync';
+            let sdk, messaging, registration, initPromise, activeAttempt, fidWaiter;
+            let retryTimer, retryCount = 0, lastAttemptAt = 0;
+            window.cumplePushReady = false;
+            window.cumplePushState = { phase: 'pending', message: 'Activa los avisos de cumpleaños en este dispositivo.' };
 
-        let cumplePushStarted = false;
-        window.cumplePushReady = false;
+            function updateState(phase, message) {
+                window.cumplePushReady = phase === 'ready';
+                window.cumplePushState = { phase, message };
+                const box = document.getElementById('cumplePushStatusText');
+                if (box) box.textContent = message;
+                const badge = document.getElementById('notifBadge');
+                if (badge) badge.classList.toggle('hidden', phase === 'ready');
+                const button = document.getElementById('cumplePushTestButton');
+                if (button) button.disabled = phase !== 'ready';
+                window.dispatchEvent(new CustomEvent('cumplepushstatechange'));
+            }
 
-        function firebasePushConfigReady() {
-            const cfg = window.CUMPLEAPP_FIREBASE_CONFIG || {};
-            const vapid = window.CUMPLEAPP_VAPID_KEY || '';
+            function configProblem() {
+                const cfg = window.CUMPLEAPP_FIREBASE_CONFIG || {};
+                const missing = ['apiKey', 'projectId', 'messagingSenderId', 'appId']
+                    .filter(key => !cfg[key] || /REEMPLAZAR|YOUR_|TODO/i.test(String(cfg[key])));
+                if (missing.length) return 'Falta completar firebase-config.js: ' + missing.join(', ') + '.';
+                const vapid = String(window.CUMPLEAPP_VAPID_KEY || '');
+                if (!/^[A-Za-z0-9_-]{87}$/.test(vapid)) return 'Falta la clave pública VAPID válida en firebase-config.js.';
+                return '';
+            }
 
-            return Boolean(
-                cfg.apiKey &&
-                cfg.projectId &&
-                cfg.messagingSenderId &&
-                cfg.appId &&
-                vapid &&
-                !String(cfg.apiKey).includes('REEMPLAZAR') &&
-                !String(vapid).includes('REEMPLAZAR')
-            );
-        }
+            function withTimeout(promise, milliseconds, message) {
+                let timer;
+                return Promise.race([promise, new Promise((_, reject) => {
+                    timer = setTimeout(() => reject(new Error(message)), milliseconds);
+                })]).finally(() => clearTimeout(timer));
+            }
 
-        async function saveInstallationIdToServer(installationId) {
-            if (!installationId || typeof window.sendToGoogleSheets !== 'function') return;
+            async function postPush(action, data) {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 25000);
+                try {
+                    const response = await fetch(googleAppsScriptUrl, {
+                        method: 'POST', mode: 'cors', credentials: 'omit', redirect: 'follow',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action, ...data }), signal: controller.signal
+                    });
+                    if (!response.ok) throw new Error('Apps Script no respondió. Revisa la implementación.');
+                    let result;
+                    try { result = await response.json(); }
+                    catch (_) { throw new Error('Apps Script no devolvió la confirmación. Publica la nueva versión con acceso para Cualquier persona.'); }
+                    if (result.status !== 'success') throw new Error(result.message || 'El servidor rechazó el registro.');
+                    return result;
+                } catch (error) {
+                    if (error.name === 'AbortError') throw new Error('Apps Script tardó demasiado. Se volverá a intentar con conexión.');
+                    if (error instanceof TypeError) throw new Error('No se pudo confirmar la conexión con Apps Script. Revisa Internet y el acceso de la implementación.');
+                    throw error;
+                } finally { clearTimeout(timer); }
+            }
 
-            localStorage.setItem('cumpleapp_fcm_installation_id', installationId);
+            async function confirmRegistration(id) {
+                updateState('registering', 'Confirmando este dispositivo con el servidor…');
+                const result = await postPush('registerPush', {
+                    installationId: id, projectId: window.CUMPLEAPP_FIREBASE_CONFIG.projectId,
+                    userAgent: navigator.userAgent, platform: navigator.platform || ''
+                });
+                if (result.action !== 'registerPush' || result.installationId !== id || result.registered !== true) {
+                    throw new Error('El servidor usa una versión anterior. Actualiza Código.gs y publica una Nueva versión.');
+                }
+                if (!result.automaticReady) throw new Error(result.message || 'Falta activar el envío automático en Apps Script.');
+                localStorage.setItem(SYNC_KEY, String(Date.now()));
+                retryCount = 0; clearTimeout(retryTimer);
+                updateState('ready', 'Avisos configurados. Usa Probar aviso para comprobar la recepción.');
+                return true;
+            }
 
-            await window.sendToGoogleSheets({
-                action: 'registerPush',
-                installationId,
-                userAgent: navigator.userAgent,
-                platform: navigator.platform || '',
-                updatedAt: new Date().toISOString()
-            });
-        }
+            async function showForegroundMessage(payload) {
+                if (!('Notification' in window) || Notification.permission !== 'granted') return;
+                const data = payload && payload.data || {};
+                const notification = payload && payload.notification || {};
+                const photo = getBirthdayPhotoUrl(data.photo);
+                const options = { body: data.body || notification.body || 'Tienes un recordatorio de cumpleaños.',
+                    tag: data.tag || 'cumpleapp-push', data: { url: data.link || location.href },
+                    icon: photo || './icon-192.png' };
+                if (photo) options.image = photo;
+                try { await registration.showNotification(data.title || notification.title || '🎂 CumpleApp', options); }
+                catch (_) {
+                    delete options.image; options.icon = './icon-192.png';
+                    await registration.showNotification(data.title || '🎂 CumpleApp', options);
+                }
+            }
 
-        async function removeInstallationIdFromServer(installationId) {
-            if (!installationId || typeof window.sendToGoogleSheets !== 'function') return;
+            async function initializeMessaging() {
+                if (messaging) return;
+                if (initPromise) return initPromise;
+                initPromise = (async () => {
+                    let appSdk;
+                    try { [appSdk, sdk] = await withTimeout(Promise.all([
+                        import(SDK + 'firebase-app.js'), import(SDK + 'firebase-messaging.js')
+                    ]), 20000, 'Firebase tardó demasiado en cargar. Revisa Internet.'); }
+                    catch (_) { throw new Error('No se pudo cargar Firebase. Revisa Internet y los bloqueadores de contenido.'); }
+                    if (!(await sdk.isSupported())) throw new Error('Este navegador no admite avisos Push. Prueba Chrome en Android o la app instalada en iPhone.');
+                    registration = await withTimeout(navigator.serviceWorker.register('./sw.js', {
+                        scope: './', updateViaCache: 'none'
+                    }), 20000, 'No se pudo registrar sw.js. Comprueba que esté publicado junto a Cumple.html.');
+                    await withTimeout(navigator.serviceWorker.ready, 20000, 'El servicio de notificaciones no se activó. Revisa sw.js y firebase-config.js.');
+                    registration.update().catch(() => {});
+                    const app = appSdk.getApps().length ? appSdk.getApp() : appSdk.initializeApp(window.CUMPLEAPP_FIREBASE_CONFIG);
+                    messaging = sdk.getMessaging(app);
+                    sdk.onRegistered(messaging, id => {
+                        if (!id) return;
+                        localStorage.setItem(ID_KEY, id);
+                        if (fidWaiter) fidWaiter(id);
+                        else if (!activeAttempt) confirmRegistration(id).catch(fail);
+                    });
+                    sdk.onUnregistered(messaging, id => {
+                        if (localStorage.getItem(ID_KEY) !== id) return;
+                        localStorage.removeItem(ID_KEY); localStorage.removeItem(SYNC_KEY);
+                        updateState('pending', 'El registro cambió. Pulsa Activar avisos para renovarlo.');
+                        postPush('unregisterPush', { installationId: id }).catch(() => {});
+                    });
+                    sdk.onMessage(messaging, payload => { showForegroundMessage(payload).catch(() => {
+                        updateState('error', 'Llegó un aviso, pero el navegador no pudo mostrarlo. Revisa sus permisos.');
+                    }); });
+                })();
+                try { await initPromise; }
+                finally { initPromise = null; }
+            }
 
-            await window.sendToGoogleSheets({
-                action: 'unregisterPush',
-                installationId
-            });
+            function scheduleRetry() {
+                clearTimeout(retryTimer);
+                if (retryCount >= 3 || !navigator.onLine) return;
+                const delay = [30000, 120000, 300000][retryCount++];
+                retryTimer = setTimeout(() => window.enableBackgroundPushNotifications(), delay);
+            }
 
-            localStorage.removeItem('cumpleapp_fcm_installation_id');
-        }
+            function fail(error) {
+                updateState('error', error && error.message || 'No se confirmó el registro de notificaciones.');
+                scheduleRetry();
+                return false;
+            }
 
-        async function enableBackgroundPushNotifications() {
-            // En móvil/PWA puede existir un ID local válido aunque el servidor
-            // todavía no tenga ese dispositivo. Cada vez que se revise Push,
-            // volvemos a sincronizarlo para autoreparar ese caso.
-            if (cumplePushStarted) {
-                const storedInstallationId =
-                    localStorage.getItem('cumpleapp_fcm_installation_id') || '';
-
-                if (storedInstallationId) {
+            window.enableBackgroundPushNotifications = function () {
+                if (activeAttempt) return activeAttempt;
+                const problem = configProblem();
+                if (problem) { updateState('config', problem); return Promise.resolve(false); }
+                if (!window.isSecureContext || !('serviceWorker' in navigator) || !('Notification' in window)) {
+                    updateState('unsupported', 'Abre CumpleApp por HTTPS en un navegador que admita notificaciones.');
+                    return Promise.resolve(false);
+                }
+                if (typeof getCumpleBrowserInfo === 'function') {
+                    const info = getCumpleBrowserInfo();
+                    if (info.isIOS && !info.isStandalone) {
+                        updateState('install', 'En iPhone/iPad, agrega CumpleApp a la pantalla de inicio y ábrela desde ese icono.');
+                        return Promise.resolve(false);
+                    }
+                }
+                if (Notification.permission !== 'granted') {
+                    updateState('permission', Notification.permission === 'denied' ? 'Los avisos están bloqueados en los permisos del navegador.' : 'Pulsa Activar avisos y permite las notificaciones.');
+                    return Promise.resolve(false);
+                }
+                if (!navigator.onLine) { updateState('offline', 'Sin conexión. El registro se reintentará al volver Internet.'); return Promise.resolve(false); }
+                lastAttemptAt = Date.now();
+                activeAttempt = (async () => {
                     try {
-                        await saveInstallationIdToServer(storedInstallationId);
-                    } catch (error) {
-                        console.warn('CumpleApp Push: no se pudo resincronizar el dispositivo.', error);
-                    }
+                        updateState('registering', 'Conectando las notificaciones…');
+                        await initializeMessaging();
+                        const idPromise = new Promise(resolve => { fidWaiter = resolve; });
+                        const [, id] = await withTimeout(Promise.all([
+                            sdk.register(messaging, { vapidKey: window.CUMPLEAPP_VAPID_KEY, serviceWorkerRegistration: registration }), idPromise
+                        ]), 30000, 'Firebase no confirmó el dispositivo. Revisa la clave VAPID y la configuración del proyecto.');
+                        return await confirmRegistration(id);
+                    } catch (error) { return fail(error); }
+                    finally { fidWaiter = null; activeAttempt = null; }
+                })();
+                return activeAttempt;
+            };
+            window.resyncCumplePushDevice = () => window.enableBackgroundPushNotifications();
+            window.firebasePushConfigReadyForPanel = () => !configProblem();
+            window.checkFirebaseMessagingSupport = async () => {
+                if (!('Notification' in window) || !('serviceWorker' in navigator)) return false;
+                try { const api = sdk || await import(SDK + 'firebase-messaging.js'); return await api.isSupported(); }
+                catch (_) { return false; }
+            };
+            window.cumpleTestPush = async function () {
+                if (!(await window.enableBackgroundPushNotifications())) return;
+                try {
+                    const result = await postPush('testPushDevice', { installationId: localStorage.getItem(ID_KEY) });
+                    if (!result.sent) throw new Error(result.message || 'Firebase no aceptó la prueba.');
+                    updateState('ready', 'Firebase aceptó el aviso de prueba. Comprueba si aparece en las notificaciones del dispositivo.');
+                } catch (error) { updateState('error', error.message); }
+            };
+
+            function resume() {
+                if (!('Notification' in window) || Notification.permission !== 'granted') {
+                    if (window.cumplePushReady) updateState('permission', 'Los avisos ya no tienen permiso. Revisa los ajustes del navegador.');
+                    return;
                 }
-
-                window.cumplePushReady = Boolean(storedInstallationId);
-                return true;
+                const lastSync = Number(localStorage.getItem(SYNC_KEY) || 0);
+                if (Date.now() - lastAttemptAt < 30000) return;
+                if (!window.cumplePushReady || Date.now() - lastSync > 6 * 3600000) window.enableBackgroundPushNotifications();
             }
-
-            if (!firebasePushConfigReady()) {
-                console.warn('CumpleApp Push: falta configurar firebase-config.js.');
-                return false;
-            }
-
-            if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-                console.warn('CumpleApp Push: este navegador no soporta Web Push.');
-                return false;
-            }
-
-            if (Notification.permission !== 'granted') {
-                return false;
-            }
-
-            const supported = await isSupported();
-            if (!supported) {
-                console.warn('CumpleApp Push: Firebase Messaging no es compatible con este navegador.');
-                return false;
-            }
-
-            try {
-                const app = initializeApp(window.CUMPLEAPP_FIREBASE_CONFIG);
-                const messaging = getMessaging(app);
-
-                const swRegistration = await navigator.serviceWorker.register('./sw.js');
-                await navigator.serviceWorker.ready;
-
-                onRegistered(messaging, (installationId) => {
-                    saveInstallationIdToServer(installationId).catch(console.error);
-                });
-
-                onUnregistered(messaging, (installationId) => {
-                    removeInstallationIdFromServer(installationId).catch(console.error);
-                });
-
-                onMessage(messaging, (payload) => {
-                    const data = payload && payload.data ? payload.data : {};
-                    if (Notification.permission === 'granted') {
-                        swRegistration.showNotification(data.title || '🎂 CumpleApp', {
-                            body: data.body || 'Tienes un recordatorio de cumpleaños.',
-                            tag: data.tag || 'cumpleapp-push',
-                            data: { url: data.link || location.href }
-                        }).catch(console.error);
-                    }
-                });
-
-                await registerMessaging(messaging, {
-                    vapidKey: window.CUMPLEAPP_VAPID_KEY,
-                    serviceWorkerRegistration: swRegistration
-                });
-
-                // Si el SDK ya tenía un registro previo, onRegistered puede no
-                // volver a dispararse inmediatamente. Resincronizamos el ID
-                // que ya existe en localStorage para que el servidor lo tenga.
-                await new Promise(resolve => setTimeout(resolve, 300));
-
-                const storedInstallationId =
-                    localStorage.getItem('cumpleapp_fcm_installation_id') || '';
-
-                if (storedInstallationId) {
-                    await saveInstallationIdToServer(storedInstallationId);
-                }
-
-                cumplePushStarted = true;
-                window.cumplePushReady = Boolean(storedInstallationId);
-                console.log('CumpleApp Push: notificaciones en segundo plano activadas.');
-                return true;
-            } catch (error) {
-                window.cumplePushReady = false;
-                console.error('CumpleApp Push:', error);
-                return false;
-            }
-        }
-
-        window.resyncCumplePushDevice = async function() {
-            const id = localStorage.getItem('cumpleapp_fcm_installation_id') || '';
-            if (!id) return false;
-
-            try {
-                await saveInstallationIdToServer(id);
-                return true;
-            } catch (error) {
-                console.warn('CumpleApp Push: resincronización falló.', error);
-                return false;
-            }
-        };
-
-        window.enableBackgroundPushNotifications = enableBackgroundPushNotifications;
-        window.checkFirebaseMessagingSupport = async function() {
-            try {
-                return await isSupported();
-            } catch (_) {
-                return false;
-            }
-        };
-        window.firebasePushConfigReadyForPanel = firebasePushConfigReady;
-
-        // Si ya dio permiso antes, registra el dispositivo al abrir la app.
-        if (Notification.permission === 'granted') {
-            enableBackgroundPushNotifications();
-        }
-
-        // Conserva el botón de notificaciones exactamente igual.
-        // Después de tocarlo, si el permiso queda concedido, activa Web Push.
-        window.addEventListener('load', () => {
-            const bell = document.getElementById('notifBellBtn');
-            if (bell) {
-                bell.addEventListener('click', () => {
-                    setTimeout(() => {
-                        if (Notification.permission === 'granted') {
-                            enableBackgroundPushNotifications();
-                        }
-                    }, 800);
-                });
-            }
-        });
+            window.addEventListener('online', () => { retryCount = 0; lastAttemptAt = 0; resume(); });
+            window.addEventListener('pageshow', resume);
+            window.addEventListener('focus', resume);
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) resume(); });
+            const problem = configProblem();
+            if (problem) updateState('config', problem);
+            else resume();
+        })();
     </script>
 
 
@@ -5400,7 +5473,7 @@
             }
 
             function notificationsAreActive() {
-                return ('Notification' in window) && Notification.permission === 'granted';
+                return ('Notification' in window) && Notification.permission === 'granted' && window.cumplePushReady === true;
             }
 
             function getInstallInstructionText(info) {
@@ -5474,7 +5547,7 @@
                 if (notifText) {
                     notifText.textContent = iosNeedsInstallFirst
                         ? 'En iPhone/iPad instala CumpleApp primero; luego abre el icono y activa las notificaciones.'
-                        : 'Recibe avisos de cumpleaños aunque cierres CumpleApp.';
+                        : (window.cumplePushState && window.cumplePushState.message || 'Recibe avisos de cumpleaños aunque cierres CumpleApp.');
                 }
 
                 if (installed && notificationsActive) {
@@ -5570,6 +5643,8 @@
                 setTimeout(updateMobileSetupStatus, 1500);
             });
 
+            window.addEventListener('cumplepushstatechange', updateMobileSetupStatus);
+
             window.addEventListener('beforeinstallprompt', function () {
                 setTimeout(updateMobileSetupStatus, 80);
             });
@@ -5593,48 +5668,7 @@
     </script>
 
 
-    <script>
-        (function () {
-            async function autoResyncPushDevice() {
-                if (!navigator.onLine) return;
-                if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
-                const id = localStorage.getItem('cumpleapp_fcm_installation_id') || '';
-                if (!id) return;
-
-                const last = Number(localStorage.getItem('cumpleapp_push_last_server_sync') || 0);
-                const sixHours = 6 * 60 * 60 * 1000;
-
-                if (Date.now() - last < sixHours) return;
-
-                try {
-                    if (typeof window.resyncCumplePushDevice === 'function') {
-                        const ok = await window.resyncCumplePushDevice();
-                        if (ok) {
-                            localStorage.setItem(
-                                'cumpleapp_push_last_server_sync',
-                                String(Date.now())
-                            );
-                        }
-                    }
-                } catch (_) {}
-            }
-
-            window.addEventListener('load', function () {
-                setTimeout(autoResyncPushDevice, 1800);
-            });
-
-            window.addEventListener('pageshow', function () {
-                setTimeout(autoResyncPushDevice, 1000);
-            });
-
-            document.addEventListener('visibilitychange', function () {
-                if (!document.hidden) {
-                    setTimeout(autoResyncPushDevice, 800);
-                }
-            });
-        })();
-    </script>
 
 </body>
 </html>
