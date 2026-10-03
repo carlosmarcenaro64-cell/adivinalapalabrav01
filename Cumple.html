@@ -18,26 +18,16 @@
     <meta name="msapplication-TileColor" content="#ec4899">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Estilos de interfaz integrados: no se compilan al abrir la app. -->
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Canvas Confetti para animaciones de celebración -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <style id="cumple-utilities">
+*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:Inter,sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.\!container{width:100%!important}.container{width:100%}@media (min-width:640px){.\!container{max-width:640px!important}.container{max-width:640px}}@media (min-width:768px){.\!container{max-width:768px!important}.container{max-width:768px}}@media (min-width:1024px){.\!container{max-width:1024px!important}.container{max-width:1024px}}@media (min-width:1280px){.\!container{max-width:1280px!important}.container{max-width:1280px}}@media (min-width:1536px){.\!container{max-width:1536px!important}.container{max-width:1536px}}.pointer-events-none{pointer-events:none}.visible{visibility:visible}.static{position:static}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0}.inset-y-0{top:0;bottom:0}.-right-1{right:-.25rem}.-top-1{top:-.25rem}.bottom-20{bottom:5rem}.bottom-36{bottom:9rem}.left-0{left:0}.left-\[12\%\]{left:12%}.left-\[8\%\]{left:8%}.right-\[10\%\]{right:10%}.right-\[15\%\]{right:15%}.top-0{top:0}.top-12{top:3rem}.top-40{top:10rem}.isolate{isolation:isolate}.z-10{z-index:10}.z-30{z-index:30}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:.25rem}.mb-1\.5{margin-bottom:.375rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-5{margin-bottom:1.25rem}.mb-6{margin-bottom:1.5rem}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.block{display:block}.inline{display:inline}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-11{height:2.75rem}.h-12{height:3rem}.h-14{height:3.5rem}.h-16{height:4rem}.h-3\.5{height:.875rem}.h-8{height:2rem}.h-full{height:100%}.w-10{width:2.5rem}.w-11{width:2.75rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-3\.5{width:.875rem}.w-8{width:2rem}.w-full{width:100%}.max-w-5xl{max-width:64rem}.max-w-\[150px\]{max-width:150px}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.origin-left{transform-origin:left}.scale-90{--tw-scale-x:.9;--tw-scale-y:.9}.scale-90,.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%,to{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}.animate-bounce{animation:bounce 1s infinite}@keyframes ping{75%,to{transform:scale(2);opacity:0}}.animate-ping{animation:ping 1s cubic-bezier(0,0,.2,1) infinite}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite}.cursor-pointer{cursor:pointer}.list-decimal{list-style-type:decimal}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-y-2{row-gap:.5rem}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.5rem*var(--tw-space-x-reverse));margin-left:calc(.5rem*(1 - var(--tw-space-x-reverse)))}.space-x-2\.5>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.625rem*var(--tw-space-x-reverse));margin-left:calc(.625rem*(1 - var(--tw-space-x-reverse)))}.space-x-3>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.75rem*var(--tw-space-x-reverse));margin-left:calc(.75rem*(1 - var(--tw-space-x-reverse)))}.space-x-3\.5>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.875rem*var(--tw-space-x-reverse));margin-left:calc(.875rem*(1 - var(--tw-space-x-reverse)))}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem*var(--tw-space-x-reverse));margin-left:calc(1rem*(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.overflow-x-hidden{overflow-x:hidden}.truncate{overflow:hidden;text-overflow:ellipsis}.truncate,.whitespace-nowrap{white-space:nowrap}.break-words{overflow-wrap:break-word}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138/var(--tw-border-opacity,1))}.border-cyan-100{--tw-border-opacity:1;border-color:rgb(207 250 254/var(--tw-border-opacity,1))}.border-cyan-200{--tw-border-opacity:1;border-color:rgb(165 243 252/var(--tw-border-opacity,1))}.border-emerald-100{--tw-border-opacity:1;border-color:rgb(209 250 229/var(--tw-border-opacity,1))}.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208/var(--tw-border-opacity,1))}.border-pink-100{--tw-border-opacity:1;border-color:rgb(252 231 243/var(--tw-border-opacity,1))}.border-pink-200{--tw-border-opacity:1;border-color:rgb(251 207 232/var(--tw-border-opacity,1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249/var(--tw-border-opacity,1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240/var(--tw-border-opacity,1))}.border-slate-200\/80{border-color:rgba(226,232,240,.8)}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225/var(--tw-border-opacity,1))}.bg-amber-400{--tw-bg-opacity:1;background-color:rgb(251 191 36/var(--tw-bg-opacity,1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235/var(--tw-bg-opacity,1))}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255/var(--tw-bg-opacity,1))}.bg-cyan-50{--tw-bg-opacity:1;background-color:rgb(236 254 255/var(--tw-bg-opacity,1))}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245/var(--tw-bg-opacity,1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255/var(--tw-bg-opacity,1))}.bg-pink-50{--tw-bg-opacity:1;background-color:rgb(253 242 248/var(--tw-bg-opacity,1))}.bg-pink-500{--tw-bg-opacity:1;background-color:rgb(236 72 153/var(--tw-bg-opacity,1))}.bg-pink-600{--tw-bg-opacity:1;background-color:rgb(219 39 119/var(--tw-bg-opacity,1))}.bg-rose-50{--tw-bg-opacity:1;background-color:rgb(255 241 242/var(--tw-bg-opacity,1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249/var(--tw-bg-opacity,1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252/var(--tw-bg-opacity,1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-slate-900\/60{background-color:rgba(15,23,42,.6)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-white\/25{background-color:hsla(0,0%,100%,.25)}.bg-white\/80{background-color:hsla(0,0%,100%,.8)}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right,var(--tw-gradient-stops))}.from-pink-500{--tw-gradient-from:#ec4899 var(--tw-gradient-from-position);--tw-gradient-to:rgba(236,72,153,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.from-violet-600{--tw-gradient-from:#7c3aed var(--tw-gradient-from-position);--tw-gradient-to:rgba(124,58,237,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.via-fuchsia-500{--tw-gradient-to:rgba(217,70,239,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#d946ef var(--tw-gradient-via-position),var(--tw-gradient-to)}.via-rose-500{--tw-gradient-to:rgba(244,63,94,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),#f43f5e var(--tw-gradient-via-position),var(--tw-gradient-to)}.to-amber-400{--tw-gradient-to:#fbbf24 var(--tw-gradient-to-position)}.to-amber-500{--tw-gradient-to:#f59e0b var(--tw-gradient-to-position)}.to-pink-500{--tw-gradient-to:#ec4899 var(--tw-gradient-to-position)}.to-pink-600{--tw-gradient-to:#db2777 var(--tw-gradient-to-position)}.to-rose-500{--tw-gradient-to:#f43f5e var(--tw-gradient-to-position)}.p-3\.5{padding:.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-3\.5{padding-left:.875rem;padding-right:.875rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-16{padding-top:4rem;padding-bottom:4rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pl-10{padding-left:2.5rem}.pl-3\.5{padding-left:.875rem}.pl-6{padding-left:1.5rem}.pr-4{padding-right:1rem}.pt-2{padding-top:.5rem}.text-center{text-align:center}.font-sans{font-family:Inter,sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-\[11px\]{font-size:11px}.text-\[8px\]{font-size:8px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.tabular-nums{--tw-numeric-spacing:tabular-nums;font-variant-numeric:var(--tw-ordinal) var(--tw-slashed-zero) var(--tw-numeric-figure) var(--tw-numeric-spacing) var(--tw-numeric-fraction)}.tracking-normal{letter-spacing:0}.tracking-tight{letter-spacing:-.025em}.tracking-wider{letter-spacing:.05em}.tracking-widest{letter-spacing:.1em}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138/var(--tw-text-opacity,1))}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11/var(--tw-text-opacity,1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6/var(--tw-text-opacity,1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9/var(--tw-text-opacity,1))}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246/var(--tw-text-opacity,1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.text-cyan-600{--tw-text-opacity:1;color:rgb(8 145 178/var(--tw-text-opacity,1))}.text-cyan-700{--tw-text-opacity:1;color:rgb(14 116 144/var(--tw-text-opacity,1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}.text-emerald-600\/80{color:rgba(5,150,105,.8)}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87/var(--tw-text-opacity,1))}.text-indigo-500{--tw-text-opacity:1;color:rgb(99 102 241/var(--tw-text-opacity,1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229/var(--tw-text-opacity,1))}.text-pink-300{--tw-text-opacity:1;color:rgb(249 168 212/var(--tw-text-opacity,1))}.text-pink-500{--tw-text-opacity:1;color:rgb(236 72 153/var(--tw-text-opacity,1))}.text-pink-600{--tw-text-opacity:1;color:rgb(219 39 119/var(--tw-text-opacity,1))}.text-pink-700{--tw-text-opacity:1;color:rgb(190 24 93/var(--tw-text-opacity,1))}.text-rose-600{--tw-text-opacity:1;color:rgb(225 29 72/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85/var(--tw-text-opacity,1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59/var(--tw-text-opacity,1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42/var(--tw-text-opacity,1))}.text-violet-500{--tw-text-opacity:1;color:rgb(139 92 246/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.underline{text-decoration-line:underline}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.opacity-0{opacity:0}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgba(0,0,0,.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color)}.shadow-2xl,.shadow-lg{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-md{--tw-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color),0 2px 4px -2px var(--tw-shadow-color)}.shadow-md,.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-pink-500\/20{--tw-shadow-color:rgba(236,72,153,.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-pink-500\/25{--tw-shadow-color:rgba(236,72,153,.25);--tw-shadow:var(--tw-shadow-colored)}.blur{--tw-blur:blur(8px)}.blur,.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-300{transition-duration:.3s}.duration-500{transition-duration:.5s}.ease-in-out{transition-timing-function:cubic-bezier(.4,0,.2,1)}.ease-out{transition-timing-function:cubic-bezier(0,0,.2,1)}.hover\:-translate-y-1\.5:hover{--tw-translate-y:-0.375rem}.hover\:-translate-y-1\.5:hover,.hover\:rotate-90:hover{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:rotate-90:hover{--tw-rotate:90deg}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05}.hover\:scale-105:hover,.hover\:scale-110:hover{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-110:hover{--tw-scale-x:1.1;--tw-scale-y:1.1}.hover\:bg-amber-100:hover{--tw-bg-opacity:1;background-color:rgb(254 243 199/var(--tw-bg-opacity,1))}.hover\:bg-cyan-100:hover{--tw-bg-opacity:1;background-color:rgb(207 250 254/var(--tw-bg-opacity,1))}.hover\:bg-indigo-100:hover{--tw-bg-opacity:1;background-color:rgb(224 231 255/var(--tw-bg-opacity,1))}.hover\:bg-pink-100:hover{--tw-bg-opacity:1;background-color:rgb(252 231 243/var(--tw-bg-opacity,1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240/var(--tw-bg-opacity,1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.hover\:from-pink-600:hover{--tw-gradient-from:#db2777 var(--tw-gradient-from-position);--tw-gradient-to:rgba(219,39,119,0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to)}.hover\:to-rose-600:hover{--tw-gradient-to:#e11d48 var(--tw-gradient-to-position)}.hover\:text-slate-600:hover{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.hover\:shadow-xl:hover{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.focus\:border-pink-500:focus{--tw-border-opacity:1;border-color:rgb(236 72 153/var(--tw-border-opacity,1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-pink-500\/20:focus{--tw-ring-color:rgba(236,72,153,.2)}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.disabled\:opacity-50:disabled{opacity:.5}.group:hover .group-hover\:translate-y-\[-2px\]{--tw-translate-y:-2px}.group:hover .group-hover\:-rotate-12,.group:hover .group-hover\:translate-y-\[-2px\]{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:-rotate-12{--tw-rotate:-12deg}.group:hover .group-hover\:rotate-12{--tw-rotate:12deg}.group:hover .group-hover\:rotate-12,.group:hover .group-hover\:rotate-180{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:rotate-180{--tw-rotate:180deg}.group:hover .group-hover\:rotate-45{--tw-rotate:45deg}.group:hover .group-hover\:rotate-45,.group:hover .group-hover\:rotate-6{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:rotate-6{--tw-rotate:6deg}.group:hover .group-hover\:rotate-90{--tw-rotate:90deg}.group:hover .group-hover\:rotate-90,.group:hover .group-hover\:rotate-\[360deg\]{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:rotate-\[360deg\]{--tw-rotate:360deg}.group:hover .group-hover\:scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05}.group:hover .group-hover\:scale-105,.group:hover .group-hover\:scale-125{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:scale-125{--tw-scale-x:1.25;--tw-scale-y:1.25}.dark\:border-amber-800\/60:is(.dark *){border-color:rgba(146,64,14,.6)}.dark\:border-cyan-800\/60:is(.dark *){border-color:rgba(21,94,117,.6)}.dark\:border-cyan-900\/50:is(.dark *){border-color:rgba(22,78,99,.5)}.dark\:border-emerald-800\/60:is(.dark *){border-color:rgba(6,95,70,.6)}.dark\:border-emerald-900\/50:is(.dark *){border-color:rgba(6,78,59,.5)}.dark\:border-pink-800\/60:is(.dark *){border-color:rgba(157,23,77,.6)}.dark\:border-pink-900\/50:is(.dark *){border-color:rgba(131,24,67,.5)}.dark\:border-slate-600\/50:is(.dark *){border-color:rgba(71,85,105,.5)}.dark\:border-slate-700:is(.dark *){--tw-border-opacity:1;border-color:rgb(51 65 85/var(--tw-border-opacity,1))}.dark\:border-slate-700\/80:is(.dark *){border-color:rgba(51,65,85,.8)}.dark\:bg-amber-900\/30:is(.dark *){background-color:rgba(120,53,15,.3)}.dark\:bg-amber-950\/40:is(.dark *){background-color:rgba(69,26,3,.4)}.dark\:bg-blue-900\/30:is(.dark *){background-color:rgba(30,58,138,.3)}.dark\:bg-cyan-950\/30:is(.dark *){background-color:rgba(8,51,68,.3)}.dark\:bg-cyan-950\/40:is(.dark *){background-color:rgba(8,51,68,.4)}.dark\:bg-emerald-900\/30:is(.dark *){background-color:rgba(6,78,59,.3)}.dark\:bg-emerald-950\/30:is(.dark *){background-color:rgba(2,44,34,.3)}.dark\:bg-emerald-950\/40:is(.dark *){background-color:rgba(2,44,34,.4)}.dark\:bg-indigo-900\/30:is(.dark *){background-color:rgba(49,46,129,.3)}.dark\:bg-indigo-950\/40:is(.dark *){background-color:rgba(30,27,75,.4)}.dark\:bg-pink-900\/30:is(.dark *){background-color:rgba(131,24,67,.3)}.dark\:bg-pink-950\/30:is(.dark *){background-color:rgba(80,7,36,.3)}.dark\:bg-pink-950\/40:is(.dark *){background-color:rgba(80,7,36,.4)}.dark\:bg-rose-900\/30:is(.dark *){background-color:rgba(136,19,55,.3)}.dark\:bg-slate-700:is(.dark *){--tw-bg-opacity:1;background-color:rgb(51 65 85/var(--tw-bg-opacity,1))}.dark\:bg-slate-700\/60:is(.dark *){background-color:rgba(51,65,85,.6)}.dark\:bg-slate-800:is(.dark *){--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.dark\:bg-slate-800\/80:is(.dark *){background-color:rgba(30,41,59,.8)}.dark\:bg-slate-900:is(.dark *){--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.dark\:bg-slate-900\/60:is(.dark *){background-color:rgba(15,23,42,.6)}.dark\:text-amber-300:is(.dark *){--tw-text-opacity:1;color:rgb(252 211 77/var(--tw-text-opacity,1))}.dark\:text-amber-400:is(.dark *){--tw-text-opacity:1;color:rgb(251 191 36/var(--tw-text-opacity,1))}.dark\:text-blue-300:is(.dark *){--tw-text-opacity:1;color:rgb(147 197 253/var(--tw-text-opacity,1))}.dark\:text-cyan-300:is(.dark *){--tw-text-opacity:1;color:rgb(103 232 249/var(--tw-text-opacity,1))}.dark\:text-emerald-300:is(.dark *){--tw-text-opacity:1;color:rgb(110 231 183/var(--tw-text-opacity,1))}.dark\:text-emerald-400\/80:is(.dark *){color:rgba(52,211,153,.8)}.dark\:text-indigo-300:is(.dark *){--tw-text-opacity:1;color:rgb(165 180 252/var(--tw-text-opacity,1))}.dark\:text-pink-300:is(.dark *){--tw-text-opacity:1;color:rgb(249 168 212/var(--tw-text-opacity,1))}.dark\:text-pink-400:is(.dark *){--tw-text-opacity:1;color:rgb(244 114 182/var(--tw-text-opacity,1))}.dark\:text-rose-300:is(.dark *){--tw-text-opacity:1;color:rgb(253 164 175/var(--tw-text-opacity,1))}.dark\:text-slate-100:is(.dark *){--tw-text-opacity:1;color:rgb(241 245 249/var(--tw-text-opacity,1))}.dark\:text-slate-200:is(.dark *){--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}.dark\:text-slate-300:is(.dark *){--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.dark\:text-slate-400:is(.dark *){--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.dark\:text-white:is(.dark *){--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.dark\:hover\:bg-amber-900\/40:hover:is(.dark *){background-color:rgba(120,53,15,.4)}.dark\:hover\:bg-cyan-900\/40:hover:is(.dark *){background-color:rgba(22,78,99,.4)}.dark\:hover\:bg-indigo-900\/50:hover:is(.dark *){background-color:rgba(49,46,129,.5)}.dark\:hover\:bg-pink-900\/40:hover:is(.dark *){background-color:rgba(131,24,67,.4)}.dark\:hover\:bg-slate-600:hover:is(.dark *){--tw-bg-opacity:1;background-color:rgb(71 85 105/var(--tw-bg-opacity,1))}.dark\:hover\:text-slate-200:hover:is(.dark *){--tw-text-opacity:1;color:rgb(226 232 240/var(--tw-text-opacity,1))}@media (min-width:640px){.sm\:w-auto{width:auto}.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:text-base{font-size:1rem;line-height:1.5rem}}@media (min-width:768px){.md\:inline-flex{display:inline-flex}.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    </style>
     <style>
         /* Carga de fotos: formulario con desplazamiento también al abrir el teclado. */
         #modalContent{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
@@ -1280,6 +1270,249 @@
             }
         }
 
+
+/* CUMPLEAPP DESIGN 2026-10-02 */
+/* CumpleApp · una agenda para celebrar, en teléfono y computadora. */
+:root {
+  --ui-bg:#fff9fc; --ui-panel:#fff; --ui-ink:#282238; --ui-muted:#796f85;
+  --ui-line:#eee5f0; --ui-soft:#f8f2fa; --ui-pink:#da287f; --ui-purple:#7851d5;
+  --ui-shadow:0 8px 32px rgba(71,32,88,.045); color-scheme:light;
+}
+html.dark {
+  --ui-bg:#101320; --ui-panel:#1b2032; --ui-ink:#f5f1fb; --ui-muted:#b0abc3;
+  --ui-line:#30334c; --ui-soft:#23283e; --ui-pink:#fa82ba; --ui-purple:#bc9aff;
+  --ui-shadow:0 12px 32px rgba(0,0,0,.12); color-scheme:dark;
+}
+body { background:var(--ui-bg)!important; color:var(--ui-ink); }
+body::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:radial-gradient(ellipse at 2% 12%,rgba(249,168,212,.15),transparent 45%),radial-gradient(ellipse at 100% 55%,rgba(167,139,250,.1),transparent 42%); }
+.dark body::before { opacity:.45; }
+body > .ambient-particle { opacity:.045; font-size:38px; }
+main.cumple-main { max-width:1160px; gap:24px; padding:34px 28px 70px; }
+#cumplePushNotice[hidden] { display:none!important; }
+#todayAlertsContainer:empty,#topFeaturedBirthdayContainer:empty { display:none; }
+.cumple-header { background:color-mix(in srgb,var(--ui-bg) 88%,transparent)!important; border-color:var(--ui-line)!important; box-shadow:none!important; }
+.cumple-header-inner { max-width:1160px; padding:15px 28px; }
+.cumple-brand { flex-shrink:0; }
+.cumple-brand > div:first-child { width:46px; height:46px; background:linear-gradient(145deg,#f55eae,#d83082 55%,#9463e7); border:1px solid rgba(255,255,255,.35); border-radius:16px; animation:ui-logo-float 6s ease-in-out infinite; }
+.cumple-brand h1 { letter-spacing:-.8px; }
+.cumple-brand h1 > span { font-size:9px; padding:3px 7px; background:var(--ui-soft); color:var(--ui-pink); border:1px solid var(--ui-line); box-shadow:none; animation:none; }
+.cumple-brand p { font-size:10px; color:var(--ui-muted); margin-top:2px; }
+.cumple-toolbar { gap:7px; }
+.cumple-toolbar > * { margin-left:0!important; }
+.cumple-toolbar > button:not(.cumple-new-button) { width:39px; height:39px; border-radius:13px; background:var(--ui-panel); color:var(--ui-muted); border:1px solid var(--ui-line); box-shadow:none; }
+.cumple-toolbar #notifBellBtn { color:var(--ui-pink); }
+.cumple-toolbar .cumple-new-button { min-height:42px; border-radius:14px; background:linear-gradient(115deg,#e83994,#c62d80); font-size:12px; padding:10px 15px; box-shadow:0 6px 18px #db277726; }
+#syncStatus { font-size:9px; border:0; padding:7px 8px; color:var(--ui-muted); background:transparent; }
+#syncStatus i { animation:none; }
+.cumple-intro { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:3px 0 5px; }
+.cumple-eyebrow { display:flex; align-items:center; gap:8px; color:var(--ui-pink); font-size:10px; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+.cumple-eyebrow::before { content:""; width:19px; height:2px; background:currentColor; border-radius:2px; }
+.cumple-intro h2 { font-size:clamp(25px,3.8vw,38px); line-height:1.18; font-weight:800; letter-spacing:-1.55px; color:var(--ui-ink); }
+.cumple-intro h2 span { color:var(--ui-pink); }
+.cumple-intro p { margin-top:10px; color:var(--ui-muted); font-size:13px; line-height:1.7; }
+.cumple-today { display:flex; align-items:center; gap:12px; background:var(--ui-panel); padding:12px 17px; border:1px solid var(--ui-line); border-radius:18px; flex-shrink:0; box-shadow:var(--ui-shadow); }
+.cumple-today i { color:var(--ui-purple); font-size:18px; background:var(--ui-soft); padding:11px; border-radius:12px; }
+.cumple-today small { display:block; color:var(--ui-muted); font-size:9px; letter-spacing:1.3px; font-weight:700; margin-bottom:4px; text-transform:uppercase; }
+.cumple-today time { display:block; font-size:12px; font-weight:700; text-transform:capitalize; color:var(--ui-ink); }
+.cumple-feature { position:relative; display:grid; grid-template-columns:minmax(0,1fr) 190px; align-items:center; gap:30px; min-height:240px; padding:30px 34px; border-radius:27px; overflow:hidden; isolation:isolate; color:white;
+  background:linear-gradient(115deg,#6240ba 0%,#a137a1 48%,#df3882 100%); border:1px solid rgba(255,255,255,.2); box-shadow:0 14px 36px rgba(137,42,133,.16); }
+.cumple-feature:nth-child(2n) { background:linear-gradient(115deg,#4156b4,#8154c7 50%,#b253b5); }
+.cumple-feature::before { content:""; position:absolute; width:470px; height:470px; top:-280px; left:30%; border:1px solid rgba(255,255,255,.13); border-radius:50%; box-shadow:0 0 0 50px #ffffff04,0 0 0 100px #ffffff03; pointer-events:none; animation:ui-orbit-drift 16s ease-in-out infinite; z-index:-1; }
+.cumple-feature::after { content:""; position:absolute; width:250px; height:250px; bottom:-190px; left:-60px; background:rgba(255,190,224,.12); border-radius:50%; pointer-events:none; z-index:-1; }
+.cumple-feature-topline { display:flex; align-items:center; gap:8px; font-size:10px; letter-spacing:1.7px; font-weight:700; text-transform:uppercase; margin-bottom:20px; color:#ffe7f5; }
+.cumple-feature-topline i { color:#ffdb8a; font-size:11px; animation:ui-twinkle 4s ease-in-out infinite; }
+.cumple-feature-person { display:flex; gap:20px; align-items:center; min-width:0; }
+.cumple-feature-avatar { width:82px; height:82px; flex:0 0 82px; border-radius:25px; padding:4px; background:#ffffff23; border:1px solid #ffffff55; box-shadow:0 8px 18px #40134325; transition:transform .35s ease; }
+.cumple-feature-avatar > span { display:flex; align-items:center; justify-content:center; width:100%; height:100%; overflow:hidden; border-radius:20px; background:#ffffff26; color:white; font-weight:800; font-size:32px; }
+.cumple-feature-avatar img { width:100%; height:100%; object-fit:cover; }
+.cumple-feature-person > div:last-child { min-width:0; }
+.cumple-feature h3 { font-size:clamp(24px,3vw,34px); font-weight:800; letter-spacing:-1.1px; line-height:1.2; overflow-wrap:anywhere; }
+.cumple-feature-subtitle { font-size:13px; color:#fff0f9; line-height:1.6; margin-top:7px; }
+.cumple-feature-subtitle .underline { text-decoration:none; }
+.cumple-feature-actions { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:20px; }
+.cumple-category-chip { font-size:10px; font-weight:600; display:inline-flex; align-items:center; gap:7px; border:1px solid #ffffff30; border-radius:30px; background:#ffffff0e; padding:7px 12px; }
+.cumple-feature-link { font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:8px; color:white; padding:8px 12px; border-radius:30px; background:#ffffff19; transition:background .2s,transform .2s; }
+.cumple-feature-countdown { position:relative; width:152px; height:152px; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:50%; background:#ffffff09; border:1px solid #ffffff22; justify-self:center; text-align:center; }
+.cumple-feature-countdown::before { content:""; position:absolute; inset:-9px; border-radius:50%; border:1px dashed #ffffff45; animation:ui-orbit-turn 65s linear infinite; }
+.cumple-feature-countdown::after { content:"✦"; position:absolute; right:0; top:-15px; font-size:25px; color:#ffe0a0; animation:ui-twinkle 4s ease-in-out infinite; }
+.cumple-feature-countdown strong { font-size:57px; letter-spacing:-3px; font-weight:800; line-height:1.1; font-variant-numeric:tabular-nums; }
+.cumple-feature-countdown strong.is-today { font-size:35px; letter-spacing:-1px; }
+.cumple-feature-countdown span { font-size:12px; font-weight:600; margin-top:2px; }
+.cumple-feature-countdown small { font-size:9px; color:#ffe6f2; margin-top:4px; }
+.cumple-overview { gap:16px; }
+.cumple-overview > div { position:relative; padding:21px; background:var(--ui-panel)!important; border-color:var(--ui-line)!important; border-radius:20px; box-shadow:var(--ui-shadow); min-width:0; transition:transform .25s,box-shadow .25s; }
+.cumple-overview > div > div:first-child { width:46px; height:46px; border-radius:15px; box-shadow:none; flex-shrink:0; }
+.cumple-overview > div > div:last-child { min-width:0; }
+.cumple-overview p { font-size:9px; color:var(--ui-muted); letter-spacing:1.2px; }
+.cumple-overview h3 { color:var(--ui-ink); letter-spacing:-.7px; margin-top:2px; font-variant-numeric:tabular-nums; }
+.cumple-overview #statNext { font-size:15px; max-width:100%; }
+.cumple-list-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; margin:9px 0 -7px; }
+.cumple-list-heading h2 { font-size:20px; letter-spacing:-.55px; font-weight:800; color:var(--ui-ink); }
+.cumple-list-heading p { color:var(--ui-muted); font-size:11px; margin-top:5px; }
+.cumple-result-count { font-size:10px; color:var(--ui-muted); border:1px solid var(--ui-line); padding:7px 12px; border-radius:30px; white-space:nowrap; }
+.cumple-controls { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; background:var(--ui-panel)!important; border-color:var(--ui-line)!important; padding:14px; border-radius:19px; box-shadow:var(--ui-shadow); }
+.cumple-search { flex:1 1 260px; min-width:0; }
+.cumple-search #searchInput { min-height:44px; width:100%; background:var(--ui-soft); border-color:transparent; color:var(--ui-ink); font-size:12px; }
+.cumple-search #searchInput::placeholder { color:var(--ui-muted); }
+.cumple-filter-group { display:flex; align-items:center; gap:3px; background:var(--ui-soft); border-radius:13px; padding:4px; }
+.cumple-filter-group .filter-btn { font-size:10px; padding:9px 12px; min-height:36px; border-radius:10px; color:var(--ui-muted); box-shadow:none; background:transparent; transform:none; }
+.cumple-filter-group .filter-btn[aria-pressed="true"] { background:var(--ui-panel); color:var(--ui-pink); box-shadow:0 2px 6px #34104610; }
+#syncDirectBtn { flex-shrink:0; font-size:10px; border-radius:12px; min-height:40px; padding:9px 12px; transform:none; }
+#birthdayList { gap:17px; }
+#birthdayList .birthday-card-selectable { overflow:hidden; min-width:0; padding:21px; border-radius:22px; background:var(--ui-panel)!important; border:1px solid var(--ui-line); box-shadow:var(--ui-shadow); color:var(--ui-ink); transition:opacity .55s ease,transform .3s ease,box-shadow .3s ease,border-color .3s ease; }
+.birthday-card-selectable::before { content:""; position:absolute; left:22px; right:22px; top:0; height:2px; border-radius:0 0 8px 8px; background:linear-gradient(90deg,var(--card-accent,#c17bce),transparent); opacity:.65; pointer-events:none; }
+.cumple-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.cumple-card-person { display:flex; gap:14px; align-items:center; min-width:0; }
+.cumple-card-avatar { width:57px; height:57px; flex:0 0 57px; border-radius:18px; display:grid; place-items:center; overflow:hidden; font-size:24px; font-weight:700; color:var(--ui-purple); background:var(--ui-soft); border:1px solid var(--ui-line); transition:transform .35s; }
+.cumple-card-avatar img { width:100%; height:100%; object-fit:cover; }
+.cumple-card-identity { min-width:0; }
+.cumple-card-identity h4 { font-size:15px; font-weight:750; letter-spacing:-.4px; line-height:1.45; overflow-wrap:anywhere; color:var(--ui-ink); }
+.cumple-card-date { display:flex; flex-wrap:wrap; gap:5px; align-items:center; color:var(--ui-muted); font-size:11px; margin-top:5px; line-height:1.5; }
+.cumple-card-date i { color:var(--ui-pink); font-size:10px; }
+.cumple-card-actions { display:flex; gap:3px; flex-shrink:0; }
+.cumple-card-actions button { width:32px; height:32px; font-size:10px; border-radius:10px; color:var(--ui-muted); display:grid; place-items:center; transition:background .2s,color .2s; }
+.cumple-card-actions button:hover { color:var(--ui-pink); background:var(--ui-soft); }
+.cumple-card-actions button:last-child:hover { color:#e6546e; }
+.cumple-card-footer { display:flex; align-items:center; flex-wrap:wrap; justify-content:space-between; gap:8px; margin-top:18px; padding-top:14px; border-top:1px solid var(--ui-line); }
+.cumple-card-footer > span { font-size:10px; border-radius:8px; padding:5px 9px; }
+.cumple-card-note { display:flex; gap:8px; align-items:flex-start; margin-top:12px; padding:11px 12px; border-radius:12px; background:var(--ui-soft); color:var(--ui-muted); font-size:11px; line-height:1.7; overflow-wrap:anywhere; }
+.cumple-card-note i { color:var(--ui-pink); margin-top:4px; }
+.cumple-card-note span { min-width:0; }
+#emptyState { border:1px dashed var(--ui-line); border-radius:24px; background:var(--ui-panel); padding:52px 20px; }
+#modalContent { background:var(--ui-panel)!important; border-color:var(--ui-line)!important; box-shadow:0 32px 100px #0c07133a; border-radius:26px; }
+#birthdayForm input:not([type=hidden]):not([type=file]),#birthdayForm select,#birthdayForm textarea { min-height:44px; border-radius:13px; }
+#birthdayForm label { font-size:10px; letter-spacing:.65px; }
+#birthdayForm button { min-height:42px; }
+.birthday-photo-editor { border-radius:18px; }
+#birthdaySaveButton { background:linear-gradient(115deg,#df338b,#ae40a3); }
+#birthdayModal { padding:16px; }
+.birthday-profile-card { box-shadow:0 30px 80px #2b12364a; }
+.cumple-footer { display:flex; align-items:center; justify-content:center; gap:8px; color:var(--ui-muted); font-size:10px; padding:10px 0; }
+.cumple-footer i { color:var(--ui-pink); font-size:9px; }
+button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible { outline:3px solid #e986be; outline-offset:3px; }
+.ui-reveal { opacity:0; transform:translateY(16px); }
+.ui-reveal.ui-in { opacity:1; transform:none; transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1); transition-delay:var(--ui-delay,0ms); }
+#birthdayList .birthday-card-selectable.ui-reveal { opacity:0; transform:translateY(16px); }
+#birthdayList .birthday-card-selectable.ui-in { opacity:1; transform:none; }
+.ui-ripple-clip { position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
+.ui-ripple-wave { position:absolute; width:20px; height:20px; border-radius:50%; background:currentColor; opacity:.16; animation:ui-ripple .65s ease-out forwards; }
+.ui-stat-updated { animation:ui-stat-pop .5s ease; }
+.cumple-motion-paused *, .cumple-motion-paused *::before, .cumple-motion-paused *::after { animation-play-state:paused!important; }
+@keyframes ui-logo-float { 0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3px) rotate(3deg)} }
+@keyframes ui-orbit-drift { 0%,100%{transform:translate(0,0)}50%{transform:translate(32px,18px)} }
+@keyframes ui-orbit-turn { to{transform:rotate(360deg)} }
+@keyframes ui-twinkle { 0%,100%{opacity:.65;transform:scale(.9) rotate(-8deg)}50%{opacity:1;transform:scale(1.1) rotate(8deg)} }
+@keyframes ui-ripple { to{transform:scale(18);opacity:0} }
+@keyframes ui-stat-pop { 0%{transform:translateY(5px);opacity:.5}100%{transform:translateY(0);opacity:1} }
+@media(hover:hover) and (pointer:fine) {
+  #birthdayList .birthday-card-selectable:hover { border-color:#c884c9; box-shadow:0 12px 28px #873e9112; transform:perspective(1000px) translateY(-4px) rotateX(var(--ui-rx,0deg)) rotateY(var(--ui-ry,0deg)); }
+  .cumple-card-actions { opacity:.65; }
+  .birthday-card-selectable:hover .cumple-card-actions,.birthday-card-selectable:focus-within .cumple-card-actions { opacity:1; }
+  .birthday-card-selectable:hover .cumple-card-avatar { transform:rotate(-3deg) scale(1.035); }
+  .cumple-feature:hover .cumple-feature-avatar { transform:rotate(-3deg) scale(1.04); }
+  .cumple-feature-link:hover { background:#ffffff30; transform:translateX(3px); }
+  .cumple-overview > div:hover { transform:translateY(-3px); box-shadow:0 10px 25px #853f9010; }
+}
+@media(max-width:1060px) {
+  #syncStatus { display:none!important; }
+  .cumple-header-inner { gap:18px; }
+  .cumple-controls { gap:10px; }
+  .cumple-search { flex-basis:100%; }
+  .cumple-filter-group { flex:1; }
+  .cumple-filter-group button { flex:1; }
+}
+@media(max-width:760px) {
+  .cumple-header-inner { padding:13px 20px; flex-wrap:wrap; }
+  .cumple-header { position:relative; }
+  .cumple-intro { align-items:flex-start; }
+  .cumple-today { padding:10px; }
+  .cumple-today i { display:none; }
+  .cumple-feature { padding:25px; grid-template-columns:minmax(0,1fr) 125px; gap:20px; }
+  .cumple-feature-countdown { width:116px; height:116px; }
+  .cumple-feature-countdown strong { font-size:44px; }
+  .cumple-feature-avatar { width:65px; height:65px; flex-basis:65px; border-radius:21px; }
+  .cumple-feature-avatar > span { border-radius:16px; }
+  .cumple-feature-person { gap:13px; }
+  .cumple-feature h3 { font-size:25px; }
+  .cumple-overview { gap:10px; }
+  .cumple-overview > div { padding:17px; gap:10px; }
+  .cumple-overview > div > div { margin-left:0!important; }
+}
+@media(max-width:639px) {
+  main.cumple-main { padding:22px 16px 35px; gap:20px; }
+  .cumple-header-inner { gap:14px; align-items:stretch; padding:14px 16px; }
+  .cumple-brand { justify-content:center; }
+  .cumple-toolbar { justify-content:center; width:100%; gap:8px; }
+  .cumple-toolbar > button:not(.cumple-new-button) { width:42px; height:42px; }
+  .cumple-toolbar .cumple-new-button { flex:1 1 auto; font-size:11px; min-height:42px; }
+  .cumple-intro { flex-direction:column; gap:13px; }
+  .cumple-intro h2 { font-size:29px; letter-spacing:-1.15px; }
+  .cumple-intro p { font-size:12px; margin-top:8px; max-width:310px; }
+  .cumple-eyebrow { font-size:9px; letter-spacing:1.5px; margin-bottom:9px; }
+  .cumple-today { padding:0; gap:0; background:none; border:0; box-shadow:none; }
+  .cumple-today small { display:none; }
+  .cumple-today time { font-size:10px; color:var(--ui-muted); }
+  .cumple-today i { display:block; font-size:11px; padding:0; background:none; margin-right:7px; }
+  .cumple-feature { grid-template-columns:minmax(0,1fr) 70px; gap:12px; padding:23px 20px; border-radius:23px; min-height:0; }
+  .cumple-feature-topline { font-size:8px; letter-spacing:1.25px; margin-bottom:14px; }
+  .cumple-feature-person { align-items:flex-start; flex-wrap:wrap; gap:12px; }
+  .cumple-feature-person > div:last-child { flex-basis:100%; }
+  .cumple-feature-avatar { width:61px; height:61px; flex-basis:61px; }
+  .cumple-feature h3 { font-size:25px; letter-spacing:-.8px; }
+  .cumple-feature-subtitle { font-size:11px; line-height:1.6; }
+  .cumple-feature-actions { margin-top:14px; gap:8px; }
+  .cumple-category-chip,.cumple-feature-link { font-size:9px; padding:6px 9px; }
+  .cumple-feature-countdown { align-self:start; width:65px; height:65px; margin-top:37px; }
+  .cumple-feature-countdown::before { inset:-5px; }
+  .cumple-feature-countdown::after { top:-16px; font-size:19px; }
+  .cumple-feature-countdown strong { font-size:29px; letter-spacing:-1px; }
+  .cumple-feature-countdown strong.is-today { font-size:20px; }
+  .cumple-feature-countdown span { font-size:9px; margin:0; }
+  .cumple-feature-countdown small { position:absolute; top:82px; font-size:8px; width:80px; line-height:1.5; margin:0; }
+  .cumple-overview { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .cumple-overview > div { flex-direction:column; align-items:flex-start; padding:13px 11px; gap:9px; border-radius:17px; }
+  .cumple-overview > div > div:first-child { width:32px; height:32px; border-radius:11px; font-size:13px; }
+  .cumple-overview p { font-size:7px; letter-spacing:.4px; line-height:1.6; }
+  .cumple-overview h3 { font-size:24px; }
+  .cumple-overview #statNext { font-size:11px; white-space:normal; line-height:1.5; overflow-wrap:anywhere; }
+  .cumple-list-heading { margin-top:4px; }
+  .cumple-list-heading h2 { font-size:18px; }
+  .cumple-list-heading p { font-size:10px; max-width:230px; }
+  .cumple-result-count { font-size:9px; padding:6px 9px; }
+  .cumple-controls { padding:11px; gap:10px; border-radius:18px; }
+  .cumple-filter-group { flex:1 1 100%; padding:3px; }
+  .cumple-filter-group .filter-btn { font-size:9px; padding:8px 6px; min-height:40px; }
+  #syncDirectBtn { width:100%; justify-content:center; }
+  #birthdayList { gap:13px; }
+  #birthdayList .birthday-card-selectable { padding:17px; border-radius:20px; }
+  .cumple-card-person { gap:11px; }
+  .cumple-card-avatar { width:48px; height:48px; flex-basis:48px; border-radius:15px; }
+  .cumple-card-identity h4 { font-size:14px; }
+  .cumple-card-date { font-size:10px; }
+  .cumple-card-actions { gap:0; }
+  .cumple-card-actions button { width:32px; height:38px; }
+  .cumple-card-footer { margin-top:15px; padding-top:12px; }
+  .cumple-card-footer > span { font-size:9px; }
+  #birthdayModal { padding:10px; }
+  #modalContent { padding:20px; border-radius:23px; }
+  #birthdayForm input:not([type=hidden]):not([type=file]),#birthdayForm select,#birthdayForm textarea { font-size:16px; }
+  body > .ambient-particle { display:none; }
+}
+@media(max-width:390px) {
+  .cumple-toolbar .cumple-new-button { flex-basis:100%; }
+  .cumple-card-actions { flex-direction:column; }
+  .cumple-card-actions button { height:28px; }
+  .cumple-feature { padding:20px 17px; }
+  .cumple-feature h3 { font-size:23px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
+  .ui-reveal,#birthdayList .birthday-card-selectable.ui-reveal { opacity:1!important; transform:none!important; }
+  #birthdayList .birthday-card-selectable:hover { transform:none; }
+  .ui-ripple-clip { display:none; }
+}
+
 </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
@@ -1295,9 +1528,9 @@
     <div class="ambient-particle text-5xl bottom-20 left-[12%] animate-float" style="animation-delay: 2.4s;">🎁</div>
     <div class="ambient-particle text-4xl bottom-36 right-[15%] animate-float" style="animation-delay: 3.6s;">⭐</div>
 
-    <header class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80 sticky top-0 z-30 shadow-sm transition-colors duration-300">
-        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-3 group cursor-pointer" onclick="triggerPartyConfetti()">
+    <header class="cumple-header bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80 sticky top-0 z-30 shadow-sm transition-colors duration-300">
+        <div class="cumple-header-inner max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="cumple-brand flex items-center space-x-3 group cursor-pointer" onclick="triggerPartyConfetti()">
                 <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-pink-500/25 animate-float transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-125">
                     <i class="fa-solid fa-cake-candles text-lg"></i>
                 </div>
@@ -1309,7 +1542,7 @@
                     <p class="text-xs text-slate-500 dark:text-slate-400">Nunca olvides una fecha especial</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2.5 w-full sm:w-auto justify-end flex-wrap gap-y-2">
+            <div class="cumple-toolbar flex items-center space-x-2.5 w-full sm:w-auto justify-end flex-wrap gap-y-2">
                 <span id="syncStatus" class="text-xs text-slate-400 hidden md:inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600/50">
                     <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-ping"></i> Auto-sync activo
                 </span>
@@ -1332,7 +1565,7 @@
                 <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 group" title="Cambiar tema">
                     <i id="themeIcon" class="fa-solid fa-moon text-sm transition-transform duration-500 group-hover:rotate-180"></i>
                 </button>
-                <button onclick="openModal()" class="bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-pink-500/25 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 text-sm group">
+                <button onclick="openModal()" class="cumple-new-button bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-pink-500/25 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 text-sm group">
                     <i class="fa-solid fa-plus transition-transform group-hover:rotate-90 group-hover:scale-125"></i>
                     <span>Nuevo Cumpleaños</span>
                 </button>
@@ -1340,8 +1573,17 @@
         </div>
     </header>
 
-    <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6 z-10">
+    <main class="cumple-main flex-1 max-w-5xl w-full mx-auto px-4 py-6 flex flex-col gap-6 z-10">
         
+        <section class="cumple-intro" data-ui-reveal aria-labelledby="cumpleWelcomeTitle">
+            <div>
+                <div class="cumple-eyebrow">Tu agenda de celebraciones</div>
+                <h2 id="cumpleWelcomeTitle">Cada cumpleaños,<br>un motivo para <span>celebrar.</span></h2>
+                <p>Las personas que quieres. Sus días especiales. Todo en un solo lugar.</p>
+            </div>
+            <div class="cumple-today"><i class="fa-regular fa-calendar-days" aria-hidden="true"></i><div><small>Hoy es un buen día</small><time id="cumpleTodayDate"></time></div></div>
+        </section>
+
         <div id="cumplePushNotice" hidden>
           <div class="bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
             <p id="cumplePushStatusText" role="status" aria-live="polite" class="text-sm text-slate-700 dark:text-slate-200 break-words">Activa los avisos de cumpleaños en este dispositivo.</p>
@@ -1359,7 +1601,7 @@
         <div id="todayAlertsContainer"></div>
 
         <!-- Cuadricula de Estadísticas -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="cumple-overview grid grid-cols-1 sm:grid-cols-3 gap-4" data-ui-reveal>
             <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center space-x-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group cursor-pointer" onclick="triggerPartyConfetti()">
                 <div class="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 flex items-center justify-center text-xl transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12 shadow-sm">
                     <i class="fa-solid fa-gift"></i>
@@ -1389,23 +1631,23 @@
             </div>
         </div>
 
-        <!-- Controles de Búsqueda y Filtro -->
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors duration-300">
-            <div class="relative w-full sm:w-80">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                </span>
-                <input type="text" id="searchInput" oninput="filterBirthdays()" placeholder="Buscar por nombre..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
+        <div class="cumple-list-heading" data-ui-reveal>
+            <div><h2>Personas para celebrar</h2><p>Un detalle bonito empieza por recordar.</p></div>
+            <span id="cumpleVisibleCount" class="cumple-result-count" role="status" aria-live="polite">Tu agenda</span>
+        </div>
+        <div class="cumple-controls border" data-ui-reveal>
+            <div class="cumple-search relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-sm" aria-hidden="true"></i></span>
+                <input type="search" id="searchInput" oninput="filterBirthdays()" placeholder="¿A quién celebramos?" aria-label="Buscar cumpleaños por nombre" class="w-full pl-10 pr-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
             </div>
-            <div class="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-                <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-pink-500 text-white transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap shadow-md shadow-pink-500/20">Todos</button>
-                <button onclick="setFilter('month')" id="filter-month" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap">Este Mes</button>
-                <button onclick="setFilter('upcoming')" id="filter-upcoming" class="filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap">Próximos 30 días</button>
-                <button onclick="syncFromGoogleSheets(false)" id="syncDirectBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all whitespace-nowrap flex items-center space-x-1.5 shadow-sm transform hover:scale-105 active:scale-95 group">
-                    <i class="fa-solid fa-rotate transition-transform group-hover:rotate-180"></i>
-                    <span>Actualizar desde Web</span>
-                </button>
+            <div class="cumple-filter-group" role="group" aria-label="Filtrar cumpleaños">
+                <button type="button" onclick="setFilter('all')" id="filter-all" aria-pressed="true" class="filter-btn font-semibold transition-all whitespace-nowrap">Todos</button>
+                <button type="button" onclick="setFilter('month')" id="filter-month" aria-pressed="false" class="filter-btn font-semibold transition-all whitespace-nowrap">Este mes</button>
+                <button type="button" onclick="setFilter('upcoming')" id="filter-upcoming" aria-pressed="false" class="filter-btn font-semibold transition-all whitespace-nowrap">Próximos 30 días</button>
             </div>
+            <button type="button" onclick="syncFromGoogleSheets(false)" id="syncDirectBtn" class="font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 transition-all whitespace-nowrap flex items-center gap-2">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i><span>Actualizar desde Web</span>
+            </button>
         </div>
 
         <div class="flex-1">
@@ -1420,6 +1662,7 @@
                 <p class="text-sm text-slate-400 mt-1 max-w-sm">Agrega nuevos cumpleaños usando el botón superior o sincroniza desde tu hoja web.</p>
             </div>
         </div>
+        <div class="cumple-footer"><i class="fa-solid fa-heart" aria-hidden="true"></i> Hecho para recordar y celebrar.</div>
     </main>
 
 
@@ -2020,6 +2263,7 @@
 
         function triggerPartyConfetti() {
             playSuccessSound();
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             confetti({
                 particleCount: 140,
                 spread: 100,
@@ -2828,78 +3072,41 @@
 
         function renderFeaturedTopBanner() {
             const container = document.getElementById('topFeaturedBirthdayContainer');
-            if (!birthdays || birthdays.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-
-            let processed = birthdays.map((b) => ({ ...b, ...getNextBirthdayDetails(b.date) }));
+            if (!birthdays || birthdays.length === 0) { container.innerHTML = ''; return; }
+            const processed = birthdays.map((b, originalIndex) => ({ ...b, originalIndex, ...getNextBirthdayDetails(b.date) }));
             processed.sort((a, b) => a.diffDays - b.diffDays);
-            
-            let topCardsData = processed.length > 0 ? processed.filter(b => b.diffDays === processed[0].diffDays) : [];
-
-            let html = '';
-            topCardsData.forEach((nextBday, index) => {
-                let timeBadge = '';
-                let subtitleText = '';
-                let ageText = nextBday.hasRealYear ? `Cumplirá <strong class="underline">${nextBday.turnsAge} años</strong>` : `Es su cumpleaños`;
-
-                if (nextBday.diffDays === 0) {
-                    timeBadge = '<span class="bg-white/30 text-white px-3.5 py-1 rounded-full text-xs font-extrabold animate-bounce shadow-md">¡Es HOY! 🎉</span>';
-                    subtitleText = nextBday.hasRealYear ? `¡Está celebrando su cumpleaños hoy y cumple <strong class="underline">${nextBday.turnsAge} años</strong>!` : `¡Está celebrando su cumpleaños hoy!`;
-                } else if (nextBday.diffDays === 1) {
-                    timeBadge = '<span class="bg-white/25 text-white px-3.5 py-1 rounded-full text-xs font-extrabold animate-pulse">Es MAÑANA ⏰</span>';
-                    subtitleText = `Falta exactamente 1 día para su cumpleaños. ${ageText}.`;
-                } else {
-                    timeBadge = `<span class="bg-white/20 text-white px-3.5 py-1 rounded-full text-xs font-bold">Faltan ${nextBday.diffDays} días ⏳</span>`;
-                    subtitleText = `${ageText} en ${nextBday.diffDays} días.`;
-                }
-
-                const gradients = [
-                    'from-violet-600 via-pink-600 to-rose-500',
-                    'from-blue-600 via-indigo-600 to-purple-600',
-                    'from-emerald-600 via-teal-600 to-cyan-600',
-                    'from-amber-600 via-orange-600 to-rose-600'
-                ];
-                const gradientClass = gradients[index % gradients.length];
-
-                const photoUrl = getBirthdayPhotoUrl(nextBday.photo);
-                let avatarContent = photoUrl ? 
-                    `<img src="${birthdayPhotoAttribute(photoUrl)}" alt="${nextBday.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${nextBday.name.charAt(0).toUpperCase()}';">` : 
-                    nextBday.name.charAt(0).toUpperCase();
-
-                html += `
-                    <div class="bg-gradient-to-r ${gradientClass} text-white p-6 rounded-3xl shadow-2xl led-border flex flex-col sm:flex-row items-center justify-between gap-5 relative overflow-hidden animate-fade-in shimmer-gradient group cursor-pointer" onclick="triggerPartyConfetti()">
-                        <div class="absolute -right-4 -bottom-4 opacity-15 text-8xl pointer-events-none transform transition-transform duration-500 group-hover:rotate-12 group-hover:scale-125">
-                            <i class="fa-solid fa-cake-candles"></i>
-                        </div>
-                        <div class="absolute top-2 right-12 opacity-15 text-2xl animate-float">✨</div>
-                        <div class="absolute bottom-3 left-1/3 opacity-20 text-2xl animate-float" style="animation-delay: 1.5s;">🎈</div>
-
-                        <div class="flex items-center space-x-4 z-10 w-full sm:w-auto">
-                            <div class="w-16 h-16 rounded-2xl bg-white/30 backdrop-blur-md flex items-center justify-center text-2xl font-extrabold shadow-inner shrink-0 overflow-hidden transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                ${avatarContent}
+            const upcoming = processed.filter(b => b.diffDays === processed[0].diffDays);
+            container.innerHTML = upcoming.map(b => {
+                const name = birthdayPhotoAttribute(b.name);
+                const initial = birthdayPhotoAttribute(String(b.name || '?').charAt(0).toUpperCase());
+                const photo = getBirthdayPhotoUrl(b.photo);
+                const avatar = photo ? `<img src="${birthdayPhotoAttribute(photo)}" alt="${name}" data-fallback="${initial}" decoding="async" onerror="this.parentElement.textContent=this.dataset.fallback">` : initial;
+                const age = b.hasRealYear ? `Cumplirá <strong>${b.turnsAge} años</strong>` : 'Una fecha para celebrar';
+                const subtitle = b.diffDays === 0
+                    ? (b.hasRealYear ? `Hoy celebra sus <strong>${b.turnsAge} años</strong>. ¡A felicitarle!` : 'Hoy es su gran día. ¡A felicitarle!')
+                    : b.diffDays === 1 ? `${age}. Su cumpleaños es mañana.` : `${age}. Ya falta menos para su día.`;
+                return `
+                    <article class="cumple-feature">
+                        <div>
+                            <div class="cumple-feature-topline"><i class="fa-solid fa-star" aria-hidden="true"></i> ${b.diffDays === 0 ? 'Hoy tenemos algo que celebrar' : 'La próxima celebración'}</div>
+                            <div class="cumple-feature-person">
+                                <div class="cumple-feature-avatar"><span>${avatar}</span></div>
+                                <div><h3>${name}</h3><p class="cumple-feature-subtitle">${subtitle}</p></div>
                             </div>
-                            <div>
-                                <div class="flex items-center space-x-2 mb-1.5 flex-wrap gap-y-1">
-                                    <span class="text-xs uppercase tracking-widest font-bold opacity-90 flex items-center gap-1">
-                                        <i class="fa-solid fa-star text-amber-300 animate-spin-slow"></i> Próximo Cumpleaños
-                                    </span>
-                                    ${timeBadge}
-                                </div>
-                                <h2 class="text-2xl sm:text-3xl font-black tracking-tight">${nextBday.name}</h2>
-                                <p class="text-sm sm:text-base opacity-95 mt-1 font-medium">${subtitleText}</p>
+                            <div class="cumple-feature-actions">
+                                <span class="cumple-category-chip"><i class="fa-regular fa-heart" aria-hidden="true"></i>${birthdayPhotoAttribute(b.category || 'Otro')}</span>
+                                <button type="button" class="cumple-feature-link" onclick="openBirthdayInfoPopup(${b.originalIndex})" aria-label="Ver detalles de ${name}">Ver detalles <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
                             </div>
                         </div>
-                        <div class="z-10 flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-white/20 gap-1.5">
-                            <span class="text-xs opacity-80 uppercase tracking-widest font-semibold">Categoría</span>
-                            <span class="bg-white/25 backdrop-blur-sm px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-sm">${nextBday.category}</span>
+                        <div class="cumple-feature-countdown" aria-label="${b.diffDays === 0 ? 'Su cumpleaños es hoy' : `Faltan ${b.diffDays} días para su cumpleaños`}">
+                            <strong class="${b.diffDays === 0 ? 'is-today' : ''}">${b.diffDays === 0 ? '¡HOY!' : String(b.diffDays).padStart(2, '0')}</strong>
+                            <span>${b.diffDays === 0 ? 'a celebrar' : b.diffDays === 1 ? 'día' : 'días'}</span>
+                            <small>${b.diffDays === 0 ? 'que sea especial' : 'para su gran día'}</small>
                         </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
+                    </article>`;
+            }).join('');
         }
+
 
         let birthdayCountdownTimer = null;
 
@@ -3218,105 +3425,66 @@
             const listContainer = document.getElementById('birthdayList');
             const emptyState = document.getElementById('emptyState');
             const searchVal = document.getElementById('searchInput').value.toLowerCase();
-
-            let processed = birthdays.map((b, index) => ({ ...b, originalIndex: index, ...getNextBirthdayDetails(b.date) }));
+            const processed = birthdays.map((b, index) => ({ ...b, originalIndex: index, ...getNextBirthdayDetails(b.date) }));
             processed.sort((a, b) => a.diffDays - b.diffDays);
-
-            let filtered = processed.filter(b => {
+            const filtered = processed.filter(b => {
                 if (!b.name.toLowerCase().includes(searchVal)) return false;
-                if (currentFilter === 'month') {
-                    return parseInt(b.date.split('-')[1]) - 1 === new Date().getMonth();
-                } else if (currentFilter === 'upcoming') {
-                    return b.diffDays <= 30;
-                }
+                if (currentFilter === 'month') return parseInt(b.date.split('-')[1]) - 1 === new Date().getMonth();
+                if (currentFilter === 'upcoming') return b.diffDays <= 30;
                 return true;
             });
-
-            if (filtered.length === 0) {
+            const count = document.getElementById('cumpleVisibleCount');
+            if (count) count.textContent = `${filtered.length} ${filtered.length === 1 ? 'persona' : 'personas'}`;
+            if (!filtered.length) {
                 listContainer.innerHTML = '';
                 emptyState.classList.remove('hidden');
                 return;
             }
-
             emptyState.classList.add('hidden');
-
-            let html = '';
-            filtered.forEach((b, idx) => {
-                let badgeColor = 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300';
-                if (b.category === 'Atencion al usuario') badgeColor = 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40';
-                if (b.category === 'Minsal') badgeColor = 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40';
-                if (b.category === 'Doctor/a') badgeColor = 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40';
-                if (b.category === 'Otro') badgeColor = 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40';
-
-                let timeText = '';
-                if (b.diffDays === 0) {
-                    timeText = '<span class="text-pink-600 dark:text-pink-400 font-bold bg-pink-50 dark:bg-pink-900/30 px-3 py-1 rounded-xl text-xs animate-bounce shadow-sm">¡Es hoy! 🎉</span>';
-                } else if (b.diffDays === 1) {
-                    timeText = '<span class="text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-900/30 px-3 py-1 rounded-xl text-xs animate-pulse">Es mañana ⏰</span>';
-                } else {
-                    timeText = `<span class="text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700/60 px-3 py-1 rounded-xl text-xs font-semibold">Faltan ${b.diffDays} días</span>`;
-                }
-
-                const [y, m, d] = b.date.split('-');
-                const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-                const formattedDate = `${d} de ${monthNames[parseInt(m)-1]}`;
-                const ageSubText = b.hasRealYear ? ` (${b.turnsAge} años)` : '';
-
-                const photoUrl = getBirthdayPhotoUrl(b.photo);
-                let avatarCardContent = photoUrl ?
-                    `<img src="${birthdayPhotoAttribute(photoUrl)}" alt="${b.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='${b.name.charAt(0).toUpperCase()}';">` :
-                    b.name.charAt(0).toUpperCase();
-
-                const animDelay = (idx % 6) * 0.05;
-                // Si es el cumple de hoy, le ponemos el marco de tira LED de colores brillante
-                const cardLedClass = b.diffDays === 0 ? 'led-border bg-gradient-to-br from-pink-500/5 via-amber-500/5 to-transparent' : 'border border-slate-200/80 dark:border-slate-700';
-
-                html += `
-                    <div
-                        class="birthday-card-selectable bg-white dark:bg-slate-800 p-5 rounded-3xl ${cardLedClass} shadow-sm flex flex-col justify-between hover-scale-card relative group animate-fade-in"
-                        style="animation-delay: ${animDelay}s;"
-                        role="button"
-                        tabindex="0"
-                        aria-label="Ver información de ${b.name}"
+            const categories = {
+                'Atencion al usuario': ['bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300', '#df7fac'],
+                'Minsal': ['bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300', '#89a8eb'],
+                'Doctor/a': ['bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', '#79bda8'],
+                'Otro': ['bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300', '#ddb77d']
+            };
+            listContainer.innerHTML = filtered.map(b => {
+                const [badgeColor, accent] = categories[b.category] || ['bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300', '#b494d8'];
+                const name = birthdayPhotoAttribute(b.name);
+                const initial = birthdayPhotoAttribute(String(b.name || '?').charAt(0).toUpperCase());
+                const photo = getBirthdayPhotoUrl(b.photo);
+                const avatar = photo ? `<img src="${birthdayPhotoAttribute(photo)}" alt="" data-fallback="${initial}" loading="lazy" decoding="async" onerror="this.parentElement.textContent=this.dataset.fallback">` : initial;
+                const [, month, day] = b.date.split('-');
+                const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+                const dateText = `${day} de ${months[parseInt(month) - 1]}`;
+                const age = b.hasRealYear ? ` · ${b.turnsAge} años` : '';
+                const time = b.diffDays === 0 ? '¡Es hoy! 🎉' : b.diffDays === 1 ? 'Es mañana ✨' : `Faltan ${b.diffDays} días`;
+                const timeClass = b.diffDays <= 1 ? 'text-pink-700 dark:text-pink-300 bg-pink-50 dark:bg-pink-900/30' : 'text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/60';
+                return `
+                    <div class="birthday-card-selectable relative ${b.diffDays === 0 ? 'led-border' : ''}"
+                        style="--card-accent:${accent}" role="button" tabindex="0" aria-label="Ver información de ${name}"
                         onclick="openBirthdayInfoPopup(${b.originalIndex})"
-                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBirthdayInfoPopup(${b.originalIndex});}"
-                    >
-                        <div class="flex items-start justify-between">
-                            <div class="flex items-center space-x-3.5">
-                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-700 dark:text-slate-200 font-black flex items-center justify-center text-lg shadow-inner overflow-hidden shrink-0 transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                    ${avatarCardContent}
-                                </div>
-                                <div>
-                                    <h4 class="font-extrabold text-slate-800 dark:text-white text-base tracking-tight">${b.name}</h4>
-                                    <p class="text-xs text-slate-400 dark:text-slate-400 mt-0.5 font-medium flex items-center gap-1">
-                                        <i class="fa-regular fa-calendar text-pink-500"></i> ${formattedDate}${ageSubText}
-                                    </p>
-                                </div>
+                        onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openBirthdayInfoPopup(${b.originalIndex});}">
+                        <div class="cumple-card-top">
+                            <div class="cumple-card-person">
+                                <div class="cumple-card-avatar">${avatar}</div>
+                                <div class="cumple-card-identity"><h4>${name}</h4><p class="cumple-card-date"><i class="fa-regular fa-calendar" aria-hidden="true"></i>${dateText}${age}</p></div>
                             </div>
-                            <div class="flex items-center space-x-1 opacity-95 sm:opacity-40 group-hover:opacity-100 transition-opacity">
-                                <button onclick="event.stopPropagation(); editBirthday(${b.originalIndex})" class="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center transition-transform hover:scale-110" title="Editar">
-                                    <i class="fa-solid fa-pen text-xs"></i>
-                                </button>
-                                <button onclick="event.stopPropagation(); deleteBirthday(${b.originalIndex})" class="w-8 h-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center justify-center transition-transform hover:scale-110" title="Eliminar">
-                                    <i class="fa-solid fa-trash text-xs"></i>
-                                </button>
+                            <div class="cumple-card-actions">
+                                <button type="button" onclick="event.stopPropagation();editBirthday(${b.originalIndex})" aria-label="Editar a ${name}" title="Editar"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
+                                <button type="button" onclick="event.stopPropagation();deleteBirthday(${b.originalIndex})" aria-label="Eliminar a ${name}" title="Eliminar"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                             </div>
                         </div>
-
-                        <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/80 flex items-center justify-between flex-wrap gap-2">
-                            <span class="text-xs font-semibold px-3 py-1 rounded-xl ${badgeColor}">${b.category}</span>
-                            ${timeText}
-                        </div>
-                        ${b.notes ? `<div class="mt-3 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/60 flex items-start gap-2"><i class="fa-regular fa-note-sticky text-pink-500 mt-0.5 shrink-0"></i> <span class="leading-relaxed">${b.notes}</span></div>` : ''}
-                    </div>
-                `;
-            });
-            listContainer.innerHTML = html;
+                        <div class="cumple-card-footer"><span class="${badgeColor}">${birthdayPhotoAttribute(b.category || 'Otro')}</span><span class="${timeClass}">${time}</span></div>
+                        ${b.notes ? `<div class="cumple-card-note"><i class="fa-regular fa-note-sticky" aria-hidden="true"></i><span>${birthdayPhotoAttribute(b.notes)}</span></div>` : ''}
+                    </div>`;
+            }).join('');
         }
+
 
         function setFilter(type) {
             currentFilter = type;
             document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.setAttribute('aria-pressed', String(btn.id === `filter-${type}`));
                 if (btn.id !== 'syncDirectBtn') {
                     btn.className = "filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all transform hover:scale-105 active:scale-95 whitespace-nowrap";
                 }
@@ -3911,66 +4079,118 @@
   }, true);
 })();
 
-/* ===== ANIMACIONES EXTRA - NO CAMBIAN LA LOGICA ===== */
-(function(){
-  function addExtraAnimations(){
-    // Aparición suave de secciones y tarjetas al entrar en pantalla.
-    const targets=document.querySelectorAll('main > div, #birthdayList > div, header, #todayAlertsContainer > div, #topFeaturedBirthdayContainer > div');
-    targets.forEach((el,i)=>{
-      if(!el.classList.contains('extra-reveal')){
-        el.classList.add('extra-reveal');
-        el.style.transitionDelay=Math.min(i*35,350)+'ms';
-      }
+/* Animaciones de interfaz: un observador, eventos compartidos y movimiento opcional. */
+(function () {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const seen = new WeakSet();
+    let refreshPending = false;
+    const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('ui-in');
+            observer.unobserve(entry.target);
+        });
+    }, { threshold: .06, rootMargin: '0px 0px 18px 0px' }) : null;
+
+    function refresh() {
+        refreshPending = false;
+        const now = new Date();
+        const stamp = document.getElementById('cumpleTodayDate');
+        if (stamp) {
+            stamp.textContent = new Intl.DateTimeFormat('es-SV', { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
+            stamp.dateTime = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
+        }
+        document.querySelectorAll('[data-ui-reveal], #birthdayList > .birthday-card-selectable, .cumple-feature').forEach((el, index) => {
+            if (seen.has(el)) return;
+            seen.add(el);
+            if (reduced.matches || !observer) return;
+            el.style.setProperty('--ui-delay', Math.min(index % 4 * 45, 135) + 'ms');
+            el.classList.add('ui-reveal');
+            observer.observe(el);
+        });
+        document.querySelectorAll('.cumple-toolbar button[title]').forEach(button => {
+            if (!button.hasAttribute('aria-label')) button.setAttribute('aria-label', button.title);
+        });
+    }
+    window.refreshCumpleDesign = function () {
+        if (refreshPending) return;
+        refreshPending = true;
+        requestAnimationFrame(refresh);
+    };
+    const changes = new MutationObserver(window.refreshCumpleDesign);
+    ['birthdayList', 'topFeaturedBirthdayContainer'].forEach(id => {
+        const container = document.getElementById(id);
+        if (container) changes.observe(container, { childList: true });
     });
-    const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.08});
-    document.querySelectorAll('.extra-reveal').forEach(el=>observer.observe(el));
 
-    // Brillo y respiración sutil en elementos importantes.
-    document.querySelectorAll('#topFeaturedBirthdayContainer > div, #todayAlertsContainer > div').forEach(el=>el.classList.add('extra-shine','extra-breathe'));
-    document.querySelectorAll('#birthdayList > div').forEach(el=>el.classList.add('extra-shine'));
-
-    // Efecto de inclinación 3D muy suave al pasar el mouse por tarjetas.
-    document.querySelectorAll('#birthdayList > div').forEach(card=>{
-      if(card.dataset.extraTilt) return; card.dataset.extraTilt='1';
-      card.addEventListener('mousemove',function(e){
-        const r=this.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
-        this.style.transform='perspective(900px) rotateX('+(-y*2.2)+'deg) rotateY('+(x*2.2)+'deg) translateY(-8px) scale(1.015)';
-      });
-      card.addEventListener('mouseleave',function(){this.style.transform='';});
+    const lastValues = new WeakMap();
+    const statTimers = new WeakMap();
+    const stats = new MutationObserver(entries => {
+        entries.forEach(entry => {
+            const el = entry.target.nodeType === 3 ? entry.target.parentElement : entry.target;
+            const value = el.textContent;
+            if (lastValues.get(el) === value) return;
+            lastValues.set(el, value);
+            if (reduced.matches) return;
+            clearTimeout(statTimers.get(el));
+            el.classList.add('ui-stat-updated');
+            statTimers.set(el, setTimeout(() => el.classList.remove('ui-stat-updated'), 550));
+        });
+    });
+    ['statTotal', 'statThisMonth', 'statNext'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { lastValues.set(el, el.textContent); stats.observe(el, { childList: true, characterData: true, subtree: true }); }
     });
 
-    // Ondas visuales al hacer clic, sin tocar onclick existentes.
-    document.querySelectorAll('button').forEach(btn=>{
-      if(btn.dataset.extraRipple) return; btn.dataset.extraRipple='1';
-      btn.style.position=btn.style.position||'relative'; btn.style.overflow='hidden';
-      btn.addEventListener('click',function(e){
-        const r=this.getBoundingClientRect(), wave=document.createElement('span');
-        wave.className='extra-ripple'; wave.style.left=(e.clientX-r.left-11)+'px'; wave.style.top=(e.clientY-r.top-11)+'px';
-        this.appendChild(wave); setTimeout(()=>wave.remove(),700);
-      });
+    let tiltFrame = 0;
+    document.addEventListener('pointermove', event => {
+        if (reduced.matches || !finePointer.matches || tiltFrame) return;
+        const card = event.target.closest && event.target.closest('#birthdayList > .birthday-card-selectable');
+        if (!card) return;
+        const x = event.clientX, y = event.clientY;
+        tiltFrame = requestAnimationFrame(() => {
+            tiltFrame = 0;
+            if (!card.isConnected || !card.matches(':hover')) return;
+            const rect = card.getBoundingClientRect();
+            card.style.setProperty('--ui-rx', ((.5 - (y - rect.top) / rect.height) * 2).toFixed(2) + 'deg');
+            card.style.setProperty('--ui-ry', (((x - rect.left) / rect.width - .5) * 2).toFixed(2) + 'deg');
+        });
+    }, { passive: true });
+    document.addEventListener('pointerout', event => {
+        const card = event.target.closest && event.target.closest('#birthdayList > .birthday-card-selectable');
+        if (card && (!event.relatedTarget || !card.contains(event.relatedTarget))) {
+            card.style.removeProperty('--ui-rx'); card.style.removeProperty('--ui-ry');
+        }
+    }, { passive: true });
+    document.addEventListener('click', event => {
+        if (reduced.matches) return;
+        const button = event.target.closest && event.target.closest('button');
+        if (!button || button.disabled || !button.isConnected) return;
+        if (getComputedStyle(button).position === 'static') button.style.position = 'relative';
+        const clip = document.createElement('span');
+        clip.className = 'ui-ripple-clip'; clip.setAttribute('aria-hidden', 'true');
+        const wave = document.createElement('span'); wave.className = 'ui-ripple-wave';
+        const rect = button.getBoundingClientRect();
+        wave.style.left = (event.detail ? event.clientX - rect.left - 10 : rect.width / 2 - 10) + 'px';
+        wave.style.top = (event.detail ? event.clientY - rect.top - 10 : rect.height / 2 - 10) + 'px';
+        clip.appendChild(wave); button.appendChild(clip);
+        setTimeout(() => clip.remove(), 700);
     });
-  }
 
-  function sparkleBurst(){
-    const symbols=['✨','⭐','💖','🎈'];
-    for(let i=0;i<3;i++) setTimeout(()=>{
-      const s=document.createElement('span'); s.className='extra-sparkle'; s.textContent=symbols[Math.floor(Math.random()*symbols.length)];
-      s.style.left=(12+Math.random()*76)+'vw'; s.style.top=(12+Math.random()*70)+'vh';
-      document.body.appendChild(s); setTimeout(()=>s.remove(),950);
-    },i*120);
-  }
-
-  document.addEventListener('click',function(e){
-    if(e.target.closest('button') || e.target.closest('#topFeaturedBirthdayContainer > div') || e.target.closest('#todayAlertsContainer > div')) sparkleBurst();
-  },true);
-
-  // Reaplica solo clases visuales después de renderizados dinámicos.
-  const originalRefresh=window.refreshAllViews;
-  if(typeof originalRefresh==='function'){
-    window.refreshAllViews=function(){ originalRefresh.apply(this,arguments); setTimeout(addExtraAnimations,40); };
-  }
-  window.addEventListener('load',()=>setTimeout(addExtraAnimations,120));
+    reduced.addEventListener('change', () => {
+        if (!reduced.matches) return;
+        document.querySelectorAll('.ui-reveal').forEach(el => el.classList.add('ui-in'));
+        if (observer) observer.disconnect();
+    });
+    document.addEventListener('visibilitychange', () => {
+        document.documentElement.classList.toggle('cumple-motion-paused', document.hidden);
+        if (!document.hidden) window.refreshCumpleDesign();
+    });
+    window.addEventListener('load', window.refreshCumpleDesign);
+    window.refreshCumpleDesign();
 })();
+
 </script>
 
     <!-- ===== BOTÓN DISCRETO DE CONFIGURACIÓN / PRUEBAS ===== -->
