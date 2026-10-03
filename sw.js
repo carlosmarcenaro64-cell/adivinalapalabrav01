@@ -25,15 +25,21 @@ self.addEventListener('notificationclick', function(event) {
   );
 });
 
-// La hoja guarda el nombre; la URL solo se construye al mostrar la imagen.
+// La hoja guarda el nombre. La imagen se sirve desde la carpeta del mismo sitio.
 function getBirthdayPhotosBaseUrl() {
+    const siteBase = typeof document !== 'undefined' ? document.baseURI : self.registration.scope;
+    return new URL('./fotos/cumpleanos/', siteBase).href;
+}
+
+// Solo se utiliza para reconocer enlaces antiguos y validar la respuesta de carga.
+// El navegador no necesita solicitar la imagen a este dominio.
+function getBirthdayPhotoRepositoryBaseUrl() {
     return 'https://raw.githubusercontent.com/carlosmarcenaro64-cell/adivinalapalabrav01/main/fotos/cumpleanos/';
 }
 
 function normalizeBirthdayPhotoFileName(value) {
     let name = String(value || '').trim();
     if (/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(name)) name += '.jpg';
-    // Un archivo de imagen, nunca una ruta ni una expresión de la hoja.
     if (name.length > 200 || !/^[A-Za-z0-9À-ÿ][A-Za-z0-9À-ÿ._ ()-]*\.(?:jpe?g|png|webp|gif|avif)$/i.test(name)) return '';
     return name;
 }
@@ -42,27 +48,35 @@ function normalizeBirthdayPhotoReference(value) {
     const photo = String(value || '').trim();
     if (!photo) return '';
     if (/^https?:\/\//i.test(photo)) {
-        // Conserva los enlaces anteriores y los de otros sitios.
         if (!/^https?:\/\/[^\s/?#@<>"\\]+(?:[/?#][^\s<>"\\]*)?$/i.test(photo)) return '';
-        const base = getBirthdayPhotosBaseUrl();
-        const prefixes = [base];
-        const repository = base.match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/fotos\/cumpleanos\/$/);
-        if (repository) {
-            prefixes.push('https://github.com/' + repository[1] + '/' + repository[2] + '/blob/' + repository[3] + '/fotos/cumpleanos/');
-            prefixes.push('https://' + repository[1] + '.github.io/' + repository[2] + '/fotos/cumpleanos/');
-        }
-        for (const prefix of prefixes) {
-            if (!photo.startsWith(prefix)) continue;
-            const suffix = photo.slice(prefix.length);
-            if (/[?#]/.test(suffix)) continue;
+        let url;
+        try { url = new URL(photo); } catch (_) { return ''; }
+        if (url.username || url.password) return '';
+        const folders = [
+            getBirthdayPhotosBaseUrl(),
+            getBirthdayPhotoRepositoryBaseUrl(),
+            'https://raw.githubusercontent.com/carlosmarcenaro64-cell/adivinalapalabrav01/refs/heads/main/fotos/cumpleanos/',
+            'https://github.com/carlosmarcenaro64-cell/adivinalapalabrav01/blob/main/fotos/cumpleanos/',
+            'https://github.com/carlosmarcenaro64-cell/adivinalapalabrav01/raw/main/fotos/cumpleanos/',
+            'https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/fotos/cumpleanos/'
+        ];
+        for (const folder of folders) {
+            const base = new URL(folder);
+            if (url.hostname !== base.hostname || url.port !== base.port || !url.pathname.startsWith(base.pathname)) continue;
             try {
-                const filename = normalizeBirthdayPhotoFileName(decodeURIComponent(suffix));
-                if (filename) return filename;
-            } catch (_) {}
+                return normalizeBirthdayPhotoFileName(decodeURIComponent(url.pathname.slice(base.pathname.length)));
+            } catch (_) { return ''; }
         }
+        // Los enlaces externos siguen funcionando; no se copian ni se redirigen.
         return photo;
     }
-    return normalizeBirthdayPhotoFileName(photo.replace(/^(?:\.\/)?fotos\/cumpleanos\//, ''));
+    const paths = ['./fotos/cumpleanos/', 'fotos/cumpleanos/', new URL(getBirthdayPhotosBaseUrl()).pathname];
+    for (const prefix of paths) {
+        if (!photo.startsWith(prefix)) continue;
+        try { return normalizeBirthdayPhotoFileName(decodeURIComponent(photo.slice(prefix.length))); }
+        catch (_) { return ''; }
+    }
+    return normalizeBirthdayPhotoFileName(photo);
 }
 
 function getBirthdayPhotoUrl(value) {
