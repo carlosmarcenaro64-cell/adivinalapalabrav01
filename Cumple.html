@@ -1854,6 +1854,8 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                             <option value="Atencion al usuario">Atencion al usuario</option>
                             <option value="Minsal">Minsal</option>
                             <option value="Doctor/a">Doctor/a</option>
+                            <option value="Enfermera">Enfermera</option>
+                            <option value="Auxiliar">Auxiliar</option>
                             <option value="Otro">Otro</option>
                         </select>
                     </div>
@@ -1871,7 +1873,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                             <input id="bPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="selectBirthdayPhoto(event)" aria-describedby="bPhotoHelp bPhotoStatus" hidden>
                         </div>
                     </div>
-                    <p id="bPhotoHelp" class="birthday-photo-help">Elige de tu galería o computadora. JPG, PNG o WebP, hasta 12 MB. Se subirá a GitHub al guardar. La foto será pública.</p>
+                    <p id="bPhotoHelp" class="birthday-photo-help">Elige de tu galería o computadora. JPG, PNG o WebP, hasta 12 MB. Se subirá a GitHub al guardar. La foto será pública y puede tardar unos minutos en aparecer.</p>
                     <div id="bPhotoKeyBox" class="birthday-photo-key" hidden>
                         <label for="bPhotoUploadKey" class="birthday-photo-label">Clave para subir fotos</label>
                         <input type="password" id="bPhotoUploadKey" autocomplete="off" minlength="24" maxlength="160" spellcheck="false" placeholder="Clave de carga configurada en Apps Script" aria-describedby="bPhotoKeyHelp">
@@ -1882,7 +1884,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                         <summary>O usar una foto que ya está subida</summary>
                         <label for="bPhoto" class="birthday-photo-label">Nombre de archivo o enlace</label>
                         <input type="text" id="bPhoto" placeholder="11b9418f-3d87-4849-be3d-28e37ce3f699.jpg" spellcheck="false" oninput="useBirthdayPhotoUrl()" aria-describedby="bPhotoReferenceHelp">
-                        <p id="bPhotoReferenceHelp" class="birthday-photo-help">Escribe el nombre del archivo en fotos/cumpleanos. Si escribes solo el identificador, se añade .jpg. También puedes usar un enlace.</p>
+                        <p id="bPhotoReferenceHelp" class="birthday-photo-help">Escribe el nombre del archivo en fotos/cumpleanos. Se buscará en la carpeta de este sitio. Si escribes solo el identificador, se añade .jpg. También se aceptan enlaces anteriores.</p>
                     </details>
                 </div>
                 <div>
@@ -2078,15 +2080,21 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
         localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
 
-        // La hoja guarda el nombre; la URL solo se construye al mostrar la imagen.
+        // La hoja guarda el nombre. La imagen se sirve desde la carpeta del mismo sitio.
         function getBirthdayPhotosBaseUrl() {
+            const siteBase = typeof document !== 'undefined' ? document.baseURI : self.registration.scope;
+            return new URL('./fotos/cumpleanos/', siteBase).href;
+        }
+
+        // Solo se utiliza para reconocer enlaces antiguos y validar la respuesta de carga.
+        // El navegador no necesita solicitar la imagen a este dominio.
+        function getBirthdayPhotoRepositoryBaseUrl() {
             return 'https://raw.githubusercontent.com/carlosmarcenaro64-cell/adivinalapalabrav01/main/fotos/cumpleanos/';
         }
 
         function normalizeBirthdayPhotoFileName(value) {
             let name = String(value || '').trim();
             if (/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(name)) name += '.jpg';
-            // Un archivo de imagen, nunca una ruta ni una expresión de la hoja.
             if (name.length > 200 || !/^[A-Za-z0-9À-ÿ][A-Za-z0-9À-ÿ._ ()-]*\.(?:jpe?g|png|webp|gif|avif)$/i.test(name)) return '';
             return name;
         }
@@ -2095,27 +2103,35 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             const photo = String(value || '').trim();
             if (!photo) return '';
             if (/^https?:\/\//i.test(photo)) {
-                // Conserva los enlaces anteriores y los de otros sitios.
                 if (!/^https?:\/\/[^\s/?#@<>"\\]+(?:[/?#][^\s<>"\\]*)?$/i.test(photo)) return '';
-                const base = getBirthdayPhotosBaseUrl();
-                const prefixes = [base];
-                const repository = base.match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/fotos\/cumpleanos\/$/);
-                if (repository) {
-                    prefixes.push('https://github.com/' + repository[1] + '/' + repository[2] + '/blob/' + repository[3] + '/fotos/cumpleanos/');
-                    prefixes.push('https://' + repository[1] + '.github.io/' + repository[2] + '/fotos/cumpleanos/');
-                }
-                for (const prefix of prefixes) {
-                    if (!photo.startsWith(prefix)) continue;
-                    const suffix = photo.slice(prefix.length);
-                    if (/[?#]/.test(suffix)) continue;
+                let url;
+                try { url = new URL(photo); } catch (_) { return ''; }
+                if (url.username || url.password) return '';
+                const folders = [
+                    getBirthdayPhotosBaseUrl(),
+                    getBirthdayPhotoRepositoryBaseUrl(),
+                    'https://raw.githubusercontent.com/carlosmarcenaro64-cell/adivinalapalabrav01/refs/heads/main/fotos/cumpleanos/',
+                    'https://github.com/carlosmarcenaro64-cell/adivinalapalabrav01/blob/main/fotos/cumpleanos/',
+                    'https://github.com/carlosmarcenaro64-cell/adivinalapalabrav01/raw/main/fotos/cumpleanos/',
+                    'https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/fotos/cumpleanos/'
+                ];
+                for (const folder of folders) {
+                    const base = new URL(folder);
+                    if (url.hostname !== base.hostname || url.port !== base.port || !url.pathname.startsWith(base.pathname)) continue;
                     try {
-                        const filename = normalizeBirthdayPhotoFileName(decodeURIComponent(suffix));
-                        if (filename) return filename;
-                    } catch (_) {}
+                        return normalizeBirthdayPhotoFileName(decodeURIComponent(url.pathname.slice(base.pathname.length)));
+                    } catch (_) { return ''; }
                 }
+                // Los enlaces externos siguen funcionando; no se copian ni se redirigen.
                 return photo;
             }
-            return normalizeBirthdayPhotoFileName(photo.replace(/^(?:\.\/)?fotos\/cumpleanos\//, ''));
+            const paths = ['./fotos/cumpleanos/', 'fotos/cumpleanos/', new URL(getBirthdayPhotosBaseUrl()).pathname];
+            for (const prefix of paths) {
+                if (!photo.startsWith(prefix)) continue;
+                try { return normalizeBirthdayPhotoFileName(decodeURIComponent(photo.slice(prefix.length))); }
+                catch (_) { return ''; }
+            }
+            return normalizeBirthdayPhotoFileName(photo);
         }
 
         function getBirthdayPhotoUrl(value) {
@@ -3087,6 +3103,12 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             localStorage.setItem('birthday_app_data', JSON.stringify(birthdays));
         }
 
+        function normalizeBirthdayCategory(value) {
+            const category = String(value || '').trim().toLocaleLowerCase('es');
+            return ['Atencion al usuario', 'Minsal', 'Doctor/a', 'Enfermera', 'Auxiliar', 'Otro']
+                .find(item => item.toLocaleLowerCase('es') === category) || 'Otro';
+        }
+
         function parseSheetDate(rawDate) {
             if (!rawDate) return null;
             let clean = rawDate.replace(/^"|"$/g, '').trim();
@@ -3151,7 +3173,6 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                         let notes = row[3] ? row[3].replace(/^"|"$/g, '') : '';
                         let photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
 
-                        if (!['Atencion al usuario', 'Minsal', 'Doctor/a', 'Otro'].includes(category)) category = 'Otro';
 
                         if (!rawDate && row[0] && (row[0].includes('/') || row[0].includes('-'))) {
                             rawDate = row[0];
@@ -3161,6 +3182,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                             photo = row[4] ? row[4].replace(/^"|"$/g, '') : '';
                         }
 
+                        category = normalizeBirthdayCategory(category);
                         const parsedDate = parseSheetDate(rawDate);
                         if (name && parsedDate) {
                             const sheetId = row[5] ? row[5].replace(/^"|"$/g, '') : '';
@@ -3599,6 +3621,8 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 'Atencion al usuario': ['bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300', '#df7fac'],
                 'Minsal': ['bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300', '#89a8eb'],
                 'Doctor/a': ['bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', '#79bda8'],
+                'Enfermera': ['bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', '#79bda8'],
+                'Auxiliar': ['bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300', '#89a8eb'],
                 'Otro': ['bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300', '#ddb77d']
             };
             listContainer.innerHTML = filtered.map(b => {
@@ -3828,7 +3852,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                     throw new Error('La subida no devolvió un enlace de foto válido.');
                 }
                 const filename = pending.uploadId + '.jpg';
-                if (url.href !== getBirthdayPhotoUrl(filename) ||
+                if (url.href !== getBirthdayPhotoRepositoryBaseUrl() + encodeURIComponent(filename) ||
                     (result.filename && result.filename !== filename) ||
                     (result.path && result.path !== 'fotos/cumpleanos/' + filename)) {
                     throw new Error('La foto se guardó en otra carpeta. Revisa la configuración de fotos de CumpleApp antes de continuar.');
@@ -3875,7 +3899,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             const index = document.getElementById('editIndex').value;
             const name = document.getElementById('bName').value.trim();
             const date = document.getElementById('bDate').value;
-            const category = document.getElementById('bCategory').value;
+            const category = normalizeBirthdayCategory(document.getElementById('bCategory').value);
             let photo = document.getElementById('bPhoto').value.trim();
             const notes = document.getElementById('bNotes').value.trim();
 
@@ -3963,7 +3987,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             document.getElementById('editIndex').value = index;
             document.getElementById('bName').value = b.name;
             document.getElementById('bDate').value = b.date;
-            document.getElementById('bCategory').value = b.category || 'Otro';
+            document.getElementById('bCategory').value = normalizeBirthdayCategory(b.category);
             document.getElementById('bPhoto').value = normalizeBirthdayPhotoReference(b.photo) || b.photo || '';
             document.getElementById('bNotes').value = b.notes || '';
             resetBirthdayPhotoEditor();
