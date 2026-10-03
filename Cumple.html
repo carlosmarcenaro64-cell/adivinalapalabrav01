@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es" class="h-full cumple-neon">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recordatorio de Cumpleaños</title>
+    <script>
+        try { document.documentElement.classList.toggle('cumple-neon', localStorage.getItem('cumpleapp_neon_enabled') !== 'off'); } catch (_) {}
+    </script>
     <!-- Favicon de Pastel Dinámico -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
     <!-- PWA: manifest real para instalación como aplicación -->
@@ -1514,8 +1517,95 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 }
 
 </style>
+<style id="cumple-neon-effects">
+/* Luces de celebración; el movimiento se puede apagar desde la propia app. */
+@property --cumple-neon-angle { syntax:'<angle>'; initial-value:0deg; inherits:false; }
+.cumple-mood-tools { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+.cumple-mood-button { display:inline-flex; align-items:center; gap:7px; border:1px solid var(--ui-line); color:var(--ui-muted); background:var(--ui-panel); padding:8px 12px; border-radius:30px; font-size:10px; font-weight:700; min-height:36px; transition:background .2s,box-shadow .2s,color .2s; }
+.cumple-mood-button[aria-pressed=true] { color:var(--ui-pink); border-color:#e78eca90; background:color-mix(in srgb,var(--ui-panel) 92%,#f084d2); box-shadow:0 0 12px #ee67d51a; }
+.cumple-mood-button i { font-size:11px; }
+.cumple-neon .cumple-intro h2 span { text-shadow:0 0 16px #f943af28,0 0 34px #ae69ff25; }
+.cumple-neon.dark .cumple-intro h2 span { color:#ff89d2; text-shadow:0 0 14px #ff45ae66,0 0 35px #ff45ae30; }
+.cumple-neon .cumple-header { box-shadow:0 4px 22px #d752bd13!important; }
+.cumple-neon .cumple-header::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:1px; background:linear-gradient(90deg,transparent,#ee55ba,#b98bff,#6ce5e9,transparent); opacity:.7; pointer-events:none; }
+.cumple-neon .cumple-brand > div:first-child { box-shadow:0 0 20px #ef44ab55,0 0 36px #a579fa24; }
+.cumple-neon .cumple-new-button { box-shadow:0 0 17px #ed3fa54d,inset 0 1px 0 #ffffff40; }
+.cumple-neon .cumple-feature { border-color:#e58aff; box-shadow:0 0 0 1px #ba70ec35,0 0 24px #d842b530,0 16px 45px #8c32832b; }
+.cumple-neon.dark .cumple-feature { box-shadow:0 0 0 1px #e174f955,0 0 28px #d943bf48,0 0 65px #8931c521; }
+.cumple-neon .cumple-feature-countdown { box-shadow:inset 0 0 20px #ffffff18,0 0 18px #ffb5e329; border-color:#ffd0ef70; }
+.cumple-neon .cumple-feature-countdown::before { border-color:#ffe4ffb0; filter:drop-shadow(0 0 4px #fa8bea); }
+.cumple-neon .cumple-feature-countdown strong { text-shadow:0 0 13px #ffd1f577,0 0 28px #ea5cff55; }
+.cumple-neon .cumple-feature-countdown::after { text-shadow:0 0 12px #ffdfa3; }
+.cumple-neon .cumple-feature-avatar { box-shadow:0 0 0 2px #ffffff18,0 0 22px #f6b5ff55; animation:neon-photo-float 5s ease-in-out infinite; }
+.cumple-neon .cumple-feature > div:first-child { position:relative; z-index:1; }
+.cumple-neon-frame { display:none; position:absolute; inset:0; margin:0!important; padding:0; border:1px solid #db69da90; border-radius:inherit; pointer-events:none; z-index:4; }
+.cumple-neon .cumple-neon-frame { display:block; }
+@supports (mask-composite:exclude) or (-webkit-mask-composite:xor) {
+  .cumple-neon .cumple-neon-frame {
+    border:0; padding:1.5px;
+    background:conic-gradient(from var(--cumple-neon-angle,0deg),#fb5fd7,#b88aff,#76e8ec,#c782ff,#ff75b0,#fb5fd7);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+    animation:neon-border-orbit 9s linear infinite; animation-play-state:paused;
+  }
+  .cumple-neon .neon-on-screen > .cumple-neon-frame { animation-play-state:running; }
+  .cumple-neon .cumple-feature > .cumple-neon-frame { padding:2px; }
+}
+.cumple-neon-shine { display:none; position:absolute; inset:0; overflow:hidden; border-radius:inherit; pointer-events:none; z-index:0; }
+.cumple-neon .cumple-feature > .cumple-neon-shine { display:block; }
+.cumple-neon-shine::before { content:""; position:absolute; top:-80%; bottom:-80%; left:0; width:20%; background:linear-gradient(90deg,transparent,#ffffff12,transparent); transform:translateX(-250%) rotate(24deg); animation:neon-shine-pass 10s ease-in-out infinite; animation-play-state:paused; }
+.neon-on-screen > .cumple-neon-shine::before { animation-play-state:running; }
+.cumple-overview > div > div:nth-child(2) { min-width:0; }
+.cumple-neon .cumple-overview > div { box-shadow:0 0 18px #bd6ee012,var(--ui-shadow); }
+.cumple-neon.dark .cumple-overview > div { background:linear-gradient(135deg,#23253b,#1c2032)!important; }
+.cumple-neon #birthdayList .birthday-card-selectable { border-color:color-mix(in srgb,var(--ui-line) 65%,var(--card-accent)); box-shadow:0 4px 20px #b745bc12; }
+.cumple-neon.dark #birthdayList .birthday-card-selectable { box-shadow:0 4px 22px #9748df16; }
+.cumple-neon .cumple-card-avatar { box-shadow:0 0 14px color-mix(in srgb,var(--card-accent,#b88aff) 20%,transparent); }
+.cumple-neon .cumple-card-actions button:active { background:#ee63c128; box-shadow:0 0 15px #ef61b833; }
+.cumple-neon .cumple-filter-group .filter-btn[aria-pressed=true] { box-shadow:0 0 12px #e84aac20,inset 0 0 0 1px #eb79c854; }
+.cumple-neon #searchInput:focus { box-shadow:0 0 0 2px #e97ec930,0 0 20px #d559c827; }
+.cumple-neon #modalContent { position:relative; box-shadow:0 0 0 1px #e479d638,0 0 36px #e349b71f,0 32px 100px #0c071344; }
+.cumple-neon .birthday-profile-action.primary { box-shadow:0 0 18px #ef52cb55; }
+#cumpleNeonAmbient { display:none; position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.cumple-neon #cumpleNeonAmbient { display:block; }
+.cumple-neon-mote { position:absolute; left:var(--mote-x); top:var(--mote-y); width:var(--mote-size,4px); height:var(--mote-size,4px); background:var(--mote-color,#e779d2); border-radius:50%; box-shadow:0 0 9px currentColor; color:var(--mote-color,#e779d2); opacity:.3; animation:neon-mote-drift var(--mote-speed,9s) ease-in-out infinite alternate; animation-delay:var(--mote-delay,0s); }
+.dark .cumple-neon-mote { opacity:.5; }
+.cumple-neon-mote:nth-child(3n) { border-radius:0; clip-path:polygon(50% 0,62% 37%,100% 50%,62% 63%,50% 100%,38% 63%,0 50%,38% 37%); width:10px; height:10px; }
+#cumpleNeonParticles { position:fixed; inset:0; pointer-events:none; z-index:10030; overflow:hidden; }
+.cumple-neon-particle { position:absolute; width:6px; height:6px; border-radius:50%; color:var(--spark-color,#ed74d3); background:currentColor; box-shadow:0 0 8px currentColor; pointer-events:none; animation:neon-spark-burst .7s ease-out forwards; }
+.cumple-neon-particle.trail { width:4px; height:4px; animation:neon-trail-fade .5s ease-out forwards; }
+.cumple-neon-particle.diamond { border-radius:1px; }
+#cumpleSoundChip[aria-pressed=true] i { color:var(--ui-pink); }
+#soundBtn[data-sound-enabled=true] { box-shadow:0 0 12px #c27aff24; }
+@keyframes neon-border-orbit { to{--cumple-neon-angle:360deg;} }
+@keyframes neon-photo-float { 0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)} }
+@keyframes neon-shine-pass { 0%,35%{transform:translateX(-250%) rotate(24deg)}80%,100%{transform:translateX(750%) rotate(24deg)} }
+@keyframes neon-mote-drift { from{transform:translate3d(0,12px,0)}to{transform:translate3d(12px,-20px,0)} }
+@keyframes neon-spark-burst { 0%{opacity:.9;transform:translate(-50%,-50%) scale(.7) rotate(0)}100%{opacity:0;transform:translate(calc(-50% + var(--spark-x)),calc(-50% + var(--spark-y))) scale(.1) rotate(120deg)} }
+@keyframes neon-trail-fade { 0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:translateY(9px) scale(0)} }
+@media(hover:hover) and (pointer:fine) {
+  .cumple-neon #birthdayList .birthday-card-selectable:hover { border-color:#e49aeb; box-shadow:0 0 0 1px #cf75f520,0 0 23px #d85be231,0 15px 35px #853d9629; }
+  .cumple-neon #birthdayList .birthday-card-selectable:hover > .cumple-neon-frame { animation-duration:4s; }
+  .cumple-neon .cumple-toolbar button:hover { box-shadow:0 0 16px #da78df30; border-color:#d68bde90; }
+}
+@media(max-width:639px) {
+  .cumple-mood-tools { margin-top:13px; }
+  .cumple-mood-button { padding:8px 11px; min-height:38px; }
+  .cumple-neon-mote:nth-child(n+7) { display:none; }
+  .cumple-neon .cumple-feature { box-shadow:0 0 18px #d842b522; }
+  .cumple-neon .cumple-feature-avatar { animation-duration:6s; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #cumpleNeonAmbient,#cumpleNeonParticles,.cumple-neon-shine { display:none!important; }
+  .cumple-neon-frame,.cumple-feature-avatar { animation:none!important; }
+}
+
+</style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
+<div id="cumpleNeonAmbient" aria-hidden="true"><span class="cumple-neon-mote" style="--mote-x:6%;--mote-y:18%;--mote-size:4px;--mote-color:#ef6dc7;--mote-delay:-0s;--mote-speed:8s"></span><span class="cumple-neon-mote" style="--mote-x:94%;--mote-y:24%;--mote-size:5px;--mote-color:#8de4e5;--mote-delay:-1s;--mote-speed:9s"></span><span class="cumple-neon-mote" style="--mote-x:3%;--mote-y:57%;--mote-size:7px;--mote-color:#ae8eff;--mote-delay:-2s;--mote-speed:10s"></span><span class="cumple-neon-mote" style="--mote-x:90%;--mote-y:76%;--mote-size:4px;--mote-color:#ff97ca;--mote-delay:-3s;--mote-speed:11s"></span><span class="cumple-neon-mote" style="--mote-x:14%;--mote-y:87%;--mote-size:4px;--mote-color:#9e9dff;--mote-delay:-4s;--mote-speed:8s"></span><span class="cumple-neon-mote" style="--mote-x:83%;--mote-y:9%;--mote-size:5px;--mote-color:#ffc384;--mote-delay:-5s;--mote-speed:9s"></span><span class="cumple-neon-mote" style="--mote-x:41%;--mote-y:5%;--mote-size:3px;--mote-color:#f27bcc;--mote-delay:-6s;--mote-speed:10s"></span><span class="cumple-neon-mote" style="--mote-x:97%;--mote-y:51%;--mote-size:4px;--mote-color:#9989ee;--mote-delay:-7s;--mote-speed:11s"></span><span class="cumple-neon-mote" style="--mote-x:24%;--mote-y:42%;--mote-size:3px;--mote-color:#6adadb;--mote-delay:-8s;--mote-speed:8s"></span></div>
+<div id="cumpleNeonParticles" aria-hidden="true"></div>
 
     <!-- ===== POP-UPS ANIMADOS DENTRO DE LA WEB / APP ===== -->
     <div id="birthdayInAppPopupHost" aria-live="polite" aria-atomic="true"></div>
@@ -1580,6 +1670,10 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 <div class="cumple-eyebrow">Tu agenda de celebraciones</div>
                 <h2 id="cumpleWelcomeTitle">Cada cumpleaños,<br>un motivo para <span>celebrar.</span></h2>
                 <p>Las personas que quieres. Sus días especiales. Todo en un solo lugar.</p>
+                <div class="cumple-mood-tools" role="group" aria-label="Luces y sonidos">
+                    <button type="button" id="cumpleNeonChip" class="cumple-mood-button" aria-pressed="true" onclick="window.toggleCumpleNeon()"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Neón activado</span></button>
+                    <button type="button" id="cumpleSoundChip" class="cumple-mood-button" aria-pressed="false" onclick="toggleSound()"><i class="fa-solid fa-volume-xmark" aria-hidden="true"></i><span>Sonidos</span></button>
+                </div>
             </div>
             <div class="cumple-today"><i class="fa-regular fa-calendar-days" aria-hidden="true"></i><div><small>Hoy es un buen día</small><time id="cumpleTodayDate"></time></div></div>
         </section>
@@ -2071,66 +2165,126 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         let soundEnabled = localStorage.getItem('birthday_app_sound') !== 'off';
         let audioContext = null;
 
-        // El navegador exige una interacción del usuario antes de reproducir audio.
+        // Sonidos sintetizados, siempre después de una interacción y con silencio inmediato.
+        let cumpleAudioUnlocked = false;
+        let cumpleMasterGain = null;
+        let cumpleAudioAvailable = true;
+        const cumpleSoundVoices = new Set();
+
+        function unlockCumpleAudio() {
+            cumpleAudioUnlocked = true;
+            if (soundEnabled) getAudioContext();
+        }
+        document.addEventListener('pointerdown', unlockCumpleAudio, { capture:true, passive:true });
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.key === ' ') unlockCumpleAudio();
+        }, true);
+
         function getAudioContext() {
-            if (!audioContext) {
-                const Ctx = window.AudioContext || window.webkitAudioContext;
-                if (!Ctx) return null;
-                audioContext = new Ctx();
-            }
-            if (audioContext.state === 'suspended') audioContext.resume();
-            return audioContext;
+            if (!soundEnabled || !cumpleAudioUnlocked || document.hidden || !cumpleAudioAvailable) return null;
+            try {
+                if (!audioContext || audioContext.state === 'closed') {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (!Ctx) { cumpleAudioAvailable = false; return null; }
+                    audioContext = new Ctx();
+                    cumpleMasterGain = audioContext.createGain();
+                    cumpleMasterGain.gain.value = .65;
+                    cumpleMasterGain.connect(audioContext.destination);
+                }
+                if (audioContext.state === 'suspended') audioContext.resume().catch(function() {});
+                return audioContext;
+            } catch (_) { cumpleAudioAvailable = false; return null; }
         }
 
-        function playTone(frequency, duration = 0.08, type = 'sine', volume = 0.035, delay = 0) {
-            if (!soundEnabled) return;
+        function stopCumpleSounds() {
+            cumpleSoundVoices.forEach(function(voice) {
+                try { voice.osc.stop(); } catch (_) {}
+                try { voice.osc.disconnect(); voice.gain.disconnect(); } catch (_) {}
+            });
+            cumpleSoundVoices.clear();
+        }
+
+        function playTone(frequency, duration = .08, type = 'sine', volume = .035, delay = 0) {
             const ctx = getAudioContext();
-            if (!ctx) return;
-            const now = ctx.currentTime + delay;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(frequency, now);
-            gain.gain.setValueAtTime(0.0001, now);
-            gain.gain.exponentialRampToValueAtTime(volume, now + 0.012);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + duration + 0.02);
+            if (!ctx || cumpleSoundVoices.size >= 96) return;
+            let osc, gain, voice;
+            try {
+                const start = ctx.currentTime + Math.max(0, delay) + .008;
+                const length = Math.max(.035, duration);
+                osc = ctx.createOscillator(); gain = ctx.createGain();
+                voice = { osc, gain }; cumpleSoundVoices.add(voice);
+                osc.type = type; osc.frequency.setValueAtTime(frequency, start);
+                gain.gain.setValueAtTime(.0001, start);
+                gain.gain.exponentialRampToValueAtTime(Math.min(.08, Math.max(.001, volume)), start + .012);
+                gain.gain.exponentialRampToValueAtTime(.0001, start + length);
+                osc.connect(gain); gain.connect(cumpleMasterGain);
+                osc.onended = function() {
+                    cumpleSoundVoices.delete(voice);
+                    try { osc.disconnect(); gain.disconnect(); } catch (_) {}
+                };
+                osc.start(start); osc.stop(start + length + .02);
+            } catch (_) {
+                if (voice) cumpleSoundVoices.delete(voice);
+                try { if (osc) osc.disconnect(); if (gain) gain.disconnect(); } catch (_) {}
+            }
         }
 
-        function playClickSound() { playTone(620, 0.07, 'sine', 0.025); }
+        function playClickSound() {
+            playTone(880,.065,'sine',.026);
+            playTone(1320,.07,'sine',.012,.025);
+        }
         function playSuccessSound() {
-            playTone(523.25, 0.11, 'sine', 0.035);
-            playTone(659.25, 0.12, 'sine', 0.035, 0.08);
-            playTone(783.99, 0.18, 'sine', 0.04, 0.17);
+            [523.25,659.25,783.99,1046.5].forEach(function(note,i) { playTone(note,.16 + i*.025,'sine',.036,i*.085); });
+            playTone(261.63,.3,'triangle',.013);
         }
         function playDeleteSound() {
-            playTone(330, 0.10, 'triangle', 0.03);
-            playTone(220, 0.14, 'triangle', 0.025, 0.08);
+            [392,311.13,261.63].forEach(function(note,i) { playTone(note,.1,'triangle',.023,i*.06); });
         }
         function playInstallSound() {
-            playTone(523.25, 0.09, 'sine', 0.03);
-            playTone(659.25, 0.09, 'sine', 0.03, 0.09);
-            playTone(1046.50, 0.20, 'sine', 0.04, 0.18);
+            [659.25,783.99,1046.5,1318.51].forEach(function(note,i) { playTone(note,.14,'sine',.03,i*.075); });
+        }
+        function playOpenSound() {
+            [392,587.33,783.99].forEach(function(note,i) { playTone(note,.11,'sine',.022,i*.04); });
+        }
+        function playCloseSound() { playTone(660,.08,'sine',.018); playTone(440,.1,'sine',.016,.045); }
+        function playFilterSound(filter) {
+            const notes = filter === 'month' ? [659.25,880] : filter === 'upcoming' ? [783.99,1046.5] : [523.25,783.99];
+            notes.forEach(function(note,i) { playTone(note,.09,'sine',.023,i*.055); });
+        }
+        function playThemeSound() {
+            const notes = document.documentElement.classList.contains('dark') ? [523.25,659.25,1046.5] : [783.99,587.33,392];
+            notes.forEach(function(note,i) { playTone(note,.12,'sine',.022,i*.07); });
+        }
+        function playNeonSound(enabled) {
+            const notes = enabled ? [523.25,783.99,1046.5,1567.98] : [783.99,523.25];
+            notes.forEach(function(note,i) { playTone(note,.13,'sine',.023,i*.055); });
         }
         function toggleSound() {
+            cumpleAudioUnlocked = true;
             soundEnabled = !soundEnabled;
-            localStorage.setItem('birthday_app_sound', soundEnabled ? 'on' : 'off');
-            const icon = document.getElementById('soundIcon');
-            const btn = document.getElementById('soundBtn');
-            if (icon) icon.className = 'fa-solid ' + (soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark') + ' text-sm transition-transform duration-500 group-hover:rotate-12';
-            if (btn) btn.title = soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
+            try { localStorage.setItem('birthday_app_sound', soundEnabled ? 'on' : 'off'); } catch (_) {}
+            if (!soundEnabled) stopCumpleSounds();
+            updateSoundUI();
             if (soundEnabled) playSuccessSound();
         }
-
         function updateSoundUI() {
+            const title = soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
             const icon = document.getElementById('soundIcon');
-            const btn = document.getElementById('soundBtn');
-            if (icon) icon.className = 'fa-solid ' + (soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark') + ' text-sm transition-transform duration-500 group-hover:rotate-12';
-            if (btn) btn.title = soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos';
+            const button = document.getElementById('soundBtn');
+            if (icon) icon.className = 'fa-solid ' + (soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark') + ' text-sm';
+            if (button) {
+                button.title = title; button.setAttribute('aria-label', title);
+                button.setAttribute('aria-pressed', String(soundEnabled)); button.dataset.soundEnabled = String(soundEnabled);
+            }
+            const chip = document.getElementById('cumpleSoundChip');
+            if (chip) {
+                chip.title = title; chip.setAttribute('aria-label', title);
+                chip.setAttribute('aria-pressed', String(soundEnabled));
+                chip.innerHTML = '<i class="fa-solid ' + (soundEnabled ? 'fa-volume-high' : 'fa-volume-xmark') + '" aria-hidden="true"></i><span>' + (soundEnabled ? 'Sonidos activados' : 'Sin sonido') + '</span>';
+            }
         }
+        document.addEventListener('visibilitychange', function() { if (document.hidden) stopCumpleSounds(); });
+
 
         function getCumpleBrowserInfo() {
             const ua = navigator.userAgent || '';
@@ -3356,7 +3510,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             setTimeout(launchBirthdayProfileParticles, 120);
 
             try {
-                if (typeof playClickSound === 'function') playClickSound();
+                if (typeof playOpenSound === 'function') playOpenSound();
             } catch (_) {}
 
             if (details.diffDays === 0 && typeof triggerPartyConfetti === 'function') {
@@ -4068,15 +4222,20 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         }
     </script>
 <script>
-/* ===== SONIDOS DE INTERFAZ ===== */
-(function(){
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('button');
-    if (!btn || btn.id === 'soundBtn') return;
-    // Evita duplicar los sonidos de acciones que ya tienen sonido propio.
-    if (btn.getAttribute('onclick') && /triggerPartyConfetti|saveBirthday|deleteBirthday|triggerNativeInstall/.test(btn.getAttribute('onclick'))) return;
-    playClickSound();
-  }, true);
+/* ===== SONIDOS DE INTERFAZ: UN SONIDO POR ACCIÓN ===== */
+(function () {
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest && event.target.closest('button');
+        if (!button || button.disabled || button.id === 'soundBtn' || button.id === 'cumpleSoundChip' || button.id === 'cumpleNeonChip' || button.id === 'birthdaySaveButton') return;
+        const action = button.getAttribute('onclick') || '';
+        // Estas acciones ya reproducen su propia confirmación o melodía.
+        if (/triggerPartyConfetti|saveBirthday|deleteBirthday|triggerNativeInstall|openBirthdayInfoPopup|openInstallModal|closeInstallModal|shareCumpleApp|celebrateProfileBirthday|enterBirthdayCelebration|playBirthdayMelody|playBirthdayFanfare/.test(action)) return;
+        if (button.classList.contains('filter-btn')) { playFilterSound(button.id.replace('filter-', '')); return; }
+        if (/toggleDarkMode/.test(action)) { playThemeSound(); return; }
+        if (/openModal|editBirthday/.test(action)) { playOpenSound(); return; }
+        if (/close/.test(action)) { playCloseSound(); return; }
+        playClickSound();
+    }, true);
 })();
 
 /* Animaciones de interfaz: un observador, eventos compartidos y movimiento opcional. */
@@ -5911,5 +6070,86 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 
 
 
+<script>
+(function () {
+    const root = document.documentElement;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const fine = matchMedia('(hover: hover) and (pointer: fine)');
+    const particles = document.getElementById('cumpleNeonParticles');
+    const observed = new Set();
+    let enabled = root.classList.contains('cumple-neon');
+    let lastTrail = 0, queued = false;
+    const colors = ['#fa77d3','#ae9aff','#79e7ec','#ffc78d'];
+    const visibility = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+        entries.forEach(entry => entry.target.classList.toggle('neon-on-screen', entry.isIntersecting));
+    }, { rootMargin:'30px', threshold:0 }) : null;
+
+    function updateControl() {
+        const button = document.getElementById('cumpleNeonChip');
+        if (!button) return;
+        button.setAttribute('aria-pressed', String(enabled));
+        button.setAttribute('aria-label', enabled ? 'Desactivar efectos neón' : 'Activar efectos neón');
+        button.querySelector('span').textContent = enabled ? 'Neón activado' : 'Neón apagado';
+    }
+    window.toggleCumpleNeon = function () {
+        enabled = !enabled;
+        root.classList.toggle('cumple-neon', enabled);
+        try { localStorage.setItem('cumpleapp_neon_enabled', enabled ? 'on' : 'off'); } catch (_) {}
+        if (!enabled && particles) particles.replaceChildren();
+        updateControl();
+        if (typeof playNeonSound === 'function') playNeonSound(enabled);
+    };
+
+    function decorate() {
+        queued = false;
+        observed.forEach(el => { if (!el.isConnected) { if (visibility) visibility.unobserve(el); observed.delete(el); } });
+        document.querySelectorAll('.cumple-feature,.cumple-overview > div,#birthdayList > .birthday-card-selectable,#modalContent').forEach(el => {
+            if (observed.has(el)) return;
+            observed.add(el);
+            const frame = document.createElement('span'); frame.className = 'cumple-neon-frame'; frame.setAttribute('aria-hidden','true'); el.appendChild(frame);
+            if (el.classList.contains('cumple-feature')) {
+                const shine=document.createElement('span'); shine.className='cumple-neon-shine'; shine.setAttribute('aria-hidden','true'); el.appendChild(shine);
+            }
+            if (visibility) visibility.observe(el); else el.classList.add('neon-on-screen');
+        });
+    }
+    function scheduleDecorate() { if (!queued) { queued = true; requestAnimationFrame(decorate); } }
+    const changes = new MutationObserver(scheduleDecorate);
+    ['birthdayList','topFeaturedBirthdayContainer'].forEach(id => { const el=document.getElementById(id); if(el)changes.observe(el,{childList:true}); });
+    const modal=document.getElementById('birthdayModal');
+    if (modal) changes.observe(modal,{attributes:true,attributeFilter:['class']});
+
+    function spark(x,y,index,trail) {
+        if (!particles || particles.childElementCount >= 36) return;
+        const el=document.createElement('span');
+        el.className='cumple-neon-particle' + (trail?' trail':index%2?' diamond':'');
+        el.style.left=x+'px'; el.style.top=y+'px';
+        el.style.setProperty('--spark-color',colors[index%colors.length]);
+        const angle=index*Math.PI/4, distance=26+Math.random()*24;
+        el.style.setProperty('--spark-x',Math.cos(angle)*distance+'px');
+        el.style.setProperty('--spark-y',Math.sin(angle)*distance+'px');
+        particles.appendChild(el); setTimeout(()=>el.remove(),trail?550:760);
+    }
+    document.addEventListener('pointermove', event => {
+        if (!enabled || reduced.matches || document.hidden || !fine.matches || event.pointerType!=='mouse' || performance.now()-lastTrail<65) return;
+        lastTrail=performance.now(); spark(event.clientX,event.clientY,Math.floor(lastTrail/65)%4,true);
+    },{passive:true});
+    document.addEventListener('click', event => {
+        if (!enabled || reduced.matches || document.hidden) return;
+        const target=event.target.closest && event.target.closest('button,.birthday-card-selectable');
+        if (!target || target.disabled || !target.isConnected || target.id==='cumpleNeonChip') return;
+        const rect=target.getBoundingClientRect();
+        const x=event.detail?event.clientX:rect.left+rect.width/2;
+        const y=event.detail?event.clientY:rect.top+rect.height/2;
+        const step=fine.matches?1:2;
+        for(let i=0;i<8;i+=step)spark(x,y,i,false);
+    },true);
+    reduced.addEventListener('change',()=>{ if(reduced.matches&&particles)particles.replaceChildren(); });
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden&&particles)particles.replaceChildren(); });
+    updateControl(); decorate();
+    if(typeof updateSoundUI==='function')updateSoundUI();
+})();
+
+</script>
 </body>
 </html>
