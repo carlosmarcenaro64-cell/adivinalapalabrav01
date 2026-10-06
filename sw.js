@@ -2,21 +2,23 @@
 // Permite recibir notificaciones incluso con la página cerrada.
 
 self.addEventListener('notificationclick', function(event) {
+  event.stopImmediatePropagation();
   event.notification.close();
+  if (event.action === 'dismiss') return;
 
   const fallback = new URL('./Cumple.html', self.registration.scope);
   let target = fallback;
   try {
     const requested = new URL(event.notification.data && event.notification.data.url || fallback.href, fallback);
-    if (requested.origin === fallback.origin && requested.pathname.startsWith(new URL(self.registration.scope).pathname)) target = requested;
+    if (requested.origin === fallback.origin && requested.pathname === fallback.pathname) target = requested;
   } catch (_) {}
   const targetUrl = target.href;
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async function(windowClients) {
       for (const client of windowClients) {
         if ('focus' in client && client.url && new URL(client.url).pathname === target.pathname) {
-          client.navigate(targetUrl).catch(function(){});
+          if (client.url !== targetUrl) await client.navigate(targetUrl).catch(function(){});
           return client.focus();
         }
       }
@@ -88,6 +90,112 @@ function getBirthdayPhotoUrl(value) {
 }
 
 
+// Un único mostrador para avisos recibidos con la app abierta o cerrada.
+// El navegador despierta este worker al recibir Push; no necesita un temporizador.
+const CUMPLE_PUSH_VERSION = 'pc-20261006';
+const CUMPLE_RECEIPTS_CACHE = 'cumpleapp-push-receipts-v1';
+const CUMPLE_RECEIPT_BASE = new URL('./__cumple_push__/', self.registration.scope).href;
+const cumpleRecentNotices = new Map();
+let cumpleNotificationQueue = Promise.resolve();
+
+function cumpleNotificationTag(payload) {
+  const data = payload && payload.data || {};
+  return String(data.tag || payload && (payload.messageId || payload.fcmMessageId) ||
+    'cumpleapp-' + Date.now() + '-' + Math.random().toString(36).slice(2)).slice(0, 300);
+}
+
+async function cumpleReadReceipt(key) {
+  try {
+    const cache = await caches.open(CUMPLE_RECEIPTS_CACHE);
+    const response = await cache.match(CUMPLE_RECEIPT_BASE + key);
+    return response ? await response.json() : null;
+  } catch (_) { return null; }
+}
+
+async function cumpleRememberNotice(tag, source) {
+  const receipt = { at:Date.now(), source };
+  cumpleRecentNotices.set(tag, receipt.at);
+  if (cumpleRecentNotices.size > 200) cumpleRecentNotices.delete(cumpleRecentNotices.keys().next().value);
+  try {
+    const cache = await caches.open(CUMPLE_RECEIPTS_CACHE);
+    const response = new Response(JSON.stringify(receipt), {headers:{'Content-Type':'application/json'}});
+    await cache.put(CUMPLE_RECEIPT_BASE + 'notice/' + encodeURIComponent(tag), response.clone());
+    await cache.put(CUMPLE_RECEIPT_BASE + 'last', response);
+    const keys = (await cache.keys()).filter(key => key.url.startsWith(CUMPLE_RECEIPT_BASE + 'notice/'));
+    await Promise.all(keys.slice(0, Math.max(0, keys.length - 200)).map(key => cache.delete(key)));
+  } catch (_) { /* Un bloqueo del almacenamiento no debe impedir el aviso. */ }
+  return receipt;
+}
+
+async function cumpleDisplayNotification(payload, source) {
+  const data = payload && payload.data || {};
+  const notification = payload && payload.notification || {};
+  const tag = cumpleNotificationTag(payload);
+  const prior = cumpleRecentNotices.get(tag) ||
+    (await cumpleReadReceipt('notice/' + encodeURIComponent(tag)) || {}).at;
+  if (prior && Date.now() - prior < 48 * 3600000) return {shown:false, duplicate:true};
+  try {
+    if ((await self.registration.getNotifications({tag})).length) return {shown:false, duplicate:true};
+  } catch (_) {}
+
+  const title = String(data.title || notification.title || '🎂 CumpleApp');
+  const photo = getBirthdayPhotoUrl(data.photo);
+  const fallbackIcon = new URL('./icon-192.png', self.registration.scope).href;
+  const options = {
+    body:String(data.body || notification.body || 'Tienes un recordatorio de cumpleaños.'),
+    tag, renotify:true,
+    requireInteraction:!/Android|iPhone|iPad|iPod|Mobile/i.test(self.navigator && self.navigator.userAgent || ''),
+    data:{url:String(data.link || './Cumple.html'), cumpleapp:true},
+    icon:photo || fallbackIcon,
+    actions:[{action:'open',title:'Abrir CumpleApp'},{action:'dismiss',title:'Cerrar'}]
+  };
+  if (photo) options.image = photo;
+  try { await self.registration.showNotification(title, options); }
+  catch (_) {
+    delete options.image; delete options.actions; delete options.requireInteraction;
+    options.icon = fallbackIcon;
+    await self.registration.showNotification(title, options);
+  }
+  const receipt = await cumpleRememberNotice(tag, source);
+  try {
+    const windows = await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    windows.forEach(client => client.postMessage({type:'CUMPLEAPP_NOTICE_RECEIVED',receipt}));
+  } catch (_) {}
+  return {shown:true, duplicate:false, receipt};
+}
+
+function cumpleQueueNotification(payload, source) {
+  const work = cumpleNotificationQueue.then(() => cumpleDisplayNotification(payload, source));
+  cumpleNotificationQueue = work.catch(() => {});
+  return work;
+}
+
+self.addEventListener('message', function(event) {
+  const message = event.data || {};
+  if (!['CUMPLEAPP_SHOW_NOTIFICATION','CUMPLEAPP_NOTIFICATION_STATUS'].includes(message.type)) return;
+  const port = event.ports && event.ports[0];
+  if (!port) return;
+  try {
+    const sender = new URL(event.source && event.source.url || event.origin);
+    const scope = new URL(self.registration.scope);
+    if (sender.origin !== scope.origin || !sender.pathname.startsWith(scope.pathname)) return;
+  } catch (_) { return; }
+  if (message.type === 'CUMPLEAPP_NOTIFICATION_STATUS') {
+    event.waitUntil(cumpleReadReceipt('last').then(receipt => {
+      port.postMessage({ok:true,version:CUMPLE_PUSH_VERSION,receipt});
+    }));
+    return;
+  }
+  // Confirmar que este worker se hace cargo antes de consultar el almacenamiento.
+  port.postMessage({accepted:true,version:CUMPLE_PUSH_VERSION});
+  event.waitUntil(cumpleQueueNotification(message.payload || {}, 'foreground').then(result => {
+    port.postMessage({ok:true,...result});
+  }).catch(error => {
+    port.postMessage({ok:false,error:String(error && error.message || 'No se pudo mostrar el aviso.')});
+  }));
+});
+
+
 // Configuración compartida con la página.
 importScripts('./firebase-config.js?v=push-20261002');
 
@@ -108,29 +216,10 @@ if (
   // El servidor manda mensajes "data-only".
   // Así evitamos notificaciones duplicadas y controlamos el aspecto aquí.
   messaging.onBackgroundMessage(function(payload) {
-    // Los mensajes notification ya los muestra el SDK; los nuestros son data-only.
+    // FCM presenta automáticamente los mensajes con notification; el servidor
+    // de CumpleApp usa data-only y delega su presentación en este mismo mostrador.
     if (payload && payload.notification) return;
-    const data = payload && payload.data ? payload.data : {};
-
-    const title = data.title || '🎂 CumpleApp';
-    const options = {
-      body: data.body || 'Tienes un recordatorio de cumpleaños.',
-      tag: data.tag || 'cumpleapp-push',
-      renotify: true,
-      data: {
-        url: data.link || './Cumple.html'
-      }
-    };
-
-    const photo = getBirthdayPhotoUrl(data.photo);
-    options.icon = photo || new URL('./icon-192.png', self.registration.scope).href;
-    if (photo) options.image = photo;
-
-    return self.registration.showNotification(title, options).catch(function() {
-      delete options.image;
-      options.icon = new URL('./icon-192.png', self.registration.scope).href;
-      return self.registration.showNotification(title, options);
-    });
+    return cumpleQueueNotification(payload, 'background');
   });
 }
 

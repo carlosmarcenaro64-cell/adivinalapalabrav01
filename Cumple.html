@@ -1602,6 +1602,35 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 }
 
 </style>
+<style>
+.cumple-notification-center { width:min(550px,calc(100% - 24px)); max-height:88vh; max-height:88dvh; margin:auto; padding:24px; color:var(--ui-ink); background:var(--ui-panel); border:1px solid var(--ui-line); border-radius:24px; box-shadow:0 24px 80px #0005; font-size:13px; line-height:1.55; overflow-y:auto; }
+.cumple-notification-center::backdrop { background:#080b1bbb; backdrop-filter:blur(6px); }
+.cumple-notice-heading { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:10px; }
+.cumple-notice-heading small { color:var(--ui-pink); letter-spacing:1.4px; font-size:9px; font-weight:800; }
+.cumple-notice-heading h2 { font-size:24px; font-weight:800; letter-spacing:-.7px; }
+.cumple-notice-heading button { width:36px; height:36px; flex-shrink:0; border-radius:12px; background:var(--ui-soft); font-size:24px; }
+.cumple-notification-center > p { color:var(--ui-muted); }
+.cumple-notice-status { margin:16px 0; padding:14px; border:1px solid var(--ui-line); border-radius:14px; background:var(--ui-soft); }
+.cumple-notice-status span { display:block; font-weight:700; }
+.cumple-notice-status small { display:block; margin-top:6px; font-size:11px; color:var(--ui-muted); }
+.cumple-notice-primary { width:100%; margin-bottom:10px; border-radius:12px; padding:12px; background:#db2777; color:#fff; font-weight:700; }
+.cumple-notice-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.cumple-notice-actions button,.cumple-notice-done { padding:12px 10px; border-radius:12px; border:1px solid var(--ui-line); background:var(--ui-soft); font-weight:700; font-size:12px; }
+.cumple-notification-center button:disabled { opacity:.5; cursor:wait; }
+.cumple-notification-center button:focus-visible,.cumple-settings-address input:focus-visible { outline:2px solid var(--ui-pink); outline-offset:3px; }
+.cumple-notice-test-status { padding:10px 0; font-size:12px; }
+.cumple-desktop-push-help { margin-top:8px; padding:15px; border:1px solid var(--ui-line); border-radius:16px; }
+.cumple-desktop-push-help h3 { font-weight:800; font-size:13px; }
+.cumple-desktop-push-help ol { list-style:decimal; padding-left:19px; margin:10px 0; }
+.cumple-desktop-push-help li { margin:8px 0; color:var(--ui-muted); font-size:12px; }
+.cumple-desktop-push-help > p { font-size:11px; color:var(--ui-muted); margin-top:12px; }
+.cumple-settings-address { display:flex; gap:8px; margin-top:8px; }
+.cumple-settings-address input { flex:1; min-width:0; border-radius:8px; background:var(--ui-soft); border:1px solid var(--ui-line); padding:8px; font-size:11px; }
+.cumple-settings-address button { font-size:11px; font-weight:700; color:var(--ui-pink); }
+.cumple-notice-done { width:100%; margin-top:16px; }
+@media(max-width:400px) { .cumple-notification-center { padding:18px; } .cumple-notice-actions { grid-template-columns:1fr; } }
+
+</style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
 <div id="cumpleNeonAmbient" aria-hidden="true"><span class="cumple-neon-mote" style="--mote-x:6%;--mote-y:18%;--mote-size:4px;--mote-color:#ef6dc7;--mote-delay:-0s;--mote-speed:8s"></span><span class="cumple-neon-mote" style="--mote-x:94%;--mote-y:24%;--mote-size:5px;--mote-color:#8de4e5;--mote-delay:-1s;--mote-speed:9s"></span><span class="cumple-neon-mote" style="--mote-x:3%;--mote-y:57%;--mote-size:7px;--mote-color:#ae8eff;--mote-delay:-2s;--mote-speed:10s"></span><span class="cumple-neon-mote" style="--mote-x:90%;--mote-y:76%;--mote-size:4px;--mote-color:#ff97ca;--mote-delay:-3s;--mote-speed:11s"></span><span class="cumple-neon-mote" style="--mote-x:14%;--mote-y:87%;--mote-size:4px;--mote-color:#9e9dff;--mote-delay:-4s;--mote-speed:8s"></span><span class="cumple-neon-mote" style="--mote-x:83%;--mote-y:9%;--mote-size:5px;--mote-color:#ffc384;--mote-delay:-5s;--mote-speed:9s"></span><span class="cumple-neon-mote" style="--mote-x:41%;--mote-y:5%;--mote-size:3px;--mote-color:#f27bcc;--mote-delay:-6s;--mote-speed:10s"></span><span class="cumple-neon-mote" style="--mote-x:97%;--mote-y:51%;--mote-size:4px;--mote-color:#9989ee;--mote-delay:-7s;--mote-speed:11s"></span><span class="cumple-neon-mote" style="--mote-x:24%;--mote-y:42%;--mote-size:3px;--mote-color:#6adadb;--mote-delay:-8s;--mote-speed:8s"></span></div>
@@ -1636,7 +1665,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 <span id="syncStatus" class="text-xs text-slate-400 hidden md:inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600/50">
                     <i class="fa-solid fa-circle text-[8px] text-emerald-500 animate-ping"></i> Auto-sync activo
                 </span>
-                <button onclick="requestNotificationPermission()" id="notifBellBtn" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 relative group" title="Activar Notificaciones">
+                <button onclick="openCumpleNotificationCenter()" id="notifBellBtn" class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-800/60 hover:bg-pink-100 dark:hover:bg-pink-900/40 flex items-center justify-center transition-all shadow-sm transform hover:scale-110 active:scale-95 relative group" title="Notificaciones y segundo plano" aria-label="Notificaciones y segundo plano">
                     <i class="fa-solid fa-bell text-sm transition-transform group-hover:rotate-12"></i>
                     <span id="notifBadge" class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 text-[8px] text-slate-900 font-extrabold flex items-center justify-center hidden animate-bounce">!</span>
                 </button>
@@ -2677,7 +2706,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                     showCustomModal('Falta completar las notificaciones', birthdayPhotoAttribute(detail));
                     return false;
                 }
-                showCustomModal('Avisos activados', 'Este dispositivo está registrado para recibir avisos. Puedes volver a este menú desde la campanita.<br><br><button type="button" onclick="window.cumpleTestPush()" class="bg-pink-600 text-white font-semibold rounded-xl px-4 py-3">Probar aviso</button>');
+                openCumpleNotificationCenter();
                 return true;
             } catch (_) {
                 showCustomModal('No se pudo activar', 'Revisa los permisos de notificaciones y la conexión a Internet.');
@@ -5560,6 +5589,140 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
     </script>
 
 
+<dialog id="cumpleNotificationCenter" class="cumple-notification-center" aria-labelledby="cumpleNotificationCenterTitle">
+  <div class="cumple-notice-heading">
+    <div><small>SIEMPRE A TIEMPO</small><h2 id="cumpleNotificationCenterTitle">Tus notificaciones</h2></div>
+    <button type="button" onclick="closeCumpleNotificationCenter()" aria-label="Cerrar notificaciones">×</button>
+  </div>
+  <p>Recibe los avisos mientras usas CumpleApp y cuando cierres su ventana.</p>
+  <div class="cumple-notice-status"><span id="cumpleCenterRegistration" role="status"></span><small id="cumpleCenterReceipt">Aún no hay un aviso recibido confirmado en esta versión.</small></div>
+  <button type="button" id="cumpleCenterEnable" class="cumple-notice-primary" onclick="activateCumpleNotificationsFromCenter()">Activar avisos en este dispositivo</button>
+  <div class="cumple-notice-actions">
+    <button type="button" id="cumpleCenterTestNow" onclick="window.cumpleTestPush()">Probar con la app abierta</button>
+    <button type="button" id="cumpleCenterTestClosed" onclick="window.cumpleScheduleClosedPush()">Probar al cerrar · 1 min</button>
+  </div>
+  <p id="cumpleCenterTestStatus" class="cumple-notice-test-status" role="status" aria-live="polite">La prueba envía un aviso real a este dispositivo.</p>
+  <section id="cumpleDesktopPushHelp" class="cumple-desktop-push-help" hidden>
+    <h3>Para recibir avisos con la ventana cerrada</h3>
+    <ol>
+      <li>En Chrome o Edge, abre la dirección correspondiente y activa la opción para seguir ejecutando aplicaciones en segundo plano al cerrar el navegador.</li>
+      <li>En Windows: <strong>Configuración → Sistema → Notificaciones</strong>. Permite los avisos y banners de CumpleApp o del navegador. Revisa también <strong>No molestar</strong>.</li>
+      <li>Deja la PC encendida y con Internet. Cierra la ventana de CumpleApp, sin finalizar el navegador desde la bandeja ni el Administrador de tareas.</li>
+    </ol>
+    <div class="cumple-settings-address"><input id="cumpleChromeBackgroundAddress" readonly value="chrome://settings/system" aria-label="Dirección de ajustes de Chrome"><button type="button" onclick="copyCumpleBackgroundAddress('cumpleChromeBackgroundAddress')">Copiar</button></div>
+    <div class="cumple-settings-address"><input id="cumpleEdgeBackgroundAddress" readonly value="edge://settings/system" aria-label="Dirección de ajustes de Edge"><button type="button" onclick="copyCumpleBackgroundAddress('cumpleEdgeBackgroundAddress')">Copiar</button></div>
+    <p>La app no puede activar ese ajuste por ti ni comprobarlo. Si aparece administrado por tu trabajo, consulta al administrador. Instalar la app por sí solo no garantiza los avisos cuando el navegador se cierra por completo.</p>
+  </section>
+  <button type="button" class="cumple-notice-done" onclick="closeCumpleNotificationCenter()">Listo</button>
+</dialog>
+
+<script>
+(function () {
+  const center = document.getElementById('cumpleNotificationCenter');
+  let busy = false, previousFocus;
+  function showReceipt(receipt) {
+    if (!receipt || !Number.isFinite(Number(receipt.at))) return;
+    document.getElementById('cumpleCenterReceipt').textContent = 'Último aviso recibido: ' +
+      new Date(Number(receipt.at)).toLocaleString('es-SV') + '. Revisa también el centro de notificaciones del sistema.';
+  }
+  function refreshCenter() {
+    const ready = window.cumplePushReady === true && 'Notification' in window && Notification.permission === 'granted';
+    document.getElementById('cumpleCenterRegistration').textContent = ready
+      ? '✓ Este dispositivo está registrado para recibir avisos.'
+      : window.cumplePushState && window.cumplePushState.message || 'Activa las notificaciones de este dispositivo.';
+    document.getElementById('cumpleCenterEnable').hidden = ready;
+    document.getElementById('cumpleCenterTestNow').disabled = busy || !ready;
+    document.getElementById('cumpleCenterTestClosed').disabled = busy || !ready;
+    const info = typeof getCumpleBrowserInfo === 'function' ? getCumpleBrowserInfo() : {};
+    document.getElementById('cumpleDesktopPushHelp').hidden = Boolean(info.isIOS || info.isAndroid);
+  }
+  async function activeRegistration(hint) {
+    if (hint && hint.active) return hint;
+    if (!('serviceWorker' in navigator)) throw new Error('Este navegador no admite el servicio de notificaciones.');
+    const found = await navigator.serviceWorker.getRegistration('./');
+    if (found && found.active) return found;
+    throw new Error('El servicio de avisos todavía no está listo. Activa las notificaciones y vuelve a intentar.');
+  }
+  function askWorker(registration, message) {
+    if (!registration.active || typeof MessageChannel === 'undefined') return Promise.resolve(null);
+    return new Promise((resolve, reject) => {
+      const channel = new MessageChannel();
+      let accepted = false, settled = false, timer;
+      function finish(error, value) {
+        if (settled) return;
+        settled = true; clearTimeout(timer); channel.port1.close();
+        if (error) reject(error); else resolve(value);
+      }
+      function timeout() {
+        finish(accepted ? new Error('El aviso llegó al servicio, pero no se pudo confirmar su presentación. Revisa las notificaciones del sistema.') : null, null);
+      }
+      timer = setTimeout(timeout, 3000);
+      channel.port1.onmessage = event => {
+        const reply = event.data || {};
+        if (reply.accepted) { accepted = true; clearTimeout(timer); timer = setTimeout(timeout, 20000); return; }
+        if (reply.ok === false) finish(new Error(reply.error || 'El navegador no pudo mostrar el aviso.'));
+        else if (reply.ok === true) finish(null, reply);
+      };
+      try { registration.active.postMessage(message, [channel.port2]); }
+      catch (error) { finish(error); }
+    });
+  }
+  window.openCumpleNotificationCenter = function () {
+    refreshCenter();
+    if (!center.open) { previousFocus = document.activeElement; center.showModal(); }
+    activeRegistration().then(registration => askWorker(registration, {type:'CUMPLEAPP_NOTIFICATION_STATUS'}))
+      .then(reply => { if (reply) showReceipt(reply.receipt); }).catch(() => {});
+  };
+  window.closeCumpleNotificationCenter = function () { center.close(); };
+  center.addEventListener('close', () => { if (previousFocus && previousFocus.isConnected) previousFocus.focus(); });
+  window.activateCumpleNotificationsFromCenter = async function () {
+    center.close();
+    await requestNotificationPermission();
+  };
+  window.setCumpleNotificationTestStatus = function (message, isBusy) {
+    busy = Boolean(isBusy); refreshCenter();
+    document.getElementById('cumpleCenterTestStatus').textContent = message;
+  };
+  window.copyCumpleBackgroundAddress = async function (id) {
+    const input = document.getElementById(id);
+    try {
+      await navigator.clipboard.writeText(input.value);
+      window.setCumpleNotificationTestStatus('Dirección copiada. Pégala en una pestaña nueva del navegador.', false);
+    } catch (_) {
+      input.focus(); input.select();
+      window.setCumpleNotificationTestStatus('Copia la dirección seleccionada y pégala en una pestaña nueva.', false);
+    }
+  };
+  window.cumpleDisplayForegroundNotification = async function (payload, hint) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const registration = await activeRegistration(hint);
+    const reply = await askWorker(registration, {type:'CUMPLEAPP_SHOW_NOTIFICATION',payload});
+    if (reply) { showReceipt(reply.receipt); return reply; }
+    // Compatibilidad durante la actualización de un sw.js anterior.
+    const data = payload && payload.data || {}, notification = payload && payload.notification || {};
+    const tag = String(data.tag || payload && payload.messageId || 'cumpleapp-' + Date.now());
+    if (registration.getNotifications && (await registration.getNotifications({tag})).length) return {duplicate:true};
+    const photo = getBirthdayPhotoUrl(data.photo);
+    const icon = new URL('./icon-192.png', document.baseURI).href;
+    const info = getCumpleBrowserInfo();
+    const options = {body:data.body || notification.body || 'Tienes un recordatorio de cumpleaños.',
+      tag, renotify:true, requireInteraction:!info.isIOS && !info.isAndroid,
+      data:{url:data.link || location.href,cumpleapp:true},icon:photo || icon};
+    if (photo) options.image = photo;
+    const title = data.title || notification.title || '🎂 CumpleApp';
+    try { await registration.showNotification(title, options); }
+    catch (_) { delete options.image; delete options.requireInteraction; options.icon = icon; await registration.showNotification(title, options); }
+    showReceipt({at:Date.now()});
+    return {shown:true};
+  };
+  window.addEventListener('cumplepushstatechange', refreshCenter);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data && event.data.type === 'CUMPLEAPP_NOTICE_RECEIVED') showReceipt(event.data.receipt);
+  });
+})();
+
+</script>
+
     <!-- ===== FIREBASE CLOUD MESSAGING: NOTIFICACIONES CON LA WEB CERRADA ===== -->
     <script src="./firebase-config.js?v=push-20261002"></script>
     <script>
@@ -5650,19 +5813,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             }
 
             async function showForegroundMessage(payload) {
-                if (!('Notification' in window) || Notification.permission !== 'granted') return;
-                const data = payload && payload.data || {};
-                const notification = payload && payload.notification || {};
-                const photo = getBirthdayPhotoUrl(data.photo);
-                const options = { body: data.body || notification.body || 'Tienes un recordatorio de cumpleaños.',
-                    tag: data.tag || 'cumpleapp-push', data: { url: data.link || location.href },
-                    icon: photo || './icon-192.png' };
-                if (photo) options.image = photo;
-                try { await registration.showNotification(data.title || notification.title || '🎂 CumpleApp', options); }
-                catch (_) {
-                    delete options.image; options.icon = './icon-192.png';
-                    await registration.showNotification(data.title || '🎂 CumpleApp', options);
-                }
+                return window.cumpleDisplayForegroundNotification(payload, registration);
             }
 
             async function initializeMessaging() {
@@ -5757,18 +5908,51 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 try { const api = sdk || await import(SDK + 'firebase-messaging.js'); return await api.isSupported(); }
                 catch (_) { return false; }
             };
-            window.cumpleTestPush = async function () {
-                if (await window.enableBackgroundPushNotifications()) {
-                    try {
-                        const result = await postPush('testPushDevice', { installationId: localStorage.getItem(ID_KEY) });
+            function schedulePushFromServer(installationId) {
+                // Esta acción ya existe como GET en la implementación de Apps Script.
+                return new Promise((resolve, reject) => {
+                    const callback = '__cumpleClosedPush_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                    const script = document.createElement('script');
+                    const url = new URL(googleAppsScriptUrl);
+                    url.searchParams.set('action', 'scheduleClosedPushTest');
+                    url.searchParams.set('installationId', installationId);
+                    url.searchParams.set('prefix', callback);
+                    let timer;
+                    function cleanup() { clearTimeout(timer); script.remove(); delete window[callback]; }
+                    window[callback] = result => {
+                        cleanup();
+                        if (!result || result.status !== 'success') reject(new Error(result && result.message || 'El servidor no confirmó la programación.'));
+                        else resolve(result);
+                    };
+                    script.onerror = () => { cleanup(); reject(new Error('No se pudo conectar para programar la prueba.')); };
+                    timer = setTimeout(() => { cleanup(); reject(new Error('El servidor no respondió a tiempo. No se confirmó la prueba.')); }, 25000);
+                    script.src = url.href; document.head.appendChild(script);
+                });
+            }
+            let pushTestBusy = false;
+            async function runNotificationTest(closed) {
+                if (pushTestBusy) return;
+                pushTestBusy = true;
+                openCumpleNotificationCenter();
+                setCumpleNotificationTestStatus(closed ? 'Programando el aviso desde el servidor…' : 'Enviando un aviso a este dispositivo…', true);
+                let message;
+                try {
+                    if (!(await window.enableBackgroundPushNotifications())) throw new Error(window.cumplePushState.message);
+                    const id = localStorage.getItem(ID_KEY);
+                    const result = closed ? await schedulePushFromServer(id)
+                        : await postPush('testPushDevice', {installationId:id});
+                    if (closed) {
+                        if (!result.scheduled) throw new Error(result.message || 'El servidor no confirmó la programación.');
+                        message = 'Prueba programada. Ahora cierra CumpleApp o esta pestaña. El servidor enviará el aviso aproximadamente en 1 minuto. En PC, permite que el navegador siga en segundo plano y mantén el equipo encendido con Internet.';
+                    } else {
                         if (!result.sent) throw new Error(result.message || 'Firebase no aceptó la prueba.');
-                        updateState('ready', 'Firebase aceptó el aviso de prueba. Comprueba si aparece en las notificaciones del dispositivo.');
-                    } catch (error) { updateState('error', error.message); }
-                }
-                if (typeof showCustomModal === 'function' && typeof birthdayPhotoAttribute === 'function') {
-                    showCustomModal('Prueba de notificaciones', birthdayPhotoAttribute(window.cumplePushState.message));
-                }
-            };
+                        message = 'El servidor aceptó el envío. Mantén CumpleApp abierta y comprueba el aviso del sistema. Si no ves el banner, revisa el centro de notificaciones y No molestar.';
+                    }
+                } catch (error) { message = error && error.message || 'No se pudo realizar la prueba. Revisa la conexión.'; }
+                finally { pushTestBusy = false; setCumpleNotificationTestStatus(message, false); }
+            }
+            window.cumpleTestPush = () => runNotificationTest(false);
+            window.cumpleScheduleClosedPush = () => runNotificationTest(true);
 
             function resume() {
                 if (!('Notification' in window) || Notification.permission !== 'granted') {
