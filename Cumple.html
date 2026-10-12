@@ -46,6 +46,18 @@
         .birthday-photo-remove{color:#be185d;font-size:13px;padding:10px 4px;min-height:44px}
         .birthday-photo-help{font-size:12px;line-height:1.5;color:#64748b;margin-top:9px}
         .birthday-photo-key{margin-top:12px}
+        .birthday-delete-dialog{width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 24px);margin:auto;padding:24px;border:1px solid var(--ui-line);border-radius:24px;background:var(--ui-panel);color:var(--ui-ink);box-shadow:0 24px 80px #170c4038;overflow:auto}
+        .birthday-delete-dialog::backdrop{background:#15102499;backdrop-filter:blur(6px)}
+        .birthday-delete-dialog h3{font-size:19px;font-weight:800;margin-bottom:8px}
+        .birthday-delete-dialog p{font-size:13px;line-height:1.6;margin-bottom:15px;color:var(--ui-muted);overflow-wrap:anywhere}
+        .birthday-delete-dialog label{display:block;font-size:12px;font-weight:700;margin-bottom:7px}
+        .birthday-delete-dialog input{width:100%;min-width:0;padding:12px;border:1px solid var(--ui-line);border-radius:12px;background:var(--ui-soft);color:var(--ui-ink);font-size:16px}
+        .birthday-delete-dialog .birthday-delete-actions{display:flex;gap:10px;margin-top:18px}
+        .birthday-delete-dialog button{flex:1;min-height:44px;padding:11px;border-radius:12px;background:var(--ui-soft);color:var(--ui-ink);font-size:13px;font-weight:700}
+        .birthday-delete-dialog button[type=submit]{background:#be185d;color:white}
+        .birthday-delete-dialog button:disabled{opacity:.6;cursor:wait}
+        .birthday-delete-dialog :focus-visible{outline:2px solid var(--ui-pink);outline-offset:3px}
+        .birthday-delete-dialog #birthdayDeleteStatus:not(:empty){margin:12px 0 0;color:var(--ui-pink)}
         .birthday-photo-editor input:not([type=file]){box-sizing:border-box;width:100%;min-width:0;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:16px;color:#1e293b;background:white}
         .birthday-photo-editor input:focus-visible,.birthday-photo-editor button:focus-visible,.birthday-photo-editor summary:focus-visible{outline:3px solid #f9a8d4;outline-offset:2px}
         .birthday-photo-status{font-size:12px;line-height:1.5;color:#64748b;overflow-wrap:anywhere}
@@ -1902,11 +1914,11 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                             <input id="bPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="selectBirthdayPhoto(event)" aria-describedby="bPhotoHelp bPhotoStatus" hidden>
                         </div>
                     </div>
-                    <p id="bPhotoHelp" class="birthday-photo-help">Elige de tu galería o computadora. JPG, PNG o WebP, hasta 12 MB. Se subirá a GitHub al guardar. La foto será pública y puede tardar unos minutos en aparecer.</p>
+                    <p id="bPhotoHelp" class="birthday-photo-help">La primera foto no necesita clave. Para cambiar o quitar una foto guardada, sí. JPG, PNG o WebP, hasta 12 MB. Se subirá a GitHub al guardar y será pública; puede tardar unos minutos en aparecer.</p>
                     <div id="bPhotoKeyBox" class="birthday-photo-key" hidden>
-                        <label for="bPhotoUploadKey" class="birthday-photo-label">Clave para subir fotos</label>
-                        <input type="password" id="bPhotoUploadKey" autocomplete="off" minlength="24" maxlength="160" spellcheck="false" placeholder="Clave de carga configurada en Apps Script" aria-describedby="bPhotoKeyHelp">
-                        <p id="bPhotoKeyHelp" class="birthday-photo-help">Usa la clave de carga de CumpleApp. No ingreses aquí tu token de GitHub.</p>
+                        <label for="bPhotoUploadKey" class="birthday-photo-label">Clave para cambiar o quitar la foto</label>
+                        <input type="password" id="bPhotoUploadKey" autocomplete="off" minlength="24" maxlength="160" spellcheck="false" placeholder="Tu clave de CumpleApp" aria-describedby="bPhotoKeyHelp">
+                        <p id="bPhotoKeyHelp" class="birthday-photo-help">Usa la misma clave que antes utilizabas para subir fotos. Solo autoriza este cambio.</p>
                     </div>
                     <p id="bPhotoStatus" class="birthday-photo-status" role="status" aria-live="polite"></p>
                     <details id="bPhotoUrlDetails" class="birthday-photo-url">
@@ -1927,6 +1939,20 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             </form>
         </div>
     </div>
+
+    <dialog id="birthdayDeleteDialog" class="birthday-delete-dialog" aria-labelledby="birthdayDeleteTitle" aria-describedby="birthdayDeleteDescription" oncancel="if (birthdaySaveInProgress) event.preventDefault(); else resetBirthdayDeleteDialog()" onclose="if (!this.open) resetBirthdayDeleteDialog()">
+        <form id="birthdayDeleteForm" onsubmit="confirmDeleteBirthday(event)">
+            <h3 id="birthdayDeleteTitle">Eliminar cumpleañero</h3>
+            <p id="birthdayDeleteDescription">Se eliminará el cumpleaños de <strong id="birthdayDeleteName"></strong>. Escribe tu clave para confirmar.</p>
+            <label for="birthdayDeleteKey">Clave de CumpleApp</label>
+            <input id="birthdayDeleteKey" type="password" autocomplete="off" required minlength="24" maxlength="160" spellcheck="false" placeholder="Tu clave de CumpleApp" aria-describedby="birthdayDeleteStatus">
+            <p id="birthdayDeleteStatus" role="status" aria-live="polite"></p>
+            <div class="birthday-delete-actions">
+                <button type="button" onclick="closeBirthdayDeleteDialog()">Cancelar</button>
+                <button id="birthdayDeleteConfirm" type="submit">Eliminar</button>
+            </div>
+        </form>
+    </dialog>
 
     <!-- Modal Personalizado para Mensajes -->
 
@@ -2183,21 +2209,34 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         }
 
         async function sendToGoogleSheets(payload) {
-            if (!googleAppsScriptUrl) return false;
+            if (!googleAppsScriptUrl) throw new Error('Falta configurar la conexión con Apps Script.');
+            if (!navigator.onLine) throw new Error('Necesitas conexión para confirmar este cambio.');
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 30000);
             try {
-                // text/plain evita el preflight CORS de application/json.
-                await fetch(googleAppsScriptUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
+                // Una respuesta opaca no permite comprobar la clave ni el guardado.
+                const response = await fetch(googleAppsScriptUrl, {
+                    method: 'POST', mode: 'cors', credentials: 'omit', redirect: 'follow',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload),
-                    keepalive: true
+                    signal: controller.signal
                 });
-                return true;
+                if (!response.ok) throw new Error('No se pudo confirmar el cambio en Google Sheets. Intenta de nuevo.');
+                let result;
+                try { result = await response.json(); }
+                catch (_) { throw new Error('Apps Script no devolvió una confirmación válida. Publica la nueva versión del código.'); }
+                if (!result || result.status !== 'success') {
+                    const error = new Error(result && result.message || 'No se pudo guardar el cambio.');
+                    error.code = result && result.code || '';
+                    throw error;
+                }
+                const expectedAction = payload.action === 'add' ? 'create' : payload.action;
+                if (result.action !== expectedAction) throw new Error('Apps Script no confirmó esta operación. Publica la nueva versión del código.');
+                return result;
             } catch (error) {
-                console.error('No se pudo enviar a Google Sheets:', error);
-                return false;
-            }
+                if (error.name === 'AbortError' || error instanceof TypeError) throw new Error('No se pudo confirmar el cambio. Revisa tu conexión y actualiza la lista antes de reintentarlo.');
+                throw error;
+            } finally { clearTimeout(timer); }
         }
 
         function saveBirthdayLocalOnly(birthday) {
@@ -3164,7 +3203,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 
         async function syncFromGoogleSheets(isSilent = false) {
             if (!googleSheetsUrl) return;
-            if (birthdaySaveInProgress || !document.getElementById('birthdayModal').classList.contains('hidden')) return;
+            if (birthdaySaveInProgress || document.getElementById('birthdayDeleteDialog').open || !document.getElementById('birthdayModal').classList.contains('hidden')) return;
             const syncBtn = document.getElementById('syncDirectBtn');
             if (syncBtn && !isSilent) {
                 syncBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i><span>Actualizando...</span>';
@@ -3174,7 +3213,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 const response = await fetch(`${googleSheetsUrl}${separator}_cb=${new Date().getTime()}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const text = await response.text();
-                if (birthdaySaveInProgress || !document.getElementById('birthdayModal').classList.contains('hidden')) return;
+                if (birthdaySaveInProgress || document.getElementById('birthdayDeleteDialog').open || !document.getElementById('birthdayModal').classList.contains('hidden')) return;
                 
                 const lines = text.split(/\r\n|\n/);
                 let newBirthdays = [];
@@ -3705,6 +3744,22 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         let birthdayPhotoSelection = 0;
         let birthdayPhotoProcessing = false;
         let birthdaySaveInProgress = false;
+        let birthdayOriginalPhoto = '';
+        let birthdayPhotoAuthorizationRequired = false;
+        let birthdayDraftId = '';
+        let birthdayDeleteTarget = null;
+
+        function updateBirthdayPhotoKeyRequirement() {
+            const photo = pendingBirthdayPhoto
+                ? (pendingBirthdayPhoto.uploadedFileName || pendingBirthdayPhoto.uploadId + '.jpg')
+                : normalizeBirthdayPhotoReference(document.getElementById('bPhoto').value);
+            const needsKey = birthdayPhotoAuthorizationRequired || Boolean(birthdayOriginalPhoto && photo !== birthdayOriginalPhoto);
+            document.getElementById('bPhotoKeyBox').hidden = !needsKey;
+            const input = document.getElementById('bPhotoUploadKey');
+            input.required = needsKey;
+            if (!needsKey) input.value = '';
+            return needsKey;
+        }
 
         function setBirthdayPhotoStatus(message, state = '') {
             const box = document.getElementById('bPhotoStatus');
@@ -3735,13 +3790,14 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             setBirthdayPhotoStatus('');
             const url = document.getElementById('bPhoto').value.trim();
             updateBirthdayPhotoPreview(getBirthdayPhotoUrl(url));
+            updateBirthdayPhotoKeyRequirement();
         }
 
         function removeBirthdayPhoto() {
             if (birthdaySaveInProgress) return;
             document.getElementById('bPhoto').value = '';
             resetBirthdayPhotoEditor();
-            setBirthdayPhotoStatus('La foto se quitará de este cumpleaños al guardar.');
+            setBirthdayPhotoStatus(birthdayOriginalPhoto ? 'Escribe tu clave y guarda para quitar la foto de este cumpleaños.' : 'Foto descartada. Puedes elegir otra sin clave.');
         }
 
         function useBirthdayPhotoUrl() {
@@ -3831,7 +3887,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 pendingBirthdayPhoto = prepared;
                 document.getElementById('bPhoto').value = '';
                 updateBirthdayPhotoPreview(prepared.dataUrl);
-                document.getElementById('bPhotoKeyBox').hidden = false;
+                updateBirthdayPhotoKeyRequirement();
                 document.getElementById('bPhotoUrlDetails').open = false;
                 setBirthdayPhotoStatus(`Foto lista (${Math.ceil(prepared.size / 1024)} KB). Se subirá al guardar.`, 'success');
             } catch (error) {
@@ -3844,21 +3900,22 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 if (selection === birthdayPhotoSelection) {
                     birthdayPhotoProcessing = false;
                     document.getElementById('birthdaySaveButton').disabled = birthdaySaveInProgress;
+                    updateBirthdayPhotoKeyRequirement();
                 }
             }
         }
 
-        async function uploadBirthdayPhotoToGitHub() {
+        async function uploadBirthdayPhotoToGitHub(uploadKey = '') {
             const pending = pendingBirthdayPhoto;
             if (!pending) return normalizeBirthdayPhotoReference(document.getElementById('bPhoto').value);
             if (pending.uploadedFileName) return pending.uploadedFileName;
-            const uploadKey = document.getElementById('bPhotoUploadKey').value;
-            if (uploadKey.length < 24) throw new Error('Escribe la clave de carga de al menos 24 caracteres configurada en Apps Script.');
             if (!navigator.onLine) throw new Error('Necesitas conexión a internet para subir la foto.');
             if (!googleAppsScriptUrl) throw new Error('Falta configurar la conexión con Apps Script.');
             setBirthdayPhotoStatus('Subiendo foto a GitHub… Mantén esta ventana abierta.');
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 60000);
+            const index = document.getElementById('editIndex').value;
+            const birthday = index !== '' ? birthdays[index] : null;
             try {
                 // Debemos poder leer la confirmación: una respuesta opaca no confirma la subida.
                 // No usar keepalive: la foto puede exceder el límite de ese modo.
@@ -3866,14 +3923,20 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                     method: 'POST', mode: 'cors', credentials: 'omit', redirect: 'follow',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     signal: controller.signal,
-                    body: JSON.stringify({ action: 'uploadBirthdayPhoto', uploadId: pending.uploadId, uploadKey, imageBase64: pending.dataUrl.split(',')[1] })
+                    body: JSON.stringify({ action: 'uploadBirthdayPhoto', uploadId: pending.uploadId, uploadKey,
+                        birthday: birthday ? { id: birthday.id, row: birthday.row, originalName: birthday.name, originalDate: birthday.date } : undefined,
+                        imageBase64: pending.dataUrl.split(',')[1] })
                 });
                 if (!response.ok) throw new Error('Apps Script no respondió correctamente. Revisa la implementación y vuelve a intentar.');
                 let result;
                 try { result = await response.json(); }
                 catch { throw new Error('Activa el complemento FotosGitHub en Apps Script y publica una nueva versión.'); }
                 if (!result || result.action !== 'uploadBirthdayPhoto') throw new Error('Falta activar FotosGitHub en el doPost de Apps Script.');
-                if (!result.ok) throw new Error(result.error || 'GitHub no confirmó la subida.');
+                if (!result.ok) {
+                    const error = new Error(result.error || 'GitHub no confirmó la subida.');
+                    error.code = result.code || '';
+                    throw error;
+                }
                 let url;
                 try { url = new URL(result.url); }
                 catch { throw new Error('La subida no devolvió un enlace válido.'); }
@@ -3889,7 +3952,6 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 // Solo este nombre se guarda en la hoja y en los datos locales.
                 pending.uploadedFileName = filename;
                 document.getElementById('bPhoto').value = filename;
-                document.getElementById('bPhotoUploadKey').value = '';
                 setBirthdayPhotoStatus('Foto confirmada en GitHub. Guardando el cumpleaños…', 'success');
                 return filename;
             } catch (error) {
@@ -3901,6 +3963,9 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 
         function openModal() {
             if (birthdaySaveInProgress) return;
+            birthdayOriginalPhoto = '';
+            birthdayPhotoAuthorizationRequired = false;
+            birthdayDraftId = createBirthdayId();
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-cake-candles text-pink-500 animate-bounce"></i> Nuevo Cumpleaños';
             document.getElementById('birthdayForm').reset();
             resetBirthdayPhotoEditor();
@@ -3915,6 +3980,8 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 
         function closeModal(force = false) {
             if (birthdaySaveInProgress && !force) return;
+            birthdayOriginalPhoto = '';
+            birthdayPhotoAuthorizationRequired = false;
             resetBirthdayPhotoEditor();
             const modal = document.getElementById('birthdayModal');
             modal.classList.add('opacity-0');
@@ -3941,19 +4008,19 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 setBirthdayPhotoStatus('Escribe un nombre de imagen válido (por ejemplo, el identificador con .jpg) o un enlace http:// o https://.', 'error');
                 return;
             }
+            const needsKey = updateBirthdayPhotoKeyRequirement();
+            const uploadKey = needsKey ? document.getElementById('bPhotoUploadKey').value : '';
+            if (needsKey && (uploadKey.length < 24 || uploadKey.length > 160)) {
+                setBirthdayPhotoStatus('Escribe tu clave de CumpleApp para autorizar este cambio de foto.', 'error');
+                document.getElementById('bPhotoUploadKey').focus();
+                return;
+            }
             setBirthdayFormBusy(true);
             try {
-                photo = await uploadBirthdayPhotoToGitHub();
+                photo = await uploadBirthdayPhotoToGitHub(uploadKey);
                 if (index === '') {
-                    const birthday = { id: createBirthdayId(), name, date, category, photo, notes };
-                    birthdays.push(birthday);
-                    saveData();
-                    closeModal(true);
-                    refreshAllViews();
-                    triggerPartyConfetti();
-                    showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
-
-                    const sent = await sendToGoogleSheets({
+                    const birthday = { id: birthdayDraftId || (birthdayDraftId = createBirthdayId()), name, date, category, photo, notes };
+                    const result = await sendToGoogleSheets({
                         action: 'add',
                         id: birthday.id,
                         name: birthday.name,
@@ -3962,11 +4029,13 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                         notes: birthday.notes,
                         photo: birthday.photo
                     });
-                    if (!sent && googleAppsScriptUrl) {
-                        showCustomModal('Guardado localmente', 'No se pudo confirmar el envío a Google Sheets. Revisa la conexión y vuelve a sincronizar.');
-                    } else if (sent) {
-                        setTimeout(() => syncFromGoogleSheets(true), 1500);
-                    }
+                    birthdays.push({ ...birthday, id: result.id || birthday.id, row: result.row });
+                    saveData();
+                    closeModal(true);
+                    refreshAllViews();
+                    triggerPartyConfetti();
+                    showCustomModal('¡Guardado!', 'El cumpleaños se ha registrado correctamente.');
+                    setTimeout(() => syncFromGoogleSheets(true), 1500);
                 } else {
                     const birthday = birthdays[index];
 
@@ -3977,7 +4046,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 
                     const updated = { ...birthday, name, date, category, photo, notes };
 
-                    const sent = await sendToGoogleSheets({
+                    const result = await sendToGoogleSheets({
                         action: 'update',
                         id: birthday.id || '',
                         row: birthday.row || '',
@@ -3987,15 +4056,10 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                         date: updated.date,
                         category: updated.category,
                         notes: updated.notes,
-                        photo: updated.photo
+                        photo: updated.photo,
+                        uploadKey
                     });
-
-                    if (!sent && googleAppsScriptUrl) {
-                        showCustomModal('Error al actualizar', 'No se pudo enviar la modificación a Google Sheets.');
-                        return;
-                    }
-
-                    birthdays[index] = updated;
+                    birthdays[index] = { ...updated, id: result.id || updated.id, row: result.row || updated.row };
                     saveData();
                     closeModal(true);
                     refreshAllViews();
@@ -4003,6 +4067,10 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                     setTimeout(() => syncFromGoogleSheets(true), 1500);
                 }
             } catch (error) {
+                if (/^AUTH_/.test(error.code || '')) {
+                    birthdayPhotoAuthorizationRequired = true;
+                    updateBirthdayPhotoKeyRequirement();
+                }
                 setBirthdayPhotoStatus(error.message || 'No se pudo guardar. Revisa la conexión e inténtalo de nuevo.', 'error');
             } finally {
                 setBirthdayFormBusy(false);
@@ -4012,6 +4080,9 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         function editBirthday(index) {
             if (birthdaySaveInProgress) return;
             const b = birthdays[index];
+            if (!b) return;
+            birthdayOriginalPhoto = normalizeBirthdayPhotoReference(b.photo) || String(b.photo || '').trim();
+            birthdayPhotoAuthorizationRequired = false;
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen text-pink-500 animate-pulse"></i> Editar Cumpleaños';
             document.getElementById('editIndex').value = index;
             document.getElementById('bName').value = b.name;
@@ -4029,25 +4100,68 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             }, 10);
         }
 
-        async function deleteBirthday(index) {
-            playDeleteSound();
+        function deleteBirthday(index) {
+            if (birthdaySaveInProgress) return;
             const birthday = birthdays[index];
             if (!birthday) return;
+            birthdayDeleteTarget = birthday;
+            document.getElementById('birthdayDeleteName').textContent = birthday.name;
+            document.getElementById('birthdayDeleteKey').value = '';
+            document.getElementById('birthdayDeleteStatus').textContent = '';
+            document.getElementById('birthdayDeleteDialog').showModal();
+            document.getElementById('birthdayDeleteKey').focus();
+        }
 
-            birthdays.splice(index, 1);
-            saveData();
-            refreshAllViews();
-            showCustomModal('Eliminado', 'El registro ha sido borrado de la lista.');
+        function resetBirthdayDeleteDialog() {
+            birthdayDeleteTarget = null;
+            document.getElementById('birthdayDeleteKey').value = '';
+            document.getElementById('birthdayDeleteStatus').textContent = '';
+        }
 
-            const sent = await sendToGoogleSheets({
-                action: 'delete',
-                id: birthday.id || '',
-                row: birthday.row || ''
-            });
-            if (!sent && googleAppsScriptUrl) {
-                showCustomModal('Eliminado localmente', 'No se pudo confirmar el borrado en Google Sheets.');
-            } else if (sent) {
+        function closeBirthdayDeleteDialog() {
+            if (birthdaySaveInProgress) return;
+            resetBirthdayDeleteDialog();
+            document.getElementById('birthdayDeleteDialog').close();
+        }
+
+        async function confirmDeleteBirthday(event) {
+            event.preventDefault();
+            if (birthdaySaveInProgress || !birthdayDeleteTarget) return;
+            const birthday = birthdayDeleteTarget;
+            const uploadKey = document.getElementById('birthdayDeleteKey').value;
+            const status = document.getElementById('birthdayDeleteStatus');
+            if (uploadKey.length < 24 || uploadKey.length > 160) {
+                status.textContent = 'Escribe tu clave de CumpleApp para eliminar este cumpleaños.';
+                return;
+            }
+            birthdaySaveInProgress = true;
+            const form = document.getElementById('birthdayDeleteForm');
+            form.setAttribute('aria-busy', 'true');
+            form.querySelectorAll('input,button').forEach(el => { el.disabled = true; });
+            document.getElementById('birthdayDeleteConfirm').textContent = 'Eliminando…';
+            status.textContent = 'Comprobando la clave y confirmando la eliminación…';
+            try {
+                await sendToGoogleSheets({
+                    action: 'delete', id: birthday.id || '', row: birthday.row || '',
+                    originalName: birthday.name || '', originalDate: birthday.date || '', uploadKey
+                });
+                // Solo se quita de la pantalla después de la confirmación del servidor.
+                const index = birthdays.indexOf(birthday);
+                if (index !== -1) birthdays.splice(index, 1);
+                saveData();
+                resetBirthdayDeleteDialog();
+                document.getElementById('birthdayDeleteDialog').close();
+                refreshAllViews();
+                playDeleteSound();
+                showCustomModal('Eliminado', 'El cumpleaños se ha eliminado correctamente.');
                 setTimeout(() => syncFromGoogleSheets(true), 1500);
+            } catch (error) {
+                status.textContent = error.message || 'No se pudo confirmar la eliminación. Intenta de nuevo.';
+            } finally {
+                birthdaySaveInProgress = false;
+                form.setAttribute('aria-busy', 'false');
+                form.querySelectorAll('input,button').forEach(el => { el.disabled = false; });
+                document.getElementById('birthdayDeleteConfirm').textContent = 'Eliminar';
             }
         }
 
