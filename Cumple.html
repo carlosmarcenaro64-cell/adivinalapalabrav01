@@ -3905,12 +3905,52 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             }
         }
 
+        async function ensureBirthdayPhotoServiceReady({ protectedChange = false, upload = false } = {}) {
+            if (!navigator.onLine) throw new Error('Necesitas conexión a internet para guardar la foto.');
+            if (!googleAppsScriptUrl) throw new Error('Falta configurar la conexión con Apps Script.');
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 20000);
+            try {
+                const response = await fetch(googleAppsScriptUrl, {
+                    method: 'POST', mode: 'cors', credentials: 'omit', redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    signal: controller.signal,
+                    body: JSON.stringify({ action: 'photoDiagnostics' })
+                });
+                if (!response.ok) throw new Error('No se pudo comprobar el servicio de fotos. Revisa el acceso de la implementación de Apps Script.');
+                let result;
+                try { result = await response.json(); }
+                catch (_) { throw new Error('El servicio de fotos no devolvió una respuesta válida. Revisa que Apps Script permita el acceso de la app.'); }
+                if (result && result.status === 'error' && !/Acci[oó]n no v[aá]lida.*photodiagnostics/i.test(String(result.message || ''))) {
+                    throw new Error(result.message || 'El servidor no pudo comprobar la configuración de fotos. Vuelve a intentarlo.');
+                }
+                if (!result || result.status !== 'success' || result.action !== 'photoDiagnostics' ||
+                    Number(result.photoApiVersion) < 2 || !Number.isFinite(Number(result.photoApiVersion)) ||
+                    result.firstPhotoRequiresKey !== false || result.existingPhotoRequiresKey !== true ||
+                    result.deleteBirthdayRequiresKey !== true) {
+                    throw new Error('El servicio de fotos todavía usa una versión anterior. Actualiza Código.gs y publica una Nueva versión desde Administrar implementaciones. Después vuelve a intentarlo.');
+                }
+                if (upload && !result.tokenConfigured) throw new Error('Falta configurar CUMPLE_GITHUB_TOKEN en las propiedades de Apps Script.');
+                if (protectedChange && !result.changeKeyConfigured) {
+                    const error = new Error('Falta configurar CUMPLE_PHOTO_UPLOAD_KEY en Apps Script para autorizar cambios y eliminaciones.');
+                    error.code = 'AUTH_NOT_CONFIGURED';
+                    throw error;
+                }
+                return result;
+            } catch (error) {
+                if (error.name === 'AbortError' || error instanceof TypeError) throw new Error('No se pudo comprobar el servicio de fotos. Revisa tu conexión y vuelve a intentarlo.');
+                throw error;
+            } finally { clearTimeout(timer); }
+        }
+
         async function uploadBirthdayPhotoToGitHub(uploadKey = '') {
             const pending = pendingBirthdayPhoto;
             if (!pending) return normalizeBirthdayPhotoReference(document.getElementById('bPhoto').value);
-            if (pending.uploadedFileName) return pending.uploadedFileName;
             if (!navigator.onLine) throw new Error('Necesitas conexión a internet para subir la foto.');
             if (!googleAppsScriptUrl) throw new Error('Falta configurar la conexión con Apps Script.');
+            setBirthdayPhotoStatus('Comprobando el servicio de fotos…');
+            await ensureBirthdayPhotoServiceReady({ protectedChange: Boolean(uploadKey), upload: !pending.uploadedFileName });
+            if (pending.uploadedFileName) return pending.uploadedFileName;
             setBirthdayPhotoStatus('Subiendo foto a GitHub… Mantén esta ventana abierta.');
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 60000);
@@ -3930,9 +3970,12 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 if (!response.ok) throw new Error('Apps Script no respondió correctamente. Revisa la implementación y vuelve a intentar.');
                 let result;
                 try { result = await response.json(); }
-                catch { throw new Error('Activa el complemento FotosGitHub en Apps Script y publica una nueva versión.'); }
-                if (!result || result.action !== 'uploadBirthdayPhoto') throw new Error('Falta activar FotosGitHub en el doPost de Apps Script.');
+                catch { throw new Error('Apps Script no devolvió una confirmación válida. Actualiza Código.gs y publica una nueva versión.'); }
+                if (!result || result.action !== 'uploadBirthdayPhoto') throw new Error('La versión publicada de Apps Script todavía no tiene habilitada la subida de fotos. Actualiza Código.gs y publica una nueva versión.');
                 if (!result.ok) {
+                    if (!uploadKey && result.error === 'La clave para subir fotos es incorrecta.' && !result.code) {
+                        throw new Error('Apps Script sigue usando la versión que exige clave para todas las fotos. Publica la nueva versión y vuelve a guardar.');
+                    }
                     const error = new Error(result.error || 'GitHub no confirmó la subida.');
                     error.code = result.code || '';
                     throw error;
@@ -4017,6 +4060,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             }
             setBirthdayFormBusy(true);
             try {
+                if (!pendingBirthdayPhoto && needsKey) await ensureBirthdayPhotoServiceReady({ protectedChange: true });
                 photo = await uploadBirthdayPhotoToGitHub(uploadKey);
                 if (index === '') {
                     const birthday = { id: birthdayDraftId || (birthdayDraftId = createBirthdayId()), name, date, category, photo, notes };
@@ -4141,6 +4185,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             document.getElementById('birthdayDeleteConfirm').textContent = 'Eliminando…';
             status.textContent = 'Comprobando la clave y confirmando la eliminación…';
             try {
+                await ensureBirthdayPhotoServiceReady({ protectedChange: true });
                 await sendToGoogleSheets({
                     action: 'delete', id: birthday.id || '', row: birthday.row || '',
                     originalName: birthday.name || '', originalDate: birthday.date || '', uploadKey
