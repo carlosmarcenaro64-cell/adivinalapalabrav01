@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Accesos por Sistemas - ISSS</title>
+    <title>Claves ISSS</title>
+    <!-- Favicon de Candado -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z'/></svg>">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- PapaParse -->
@@ -81,6 +83,28 @@
     <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <span id="toastMsg" class="text-sm font-medium"></span>
+    </div>
+
+    <!-- MODAL DE ADVERTENCIA DE BLOQUEO POR INACTIVIDAD (15 SEG) -->
+    <div id="timeoutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center border border-amber-200 animate-pop">
+            <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">¿Sigues ahí?</h3>
+            <p class="text-xs text-slate-500 mb-4">El sistema se bloqueará por seguridad en:</p>
+            <div class="text-3xl font-black text-amber-600 font-mono mb-6 bg-amber-50 py-2 rounded-2xl border border-amber-200" id="countdownSeconds">
+                15s
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="logout()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all">
+                    Cerrar Sesión
+                </button>
+                <button onclick="extendSession()" class="w-1/2 py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-700/30 transition-all active:scale-95">
+                    Sí, continuar
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- PANTALLA DE LOGIN ANIMADA -->
@@ -342,30 +366,76 @@
     <script>
         const AUTH_USER = "hmq";
         const AUTH_PASS = "punto2026";
-        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuGrXy-61ZSjEQebLFef_ym9rNR5qcvE47wyKlaM2UZPWO6seuCH27QpCi7O8s_JDuYTEUBykLRMLV/pub?gid=0&single=true&output=csv";
+        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv";
+
+        // TIMER VARIABLES
+        let sessionTimer = null;
+        let countdownTimer = null;
+        let secondsLeft = 15;
+
+        function startSessionTimer() {
+            clearTimers();
+            // 1 minuto = 60,000 ms
+            sessionTimer = setTimeout(() => {
+                showTimeoutModal();
+            }, 60000);
+        }
+
+        function showTimeoutModal() {
+            secondsLeft = 15;
+            document.getElementById('countdownSeconds').innerText = `${secondsLeft}s`;
+            const modal = document.getElementById('timeoutModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            countdownTimer = setInterval(() => {
+                secondsLeft--;
+                document.getElementById('countdownSeconds').innerText = `${secondsLeft}s`;
+                if (secondsLeft <= 0) {
+                    clearTimers();
+                    closeModal('timeoutModal');
+                    logout();
+                    showToast("Sesión expirada por inactividad", false);
+                }
+            }, 1000);
+        }
+
+        function extendSession() {
+            clearTimers();
+            closeModal('timeoutModal');
+            showToast("Sesión renovada por 1 minuto");
+            startSessionTimer();
+        }
+
+        function clearTimers() {
+            if (sessionTimer) clearTimeout(sessionTimer);
+            if (countdownTimer) clearInterval(countdownTimer);
+        }
 
         const fallbackData = [
-            { sistema: "AGENDA", usuario: "A004046", contrasena: "Agosto2026.", centro_de_atencion: "CEIBA" },
-            { sistema: "AGENDA", usuario: "P002529", contrasena: "Carlos2026.", centro_de_atencion: "ZACAMIL" },
-            { sistema: "AGENDA", usuario: "C004199", contrasena: "AGOSTO26", centro_de_atencion: "ONCOLOGIA" },
-            { sistema: "AGENDA", usuario: "A003641", contrasena: "Leandro08", centro_de_atencion: "MQ" },
-            { sistema: "AGENDA", usuario: "R002715", contrasena: "", centro_de_atencion: "Oncólogía" },
-            { sistema: "AGENDA", usuario: "L001838", contrasena: "Septiembre2026", centro_de_atencion: "especialidades" },
-            { sistema: "WED IMPACTO", usuario: "A003641", contrasena: "Isss2026", centro_de_atencion: "" },
-            { sistema: "WED IMPACTO", usuario: "C004199", contrasena: "Isss2026", centro_de_atencion: "sobrevivencia" },
-            { sistema: "WED IMPACTO", usuario: "P002529", contrasena: "Julio2026.", centro_de_atencion: "" },
-            { sistema: "EMERGENCIA", usuario: "P002123", contrasena: "Agosto2026.", centro_de_atencion: "MQ" },
-            { sistema: "EMERGENCIA", usuario: "C004199", contrasena: "Septiembr3", centro_de_atencion: "MQ" },
-            { sistema: "EMERGENCIA", usuario: "R002715", contrasena: "", centro_de_atencion: "MQ" },
-            { sistema: "DOMICILIAR", usuario: "C004199", contrasena: "Agosto2026.", centro_de_atencion: "" },
-            { sistema: "GENERAL", usuario: "A003641", contrasena: "Reyes1212", centro_de_atencion: "MQ" },
-            { sistema: "GENERAL", usuario: "P002529", contrasena: "Agosto2026.", centro_de_atencion: "MQ" },
-            { sistema: "COMPUTADORAS A.T.", usuario: "Punt0S3guro26.", contrasena: "", centro_de_atencion: "" },
-            { sistema: "COMPUTADORAS MEDICOS", usuario: "Expediente2026.", contrasena: "", centro_de_atencion: "" },
-            { sistema: "CORREO ELECTRONICO", usuario: "hospitalhmqisss@gmail.com", contrasena: "Atencion.usuario.2026", centro_de_atencion: "MQ" },
-            { sistema: "VOCEO", usuario: "puntoseguro.hmq", contrasena: "P002529", centro_de_atencion: "" },
-            { sistema: "INCAPACIDADES", usuario: "P002529", contrasena: "Septiembr3", centro_de_atencion: "MQ" },
-            { sistema: "EXPEDIENTE CLINICO", usuario: "C004199", contrasena: "Isss2026", centro_de_atencion: "MQ" }
+            { sistema: "AGENDA", usuario: "A004046", contrasena: "Agosto2026.", centro_de_atencion: "CEIBA", actualizada: "27/08/26" },
+            { sistema: "AGENDA", usuario: "P002529", contrasena: "Carlos2026..", centro_de_atencion: "ZACAMIL", actualizada: "10/10/26" },
+            { sistema: "AGENDA", usuario: "C004199", contrasena: "Sept2026.", centro_de_atencion: "ONCOLOGIA", actualizada: "10/11/26" },
+            { sistema: "AGENDA", usuario: "A003641", contrasena: "Marcenaro24", centro_de_atencion: "MQ", actualizada: "14/10/26" },
+            { sistema: "AGENDA", usuario: "R002715", contrasena: "", centro_de_atencion: "Oncología", actualizada: "" },
+            { sistema: "AGENDA", usuario: "L001838", contrasena: "Aguila11", centro_de_atencion: "HMQ", actualizada: "03/11/26" },
+            { sistema: "WED IMPACTO", usuario: "A003641", contrasena: "Arias1212", centro_de_atencion: "", actualizada: "25/09/26" },
+            { sistema: "WED IMPACTO", usuario: "C004199", contrasena: "Isss2026", centro_de_atencion: "sobrevivencia", actualizada: "08/09/26" },
+            { sistema: "WED IMPACTO", usuario: "L001838", contrasena: "Noviembre26", centro_de_atencion: "", actualizada: "02/11/26" },
+            { sistema: "WED IMPACTO", usuario: "P002529", contrasena: "Octubre2026", centro_de_atencion: "", actualizada: "04/10/26" },
+            { sistema: "EMERGENCIA", usuario: "P002123", contrasena: "Noviembre26", centro_de_atencion: "MQ", actualizada: "28/10/26" },
+            { sistema: "EMERGENCIA", usuario: "C004199", contrasena: "Septiembr3", centro_de_atencion: "MQ", actualizada: "14/09/26" },
+            { sistema: "EMERGENCIA", usuario: "R002715", contrasena: "", centro_de_atencion: "MQ", actualizada: "" },
+            { sistema: "DOMICILIAR", usuario: "C004199", contrasena: "Octubre2026.", centro_de_atencion: "", actualizada: "28/09/26" },
+            { sistema: "DOMICILIAR", usuario: "L001838", contrasena: "Noviembre26", centro_de_atencion: "MQ", actualizada: "02/11/26" },
+            { sistema: "DOMICILIAR", usuario: "A003641", contrasena: "Isss2026", centro_de_atencion: "MQ", actualizada: "14/10/26" },
+            { sistema: "DOMICILIAR", usuario: "P002529", contrasena: "Carlos2026..", centro_de_atencion: "MQ", actualizada: "03/11/26" },
+            { sistema: "COMPUTADORAS A.T.", usuario: "Punt0S3guro26.", contrasena: "", centro_de_atencion: "", actualizada: "23/10/26" },
+            { sistema: "COMPUTADORAS MEDICOS", usuario: "J", contrasena: "", centro_de_atencion: "", actualizada: "15/09/26" },
+            { sistema: "CORREO ELECTRONICO", usuario: "hospitalhmqisss@gmail.com", contrasena: "Atencion.usuario.2026", centro_de_atencion: "MQ", actualizada: "" },
+            { sistema: "VOCEO", usuario: "puntoseguro.hmq", contrasena: "Punt0S3guro26.", centro_de_atencion: "", actualizada: "23/10/26" },
+            { sistema: "INCAPACIDADES", usuario: "P002529", contrasena: "Carlos2026..", centro_de_atencion: "MQ", actualizada: "03/11/26" },
+            { sistema: "EXPEDIENTE CLINICO", usuario: "C004199", contrasena: "Septiembr3", centro_de_atencion: "MQ", actualizada: "14/09/26" }
         ];
 
         let allData = [];
@@ -400,12 +470,15 @@
                 document.getElementById('mainApp').style.display = 'flex';
                 showToast("Acceso Autorizado. Bienvenido.");
                 loadSheetData();
+                startSessionTimer();
             } else {
                 errorDiv.classList.remove('hidden');
             }
         }
 
         function logout() {
+            clearTimers();
+            closeModal('timeoutModal');
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('loginUser').value = '';
@@ -426,7 +499,8 @@
                             sistema: (row.sistema || row.Sistema || "GENERAL").trim().toUpperCase(),
                             usuario: (row.usuario || row.Usuario || "").trim(),
                             contrasena: (row.contrasena || row.contraseña || row.Contraseña || "").trim(),
-                            centro_de_atencion: (row.centro_de_atencion || row.centro || row.CENTRO || "").trim()
+                            centro_de_atencion: (row.centro_de_atencion || row.centro || row.Centro || row.CENTRO || "").trim(),
+                            actualizada: (row.actualizada || row.Actualizada || "").trim()
                         }));
                         updateCount();
                         renderSystems(allData);
@@ -446,7 +520,8 @@
                 sistema: row.sistema.toUpperCase(),
                 usuario: row.usuario,
                 contrasena: row.contrasena,
-                centro_de_atencion: row.centro_de_atencion
+                centro_de_atencion: row.centro_de_atencion,
+                actualizada: row.actualizada
             }));
             updateCount();
             renderSystems(allData);
@@ -525,11 +600,18 @@
                                                     ` : ''}
                                                 </div>
                                             </div>
-                                            ${item.centro_de_atencion ? `
-                                                <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200/60">
-                                                    ${item.centro_de_atencion}
-                                                </span>
-                                            ` : ''}
+                                            <div class="flex flex-col items-end space-y-1">
+                                                ${item.centro_de_atencion ? `
+                                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                                                        ${item.centro_de_atencion}
+                                                    </span>
+                                                ` : ''}
+                                                ${item.actualizada ? `
+                                                    <span class="text-[9px] bg-slate-100 text-slate-500 font-medium px-2 py-0.5 rounded-md border border-slate-200/60">
+                                                        <i class="fa-regular fa-calendar text-[8px] mr-1"></i>${item.actualizada}
+                                                    </span>
+                                                ` : ''}
+                                            </div>
                                         </div>
 
                                         <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-200/60">
