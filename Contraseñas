@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Accesos por Sistemas - ISSS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PapaParse para leer CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+    <!-- Encabezado Institucional ISSS -->
+    <header class="bg-blue-900 shadow-lg border-b-4 border-blue-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-3 sm:mb-0">
+                <div class="bg-white p-2.5 rounded-xl shadow-inner text-blue-900 flex items-center justify-center font-bold">
+                    <svg class="w-8 h-8 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xs uppercase tracking-widest text-blue-300 font-semibold">Instituto Salvadoreño del Seguro Social</span>
+                    <h1 class="text-xl sm:text-2xl font-bold text-white">Hospital Médico Quirúrgico &bull; Panel de Sistemas</h1>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="openCreateModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Nuevo Registro</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Barra de Control y Búsqueda -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900">Sistemas y Módulos Activos</h2>
+                <p class="text-sm text-slate-500">Visualización agrupada por plataforma con soporte de sincronización de claves.</p>
+            </div>
+            <div class="w-full md:w-80">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </span>
+                    <input type="text" id="searchInput" placeholder="Buscar por sistema, usuario o centro..." 
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all">
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenedor donde se cargarán las tarjetas agrupadas por sistema -->
+        <div id="systemsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full py-12 text-center text-slate-400">
+                <div class="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                Cargando sistemas institucionales...
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL DE EDICIÓN / ACTUALIZACIÓN -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 overflow-hidden">
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Actualizar Contraseña</h3>
+            <p id="editModalSub" class="text-sm text-slate-500 mb-4">Modifique la credencial de acceso para este registro.</p>
+            
+            <form id="editForm" onsubmit="handleEditSubmit(event)">
+                <input type="hidden" id="editIndex">
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Sistema</label>
+                    <input type="text" id="editSistema" readonly class="w-full px-3 py-2 bg-slate-100 border rounded-xl text-sm text-slate-600 font-medium">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Usuario</label>
+                    <input type="text" id="editUsuario" readonly class="w-full px-3 py-2 bg-slate-100 border rounded-xl text-sm font-mono text-slate-600">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nueva Contraseña</label>
+                    <input type="text" id="editPassword" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none font-mono">
+                </div>
+
+                <div id="linkedSection" class="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-xl hidden">
+                    <p class="text-xs font-semibold text-amber-800 mb-1">⚠️ Sistemas vinculados detectados con la misma clave:</p>
+                    <p id="linkedSystemsList" class="text-xs text-amber-700 mb-3"></p>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="syncLinked" checked class="rounded text-blue-600 focus:ring-blue-500">
+                        <span class="text-xs font-medium text-amber-900">Actualizar también la contraseña en los sistemas vinculados</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 border rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-500 shadow">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE CREACIÓN -->
+    <div id="createModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 overflow-hidden">
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Registrar Nuevo Acceso</h3>
+            <p class="text-sm text-slate-500 mb-4">Añada un nuevo sistema y sus credenciales.</p>
+            
+            <form id="createForm" onsubmit="handleCreateSubmit(event)">
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nombre del Sistema</label>
+                    <input type="text" id="newSistema" required placeholder="Ej. AGENDA, FARMACIA, etc." class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none uppercase font-semibold">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Usuario</label>
+                    <input type="text" id="newUsuario" required placeholder="Ej. A004046" class="w-full px-3 py-2 border rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Contraseña</label>
+                    <input type="text" id="newPassword" required placeholder="Contraseña de acceso" class="w-full px-3 py-2 border rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Centro de Atención</label>
+                    <input type="text" id="newCentro" placeholder="Ej. MQ, CEIBA, ZACAMIL" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2 border rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-500 shadow">Crear Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lógica de la Aplicación -->
+    <script>
+        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuGrXy-61ZSjEQebLFef_ym9rNR5qcvE47wyKlaM2UZPWO6seuCH27QpCi7O8s_JDuYTEUBykLRMLV/pub?gid=0&single=true&output=csv";
+
+        const fallbackData = [
+            { sistema: "AGENDA", usuario: "A004046", contrasena: "Agosto2026.", centro_de_atencion: "CEIBA" },
+            { sistema: "AGENDA", usuario: "P002529", contrasena: "Carlos2026.", centro_de_atencion: "ZACAMIL" },
+            { sistema: "AGENDA", usuario: "C004199", contrasena: "AGOSTO26", centro_de_atencion: "ONCOLOGIA" },
+            { sistema: "AGENDA", usuario: "A003641", contrasena: "Leandro08", centro_de_atencion: "MQ" },
+            { sistema: "AGENDA", usuario: "R002715", contrasena: "", centro_de_atencion: "Oncólogía" },
+            { sistema: "AGENDA", usuario: "L001838", contrasena: "Septiembre2026", centro_de_atencion: "especialidades" },
+            { sistema: "WED IMPACTO", usuario: "A003641", contrasena: "Isss2026", centro_de_atencion: "" },
+            { sistema: "WED IMPACTO", usuario: "C004199", contrasena: "Isss2026", centro_de_atencion: "sobrevivencia" },
+            { sistema: "WED IMPACTO", usuario: "P002529", contrasena: "Julio2026.", centro_de_atencion: "" },
+            { sistema: "EMERGENCIA", usuario: "P002123", contrasena: "Agosto2026.", centro_de_atencion: "MQ" },
+            { sistema: "EMERGENCIA", usuario: "C004199", contrasena: "Septiembr3", centro_de_atencion: "MQ" },
+            { sistema: "EMERGENCIA", usuario: "R002715", contrasena: "", centro_de_atencion: "MQ" },
+            { sistema: "DOMICILIAR", usuario: "C004199", contrasena: "Agosto2026.", centro_de_atencion: "" },
+            { sistema: "GENERAL", usuario: "A003641", contrasena: "Reyes1212", centro_de_atencion: "MQ" },
+            { sistema: "GENERAL", usuario: "P002529", contrasena: "Agosto2026.", centro_de_atencion: "MQ" },
+            { sistema: "COMPUTADORAS A.T.", usuario: "Punt0S3guro26.", contrasena: "", centro_de_atencion: "" },
+            { sistema: "COMPUTADORAS MEDICOS", usuario: "Expediente2026.", contrasena: "", centro_de_atencion: "" },
+            { sistema: "CORREO ELECTRONICO", usuario: "hospitalhmqisss@gmail.com", contrasena: "Atencion.usuario.2026", centro_de_atencion: "MQ" },
+            { sistema: "VOCEO", usuario: "puntoseguro.hmq", contrasena: "P002529", centro_de_atencion: "" },
+            { sistema: "INCAPACIDADES", usuario: "P002529", contrasena: "Septiembr3", centro_de_atencion: "MQ" },
+            { sistema: "EXPEDIENTE CLINICO", usuario: "C004199", contrasena: "Isss2026", centro_de_atencion: "MQ" }
+        ];
+
+        let allData = [];
+
+        function loadSheetData() {
+            Papa.parse(csvUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.data && results.data.length > 0) {
+                        allData = results.data.map((row, idx) => ({
+                            originalIndex: idx,
+                            sistema: (row.sistema || row.Sistema || "GENERAL").trim().toUpperCase(),
+                            usuario: (row.usuario || row.Usuario || "").trim(),
+                            contrasena: (row.contrasena || row.contraseña || row.Contraseña || "").trim(),
+                            centro_de_atencion: (row.centro_de_atencion || row.centro || row.CENTRO || "").trim()
+                        }));
+                        renderSystems(allData);
+                    } else {
+                        useFallback();
+                    }
+                },
+                error: function(err) {
+                    useFallback();
+                }
+            });
+        }
+
+        function useFallback() {
+            allData = fallbackData.map((row, idx) => ({
+                originalIndex: idx,
+                sistema: row.sistema.toUpperCase(),
+                usuario: row.usuario,
+                contrasena: row.contrasena,
+                centro_de_atencion: row.centro_de_atencion
+            }));
+            renderSystems(allData);
+        }
+
+        // Agrupar y renderizar por tarjetas de Sistemas
+        function renderSystems(data) {
+            const container = document.getElementById('systemsContainer');
+
+            if (data.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No se encontraron registros.</div>`;
+                return;
+            }
+
+            // Agrupar registros por el nombre del sistema
+            const grouped = {};
+            data.forEach((item) => {
+                const sysName = item.sistema || "OTRAS APLICACIONES";
+                if (!grouped[sysName]) {
+                    grouped[sysName] = [];
+                }
+                grouped[sysName].push(item);
+            });
+
+            // Generar tarjetas para cada sistema
+            container.innerHTML = Object.keys(grouped).map(sistema => {
+                const items = grouped[sistema];
+                return `
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <!-- Cabecera de la tarjeta del sistema -->
+                        <div class="bg-slate-50 px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                                <h3 class="font-bold text-slate-800 text-base tracking-wide">${sistema}</h3>
+                            </div>
+                            <span class="text-xs bg-blue-50 text-blue-700 font-semibold px-2.5 py-1 rounded-full border border-blue-100">
+                                ${items.length} ${items.length === 1 ? 'cuenta' : 'cuentas'}
+                            </span>
+                        </div>
+
+                        <!-- Lista de cuentas asociadas a este sistema -->
+                        <div class="p-5 space-y-4 flex-1">
+                            ${items.map(item => `
+                                <div class="p-3.5 rounded-xl bg-slate-50/70 border border-slate-100 relative group">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Usuario</span>
+                                            <span class="font-mono text-sm font-semibold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 inline-block">
+                                                ${item.usuario || 'Sin usuario'}
+                                            </span>
+                                        </div>
+                                        ${item.centro_de_atencion ? `
+                                            <span class="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded border border-emerald-100">
+                                                ${item.centro_de_atencion}
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-200/60">
+                                        <div>
+                                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Contraseña</span>
+                                            <span class="font-mono text-xs text-slate-600 font-medium">
+                                                ${item.contrasena ? item.contrasena : '<span class="text-slate-300 italic">Sin clave asignada</span>'}
+                                            </span>
+                                        </div>
+                                        <button onclick="openEditModal(${item.originalIndex})" class="text-xs bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg shadow-sm transition-colors flex items-center space-x-1">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                            <span>Editar</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Abrir Modal de Edición con detección de sistemas vinculados
+        function openEditModal(index) {
+            const row = allData[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('editSistema').value = row.sistema;
+            document.getElementById('editUsuario').value = row.usuario;
+            document.getElementById('editPassword').value = row.contrasena;
+
+            const currentPass = row.contrasena;
+            const linked = allData.filter((r, i) => i !== index && r.contrasena === currentPass && currentPass);
+
+            const linkedSection = document.getElementById('linkedSection');
+            const linkedList = document.getElementById('linkedSystemsList');
+
+            if (linked.length > 0) {
+                linkedSection.classList.remove('hidden');
+                linkedList.innerText = [...new Set(linked.map(r => r.sistema))].join(', ');
+            } else {
+                linkedSection.classList.add('hidden');
+            }
+
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+
+        function handleEditSubmit(e) {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('editIndex').value);
+            const newPass = document.getElementById('editPassword').value;
+            const oldPass = allData[index].contrasena;
+            const shouldSync = document.getElementById('syncLinked').checked;
+
+            allData[index].contrasena = newPass;
+
+            if (shouldSync) {
+                allData.forEach((row) => {
+                    if (row.contrasena === oldPass && oldPass !== "") {
+                        row.contrasena = newPass;
+                    }
+                });
+            }
+
+            closeModal('editModal');
+            renderSystems(allData);
+            alert('¡Contraseña actualizada correctamente!');
+        }
+
+        function openCreateModal() {
+            document.getElementById('createForm').reset();
+            document.getElementById('createModal').classList.remove('hidden');
+            document.getElementById('createModal').classList.add('flex');
+        }
+
+        function handleCreateSubmit(e) {
+            e.preventDefault();
+            const nuevoSistema = document.getElementById('newSistema').value.trim().toUpperCase();
+            const nuevoUsuario = document.getElementById('newUsuario').value.trim();
+            const nuevaPassword = document.getElementById('newPassword').value.trim();
+            const nuevoCentro = document.getElementById('newCentro').value.trim();
+
+            const newRow = {
+                originalIndex: allData.length,
+                sistema: nuevoSistema,
+                usuario: nuevoUsuario,
+                contrasena: nuevaPassword,
+                centro_de_atencion: nuevoCentro
+            };
+
+            allData.push(newRow);
+            closeModal('createModal');
+            renderSystems(allData);
+            alert('Nuevo registro creado con éxito.');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+
+        // Búsqueda en tiempo real
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allData.filter(row => {
+                return row.sistema.toLowerCase().includes(searchTerm) ||
+                       row.usuario.toLowerCase().includes(searchTerm) ||
+                       row.centro_de_atencion.toLowerCase().includes(searchTerm);
+            });
+            renderSystems(filtered);
+        });
+
+        loadSheetData();
+    </script>
+</body>
+</html>
