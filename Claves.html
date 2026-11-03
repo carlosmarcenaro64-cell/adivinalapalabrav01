@@ -971,7 +971,32 @@
             closeModal('createModal');
             updateCount();
             renderSystems(allData);
-            showToast("Nuevo registro creado correctamente.");
+            showToast("Guardando nuevo registro en Google Sheets...");
+
+            // Guardar el nuevo registro directamente en Google Sheets
+            fetch(currentScriptUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    hoja: currentActiveUser,
+                    action: "createRow",
+                    sistema: nuevoSistema,
+                    usuario: nuevoUsuario,
+                    contrasena: nuevaPassword,
+                    centro: nuevoCentro,
+                    fecha: fechaHoy
+                })
+            })
+            .then(() => {
+                showToast("¡Registro guardado exitosamente en Sheets!");
+            })
+            .catch(err => {
+                console.error("Error al crear registro:", err);
+                showToast("Guardado localmente (error de red con Sheets)", false);
+            });
         }
 
         function openChangeAccessPassModal() {
