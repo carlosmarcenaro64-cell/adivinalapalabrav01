@@ -495,16 +495,18 @@
     <!-- SCRIPT PRINCIPAL -->
     <script>
         // CONFIGURACIÓN MULTI-USUARIO Y HOJAS VINCULADAS
+        const SHARED_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv";
+
         const USERS_DATABASE = {
             "hmq": {
                 pass: "punto2026", // Clave por defecto si falla la lectura inicial
                 label: "Hospital Médico Quirúrgico",
-                csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?gid=36315083&single=true&output=csv"
+                csvUrl: SHARED_CSV_URL
             },
             "especialidades": {
                 pass: "especialidades2026", // Clave por defecto si falla la lectura inicial
                 label: "Hospital de Especialidades",
-                csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?gid=1437872986&single=true&output=csv" 
+                csvUrl: SHARED_CSV_URL
             }
         };
 
