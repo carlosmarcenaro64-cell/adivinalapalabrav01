@@ -375,7 +375,6 @@
 
         function startSessionTimer() {
             clearTimers();
-            // 1 minuto = 60,000 ms
             sessionTimer = setTimeout(() => {
                 showTimeoutModal();
             }, 60000);
@@ -490,23 +489,52 @@
         function loadSheetData() {
             Papa.parse(csvUrl, {
                 download: true,
-                header: true,
+                header: false, // Parse as raw array of rows to reliably capture columns A, B, C, D, E regardless of header names
                 skipEmptyLines: true,
                 complete: function(results) {
                     if (results.data && results.data.length > 0) {
-                        allData = results.data.map((row, idx) => ({
-                            originalIndex: idx,
-                            sistema: (row.sistema || row.Sistema || "GENERAL").trim().toUpperCase(),
-                            usuario: (row.usuario || row.Usuario || "").trim(),
-                            contrasena: (row.contrasena || row.contraseña || row.Contraseña || "").trim(),
-                            centro_de_atencion: (row.centro_de_atencion || row.centro || row.Centro || row.CENTRO || "").trim(),
-                            actualizada: (row.actualizada || row.Actualizada || "").trim()
-                        }));
-                        updateCount();
-                        renderSystems(allData);
-                    } else {
-                        useFallback();
+                        let parsed = [];
+                        let currentSystem = "";
+                        
+                        results.data.forEach((row, idx) => {
+                            // Extract by exact position: A=0, B=1, C=2, D=3, E=4
+                            const colA = row[0] ? String(row[0]).trim() : "";
+                            const colB = row[1] ? String(row[1]).trim() : "";
+                            const colC = row[2] ? String(row[2]).trim() : "";
+                            const colD = row[3] ? String(row[3]).trim() : "";
+                            const colE = row[4] ? String(row[4]).trim() : "";
+
+                            // Ignore top title/header row if it matches "Sistema" or "sistema"
+                            if (colA.toLowerCase() === "sistema" && colB.toLowerCase() === "usuario") {
+                                return;
+                            }
+
+                            // Fill merged cells for Column A (Sistema)
+                            if (colA !== "") {
+                                currentSystem = colA.toUpperCase();
+                            }
+
+                            // Keep record if there's user data, pass data, or system name
+                            if (colB !== "" || colC !== "" || colD !== "" || colE !== "") {
+                                parsed.push({
+                                    originalIndex: parsed.length,
+                                    sistema: currentSystem || "GENERAL",
+                                    usuario: colB,
+                                    contrasena: colC,
+                                    centro_de_atencion: colD,
+                                    actualizada: colE
+                                });
+                            }
+                        });
+
+                        if (parsed.length > 0) {
+                            allData = parsed;
+                            updateCount();
+                            renderSystems(allData);
+                            return;
+                        }
                     }
+                    useFallback();
                 },
                 error: function() {
                     useFallback();
@@ -557,7 +585,7 @@
 
             const grouped = {};
             data.forEach((item) => {
-                const sysName = item.sistema || "OTRAS APLICACIONES";
+                const sysName = item.sistema || "GENERAL";
                 if (!grouped[sysName]) {
                     grouped[sysName] = [];
                 }
@@ -575,7 +603,7 @@
                                 <h3 class="font-extrabold text-slate-800 text-sm tracking-wide uppercase">${sistema}</h3>
                             </div>
                             <span class="text-[11px] bg-blue-100/70 text-blue-800 font-extrabold px-3 py-1 rounded-full">
-                                ${items.length} ${items.length === 1 ? 'cuenta' : 'cuentas'}
+                                ${items.length} ${items.length === 1 ? 'registro' : 'registros'}
                             </span>
                         </div>
 
@@ -586,12 +614,13 @@
                                 const isVisible = visiblePasswords[idx];
                                 return `
                                     <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 transition-all hover:bg-slate-100/70">
-                                        <div class="flex justify-between items-start mb-2">
+                                        <!-- Fila 1: Usuario y Centro / Fecha -->
+                                        <div class="flex justify-between items-start mb-2.5">
                                             <div>
-                                                <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Usuario</span>
+                                                <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Usuario (Col. B)</span>
                                                 <div class="flex items-center space-x-1.5 mt-0.5">
                                                     <span class="font-mono text-xs font-bold text-slate-800 bg-white px-2 py-0.5 rounded-lg border border-slate-200 shadow-2xs">
-                                                        ${item.usuario || 'Sin usuario'}
+                                                        ${item.usuario || '<span class="text-slate-300 italic">No especificado</span>'}
                                                     </span>
                                                     ${item.usuario ? `
                                                         <button onclick="copyToClipboard('${item.usuario}', 'Usuario')" class="text-slate-400 hover:text-blue-600 text-xs px-1 transition-colors" title="Copiar Usuario">
@@ -600,23 +629,25 @@
                                                     ` : ''}
                                                 </div>
                                             </div>
+                                            
                                             <div class="flex flex-col items-end space-y-1">
                                                 ${item.centro_de_atencion ? `
-                                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200/60">
-                                                        ${item.centro_de_atencion}
+                                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200/60" title="Centro de Atención (Col. D)">
+                                                        <i class="fa-solid fa-hospital text-[9px] mr-1"></i>${item.centro_de_atencion}
                                                     </span>
                                                 ` : ''}
                                                 ${item.actualizada ? `
-                                                    <span class="text-[9px] bg-slate-100 text-slate-500 font-medium px-2 py-0.5 rounded-md border border-slate-200/60">
-                                                        <i class="fa-regular fa-calendar text-[8px] mr-1"></i>${item.actualizada}
+                                                    <span class="text-[9px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-md border border-blue-200/60" title="Fecha de Actualización (Col. E)">
+                                                        <i class="fa-regular fa-calendar-check text-[8px] mr-1"></i>${item.actualizada}
                                                     </span>
                                                 ` : ''}
                                             </div>
                                         </div>
 
+                                        <!-- Fila 2: Contraseña y Acciones -->
                                         <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-200/60">
                                             <div>
-                                                <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Contraseña</span>
+                                                <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Contraseña (Col. C)</span>
                                                 <div class="flex items-center space-x-2 mt-0.5">
                                                     <span class="font-mono text-xs text-slate-700 font-bold">
                                                         ${item.contrasena ? (isVisible ? item.contrasena : '••••••••') : '<span class="text-slate-300 italic font-normal text-xs">Sin clave</span>'}
@@ -709,7 +740,8 @@
                 sistema: nuevoSistema,
                 usuario: nuevoUsuario,
                 contrasena: nuevaPassword,
-                centro_de_atencion: nuevoCentro
+                centro_de_atencion: nuevoCentro,
+                actualizada: new Date().toLocaleDateString('es-SV', { day: '2-digit', month: '2-digit', year: '2-digit' })
             };
 
             allData.push(newRow);
@@ -729,7 +761,8 @@
             const filtered = allData.filter(row => {
                 return row.sistema.toLowerCase().includes(searchTerm) ||
                        row.usuario.toLowerCase().includes(searchTerm) ||
-                       row.centro_de_atencion.toLowerCase().includes(searchTerm);
+                       row.centro_de_atencion.toLowerCase().includes(searchTerm) ||
+                       row.actualizada.toLowerCase().includes(searchTerm);
             });
             renderSystems(filtered);
         });
