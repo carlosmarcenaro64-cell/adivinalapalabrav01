@@ -1,145 +1,347 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Accesos por Sistemas - ISSS</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PapaParse para leer CSV -->
+    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconos animados -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'pop': 'pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        'slideUp': {
+                            '0%': { opacity: 0, transform: 'translateY(20px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                        'fadeIn': {
+                            '0%': { opacity: 0 },
+                            '100%': { opacity: 1 },
+                        },
+                        'pop': {
+                            '0%': { transform: 'scale(0.95)', opacity: 0 },
+                            '100%': { transform: 'scale(1)', opacity: 1 },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .card-hover-effect {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .card-hover-effect:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-900 text-slate-800 antialiased min-h-screen selection:bg-blue-500 selection:text-white">
 
-    <!-- Encabezado Institucional ISSS -->
-    <header class="bg-blue-900 shadow-lg border-b-4 border-blue-500">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center">
-            <div class="flex items-center space-x-3 mb-3 sm:mb-0">
-                <div class="bg-white p-2.5 rounded-xl shadow-inner text-blue-900 flex items-center justify-center font-bold">
-                    <svg class="w-8 h-8 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                    </svg>
-                </div>
-                <div>
-                    <span class="text-xs uppercase tracking-widest text-blue-300 font-semibold">Instituto Salvadoreño del Seguro Social</span>
-                    <h1 class="text-xl sm:text-2xl font-bold text-white">Hospital Médico Quirúrgico &bull; Panel de Sistemas</h1>
+    <!-- NOTIFICACIÓN TOAST FLOTANTE -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toastMsg" class="text-sm font-medium"></span>
+    </div>
+
+    <!-- PANTALLA DE LOGIN ANIMADA -->
+    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 animate-gradient-x">
+        <!-- Elementos Decorativos Fondo -->
+        <div class="absolute w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-float -top-10 -left-10 pointer-events-none"></div>
+        <div class="absolute w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-float -bottom-10 -right-10 pointer-events-none" style="animation-delay: -3s;"></div>
+
+        <div class="glass-card relative z-10 max-w-md w-full p-8 sm:p-10 rounded-3xl border border-white/40 shadow-2xl animate-pop">
+            <!-- Icono Encabezado -->
+            <div class="flex justify-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-tr from-blue-700 to-cyan-500 rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center text-white text-2xl animate-float">
+                    <i class="fa-solid fa-hospital-user"></i>
                 </div>
             </div>
-            <div class="flex items-center space-x-3">
-                <button onclick="openCreateModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center space-x-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-                    <span>Nuevo Registro</span>
+            
+            <div class="text-center mb-8">
+                <span class="text-[11px] font-extrabold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                    Instituto Salvadoreño del Seguro Social
+                </span>
+                <h2 class="text-2xl font-extrabold text-slate-900 mt-3 tracking-tight">Hospital Médico Quirúrgico</h2>
+                <p class="text-xs text-slate-500 mt-1.5">Portal Seguro de Control y Consulta de Accesos</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Usuario</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </span>
+                        <input type="text" id="loginUser" required placeholder="Ingrese usuario autorizador" autocomplete="off"
+                            class="w-full pl-10 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all font-medium">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Contraseña</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-key"></i>
+                        </span>
+                        <input type="password" id="loginPass" required placeholder="••••••••" autocomplete="off"
+                            class="w-full pl-10 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all font-medium">
+                    </div>
+                </div>
+
+                <div id="loginError" class="p-3.5 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-2xl hidden text-center font-semibold animate-slide-up flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Usuario o contraseña incorrectos.</span>
+                </div>
+
+                <button type="submit" 
+                    class="w-full bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 hover:from-blue-600 hover:to-indigo-800 text-white font-bold py-3.5 rounded-2xl shadow-xl shadow-blue-900/30 active:scale-[0.98] transition-all text-sm flex items-center justify-center space-x-2 group">
+                    <span>Acceder al Sistema</span>
+                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PANEL PRINCIPAL DE APPLICACIÓN -->
+    <div id="mainApp" style="display: none;" class="min-h-screen bg-slate-100 flex flex-col">
+        <!-- NAV HEADER CON GLASSMORPHISM -->
+        <header class="sticky top-0 z-40 bg-blue-900/95 backdrop-blur-md border-b border-blue-800/80 shadow-xl">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-11 h-11 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center text-white text-xl shadow-inner">
+                        <i class="fa-solid fa-square-h text-cyan-400"></i>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase tracking-widest text-blue-300 font-extrabold block">ISSS &bull; El Salvador</span>
+                        <h1 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Directorio Integrado de Sistemas</h1>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <button onclick="openCreateModal()" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-cyan-900/30 active:scale-95 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span>Nuevo Acceso</span>
+                    </button>
+                    <button onclick="logout()" class="bg-slate-800/80 hover:bg-rose-900 text-slate-300 hover:text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all border border-slate-700/60 active:scale-95 flex items-center space-x-2">
+                        <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                        <span>Salir</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+            
+            <!-- TARJETAS METRICAS -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-cubes"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Registros</p>
+                        <p id="totalCount" class="text-2xl font-extrabold text-slate-900 mt-0.5">-</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Estado Conexión</p>
+                        <p id="statusText" class="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Sincronizado
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-link"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Sistemas Vinculados</p>
+                        <p class="text-sm font-bold text-slate-800 mt-1">Detección Automática</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARRA DE BÚSQUEDA FLOTANTE -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-900">Módulos Institucionales</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Gestione y consulte credenciales organizadas por plataforma.</p>
+                </div>
+                <div class="w-full md:w-96">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input type="text" id="searchInput" placeholder="Buscar por sistema, usuario o centro..." 
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all font-medium">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENEDOR GRID DE SISTEMAS -->
+            <div id="systemsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Skeleton Loader por Defecto -->
+                <div class="col-span-full py-16 text-center text-slate-400 flex flex-col items-center justify-center space-y-3">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-blue-600"></i>
+                    <span class="text-xs font-semibold tracking-wide uppercase">Cargando base de datos institucionales...</span>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 font-medium">
+            Hospital Médico Quirúrgico &bull; Instituto Salvadoreño del Seguro Social 2026
+        </footer>
+    </div>
+
+    <!-- MODAL DE EDICIÓN ANIMADO -->
+    <div id="editModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 overflow-hidden animate-pop border border-slate-100">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">Actualizar Contraseña</h3>
+                        <p class="text-xs text-slate-400">Modificación de credenciales</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-600 text-lg transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-        </div>
-    </header>
-
-    <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <!-- Barra de Control y Búsqueda -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <h2 class="text-lg font-bold text-slate-900">Sistemas y Módulos Activos</h2>
-                <p class="text-sm text-slate-500">Visualización agrupada por plataforma con soporte de sincronización de claves.</p>
-            </div>
-            <div class="w-full md:w-80">
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </span>
-                    <input type="text" id="searchInput" placeholder="Buscar por sistema, usuario o centro..." 
-                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all">
-                </div>
-            </div>
-        </div>
-
-        <!-- Contenedor donde se cargarán las tarjetas agrupadas por sistema -->
-        <div id="systemsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="col-span-full py-12 text-center text-slate-400">
-                <div class="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-                Cargando sistemas institucionales...
-            </div>
-        </div>
-    </main>
-
-    <!-- MODAL DE EDICIÓN / ACTUALIZACIÓN -->
-    <div id="editModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 overflow-hidden">
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Actualizar Contraseña</h3>
-            <p id="editModalSub" class="text-sm text-slate-500 mb-4">Modifique la credencial de acceso para este registro.</p>
             
             <form id="editForm" onsubmit="handleEditSubmit(event)">
                 <input type="hidden" id="editIndex">
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Sistema</label>
-                    <input type="text" id="editSistema" readonly class="w-full px-3 py-2 bg-slate-100 border rounded-xl text-sm text-slate-600 font-medium">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Sistema</label>
+                    <input type="text" id="editSistema" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Usuario</label>
-                    <input type="text" id="editUsuario" readonly class="w-full px-3 py-2 bg-slate-100 border rounded-xl text-sm font-mono text-slate-600">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Usuario</label>
+                    <input type="text" id="editUsuario" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono font-semibold text-slate-700">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nueva Contraseña</label>
-                    <input type="text" id="editPassword" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none font-mono">
+                <div class="mb-5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Nueva Contraseña</label>
+                    <input type="text" id="editPassword" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
 
-                <div id="linkedSection" class="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-xl hidden">
-                    <p class="text-xs font-semibold text-amber-800 mb-1">⚠️ Sistemas vinculados detectados con la misma clave:</p>
-                    <p id="linkedSystemsList" class="text-xs text-amber-700 mb-3"></p>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="syncLinked" checked class="rounded text-blue-600 focus:ring-blue-500">
-                        <span class="text-xs font-medium text-amber-900">Actualizar también la contraseña en los sistemas vinculados</span>
+                <div id="linkedSection" class="mb-6 p-4 bg-amber-50/80 border border-amber-200 rounded-2xl hidden animate-slide-up">
+                    <div class="flex items-start space-x-2.5 mb-2">
+                        <i class="fa-solid fa-link text-amber-600 mt-0.5 text-xs"></i>
+                        <p class="text-xs font-bold text-amber-900">Sistemas vinculados detectados:</p>
+                    </div>
+                    <p id="linkedSystemsList" class="text-xs text-amber-800 font-medium mb-3 pl-6"></p>
+                    <label class="flex items-center space-x-2.5 cursor-pointer pl-6">
+                        <input type="checkbox" id="syncLinked" checked class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
+                        <span class="text-xs font-semibold text-amber-950">Sincronizar contraseña en estos sistemas</span>
                     </label>
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 border rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-500 shadow">Guardar Cambios</button>
+                    <button type="button" onclick="closeModal('editModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-700/20 active:scale-95 transition-all">Guardar Cambios</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE CREACIÓN -->
-    <div id="createModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 overflow-hidden">
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Registrar Nuevo Acceso</h3>
-            <p class="text-sm text-slate-500 mb-4">Añada un nuevo sistema y sus credenciales.</p>
+    <!-- MODAL DE CREACIÓN ANIMADO -->
+    <div id="createModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 overflow-hidden animate-pop border border-slate-100">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-folder-plus"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">Registrar Nuevo Acceso</h3>
+                        <p class="text-xs text-slate-400">Creación de cuenta de sistema</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('createModal')" class="text-slate-400 hover:text-slate-600 text-lg transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
             
             <form id="createForm" onsubmit="handleCreateSubmit(event)">
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nombre del Sistema</label>
-                    <input type="text" id="newSistema" required placeholder="Ej. AGENDA, FARMACIA, etc." class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none uppercase font-semibold">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Nombre del Sistema</label>
+                    <input type="text" id="newSistema" required placeholder="Ej. AGENDA, FARMACIA, VOCEO" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none uppercase font-bold">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Usuario</label>
-                    <input type="text" id="newUsuario" required placeholder="Ej. A004046" class="w-full px-3 py-2 border rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Usuario</label>
+                    <input type="text" id="newUsuario" required placeholder="Ej. A004046" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-semibold focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Contraseña</label>
-                    <input type="text" id="newPassword" required placeholder="Contraseña de acceso" class="w-full px-3 py-2 border rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Contraseña</label>
+                    <input type="text" id="newPassword" required placeholder="Contraseña de acceso" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Centro de Atención</label>
-                    <input type="text" id="newCentro" placeholder="Ej. MQ, CEIBA, ZACAMIL" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Centro de Atención</label>
+                    <input type="text" id="newCentro" placeholder="Ej. MQ, CEIBA, ZACAMIL" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
 
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2 border rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-500 shadow">Crear Registro</button>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-700/20 active:scale-95 transition-all">Crear Registro</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Lógica de la Aplicación -->
+    <!-- SCRIPT PRINCIPAL -->
     <script>
+        const AUTH_USER = "hmq";
+        const AUTH_PASS = "punto2026";
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuGrXy-61ZSjEQebLFef_ym9rNR5qcvE47wyKlaM2UZPWO6seuCH27QpCi7O8s_JDuYTEUBykLRMLV/pub?gid=0&single=true&output=csv";
 
         const fallbackData = [
@@ -167,6 +369,50 @@
         ];
 
         let allData = [];
+        let visiblePasswords = {};
+
+        function showToast(msg, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+            toastIcon.className = isSuccess ? "fa-solid fa-circle-check text-emerald-400 text-lg" : "fa-solid fa-triangle-exclamation text-rose-400 text-lg";
+
+            toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-100px]', 'opacity-0');
+            }, 3000);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value.trim();
+            const errorDiv = document.getElementById('loginError');
+
+            if (u === AUTH_USER && p === AUTH_PASS) {
+                errorDiv.classList.add('hidden');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
+                showToast("Acceso Autorizado. Bienvenido.");
+                loadSheetData();
+            } else {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+            showToast("Sesión cerrada correctamente", false);
+        }
 
         function loadSheetData() {
             Papa.parse(csvUrl, {
@@ -182,12 +428,13 @@
                             contrasena: (row.contrasena || row.contraseña || row.Contraseña || "").trim(),
                             centro_de_atencion: (row.centro_de_atencion || row.centro || row.CENTRO || "").trim()
                         }));
+                        updateCount();
                         renderSystems(allData);
                     } else {
                         useFallback();
                     }
                 },
-                error: function(err) {
+                error: function() {
                     useFallback();
                 }
             });
@@ -201,19 +448,38 @@
                 contrasena: row.contrasena,
                 centro_de_atencion: row.centro_de_atencion
             }));
+            updateCount();
             renderSystems(allData);
         }
 
-        // Agrupar y renderizar por tarjetas de Sistemas
+        function updateCount() {
+            document.getElementById('totalCount').innerText = allData.length;
+        }
+
+        function togglePassword(index) {
+            visiblePasswords[index] = !visiblePasswords[index];
+            renderSystems(allData);
+        }
+
+        function copyToClipboard(text, label) {
+            if (!text) return;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast(`${label} copiado al portapapeles`);
+        }
+
         function renderSystems(data) {
             const container = document.getElementById('systemsContainer');
 
             if (data.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No se encontraron registros.</div>`;
+                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-semibold animate-fade-in">No se encontraron registros coincidentes.</div>`;
                 return;
             }
 
-            // Agrupar registros por el nombre del sistema
             const grouped = {};
             data.forEach((item) => {
                 const sysName = item.sistema || "OTRAS APLICACIONES";
@@ -223,60 +489,80 @@
                 grouped[sysName].push(item);
             });
 
-            // Generar tarjetas para cada sistema
-            container.innerHTML = Object.keys(grouped).map(sistema => {
+            container.innerHTML = Object.keys(grouped).map((sistema, sIdx) => {
                 const items = grouped[sistema];
                 return `
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow">
-                        <!-- Cabecera de la tarjeta del sistema -->
-                        <div class="bg-slate-50 px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
-                                <h3 class="font-bold text-slate-800 text-base tracking-wide">${sistema}</h3>
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col justify-between card-hover-effect animate-slide-up" style="animation-delay: ${sIdx * 0.05}s">
+                        <!-- Cabecera de Tarjeta -->
+                        <div class="bg-gradient-to-r from-slate-50 to-blue-50/50 px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="w-3 h-3 rounded-full bg-blue-600 shadow-sm shadow-blue-500"></span>
+                                <h3 class="font-extrabold text-slate-800 text-sm tracking-wide uppercase">${sistema}</h3>
                             </div>
-                            <span class="text-xs bg-blue-50 text-blue-700 font-semibold px-2.5 py-1 rounded-full border border-blue-100">
+                            <span class="text-[11px] bg-blue-100/70 text-blue-800 font-extrabold px-3 py-1 rounded-full">
                                 ${items.length} ${items.length === 1 ? 'cuenta' : 'cuentas'}
                             </span>
                         </div>
 
-                        <!-- Lista de cuentas asociadas a este sistema -->
-                        <div class="p-5 space-y-4 flex-1">
-                            ${items.map(item => `
-                                <div class="p-3.5 rounded-xl bg-slate-50/70 border border-slate-100 relative group">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <div>
-                                            <span class="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Usuario</span>
-                                            <span class="font-mono text-sm font-semibold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 inline-block">
-                                                ${item.usuario || 'Sin usuario'}
-                                            </span>
+                        <!-- Cuentas del Sistema -->
+                        <div class="p-5 space-y-3.5 flex-1">
+                            ${items.map(item => {
+                                const idx = item.originalIndex;
+                                const isVisible = visiblePasswords[idx];
+                                return `
+                                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 transition-all hover:bg-slate-100/70">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Usuario</span>
+                                                <div class="flex items-center space-x-1.5 mt-0.5">
+                                                    <span class="font-mono text-xs font-bold text-slate-800 bg-white px-2 py-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                                                        ${item.usuario || 'Sin usuario'}
+                                                    </span>
+                                                    ${item.usuario ? `
+                                                        <button onclick="copyToClipboard('${item.usuario}', 'Usuario')" class="text-slate-400 hover:text-blue-600 text-xs px-1 transition-colors" title="Copiar Usuario">
+                                                            <i class="fa-regular fa-copy"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                            ${item.centro_de_atencion ? `
+                                                <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                                                    ${item.centro_de_atencion}
+                                                </span>
+                                            ` : ''}
                                         </div>
-                                        ${item.centro_de_atencion ? `
-                                            <span class="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded border border-emerald-100">
-                                                ${item.centro_de_atencion}
-                                            </span>
-                                        ` : ''}
-                                    </div>
-                                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-200/60">
-                                        <div>
-                                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Contraseña</span>
-                                            <span class="font-mono text-xs text-slate-600 font-medium">
-                                                ${item.contrasena ? item.contrasena : '<span class="text-slate-300 italic">Sin clave asignada</span>'}
-                                            </span>
+
+                                        <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-200/60">
+                                            <div>
+                                                <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Contraseña</span>
+                                                <div class="flex items-center space-x-2 mt-0.5">
+                                                    <span class="font-mono text-xs text-slate-700 font-bold">
+                                                        ${item.contrasena ? (isVisible ? item.contrasena : '••••••••') : '<span class="text-slate-300 italic font-normal text-xs">Sin clave</span>'}
+                                                    </span>
+                                                    ${item.contrasena ? `
+                                                        <button onclick="togglePassword(${idx})" class="text-slate-400 hover:text-slate-600 text-xs transition-colors">
+                                                            <i class="fa-solid ${isVisible ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                                                        </button>
+                                                        <button onclick="copyToClipboard('${item.contrasena}', 'Contraseña')" class="text-slate-400 hover:text-blue-600 text-xs transition-colors" title="Copiar Clave">
+                                                            <i class="fa-regular fa-copy"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                            <button onclick="openEditModal(${idx})" class="text-xs bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white font-bold px-3 py-1.5 rounded-xl transition-all shadow-2xs flex items-center space-x-1.5 active:scale-95">
+                                                <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                                                <span>Editar</span>
+                                            </button>
                                         </div>
-                                        <button onclick="openEditModal(${item.originalIndex})" class="text-xs bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg shadow-sm transition-colors flex items-center space-x-1">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                            <span>Editar</span>
-                                        </button>
                                     </div>
-                                </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Abrir Modal de Edición con detección de sistemas vinculados
         function openEditModal(index) {
             const row = allData[index];
             document.getElementById('editIndex').value = index;
@@ -285,7 +571,7 @@
             document.getElementById('editPassword').value = row.contrasena;
 
             const currentPass = row.contrasena;
-            const linked = allData.filter((r, i) => i !== index && r.contrasena === currentPass && currentPass);
+            const linked = allData.filter((r, i) => i !== index && r.contrasena === currentPass && currentPass !== "");
 
             const linkedSection = document.getElementById('linkedSection');
             const linkedList = document.getElementById('linkedSystemsList');
@@ -310,9 +596,9 @@
 
             allData[index].contrasena = newPass;
 
-            if (shouldSync) {
+            if (shouldSync && oldPass !== "") {
                 allData.forEach((row) => {
-                    if (row.contrasena === oldPass && oldPass !== "") {
+                    if (row.contrasena === oldPass) {
                         row.contrasena = newPass;
                     }
                 });
@@ -320,7 +606,7 @@
 
             closeModal('editModal');
             renderSystems(allData);
-            alert('¡Contraseña actualizada correctamente!');
+            showToast("Contraseña y sistemas vinculados actualizados");
         }
 
         function openCreateModal() {
@@ -345,9 +631,10 @@
             };
 
             allData.push(newRow);
+            updateCount();
             closeModal('createModal');
             renderSystems(allData);
-            alert('Nuevo registro creado con éxito.');
+            showToast("Nuevo registro creado exitosamente");
         }
 
         function closeModal(modalId) {
@@ -355,7 +642,6 @@
             document.getElementById(modalId).classList.remove('flex');
         }
 
-        // Búsqueda en tiempo real
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const filtered = allData.filter(row => {
@@ -365,8 +651,6 @@
             });
             renderSystems(filtered);
         });
-
-        loadSheetData();
     </script>
 </body>
 </html>
