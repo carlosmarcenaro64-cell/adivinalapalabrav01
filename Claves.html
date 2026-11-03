@@ -215,8 +215,8 @@
                 <span class="text-[11px] font-extrabold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
                     Instituto Salvadoreño del Seguro Social
                 </span>
-                <h2 class="text-2xl font-extrabold text-slate-900 mt-3 tracking-tight">Hospital Médico Quirúrgico</h2>
-                <p class="text-xs text-slate-500 mt-1.5 font-medium">Portal Seguro de Control y Consulta de Accesos</p>
+                <h2 class="text-2xl font-extrabold text-slate-900 mt-3 tracking-tight">Portal de Claves ISSS</h2>
+                <p class="text-xs text-slate-500 mt-1.5 font-medium">Control y Consulta de Accesos Institucionales</p>
             </div>
 
             <form onsubmit="handleLogin(event)" class="space-y-5">
@@ -226,7 +226,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-user-shield"></i>
                         </span>
-                        <input type="text" id="loginUser" required placeholder="Ingrese usuario autorizador" autocomplete="off"
+                        <input type="text" id="loginUser" required placeholder="Ingrese hmq o especialidades" autocomplete="off"
                             class="w-full pl-10 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all font-medium">
                     </div>
                 </div>
@@ -271,7 +271,7 @@
                     </div>
                     <div>
                         <span class="text-[10px] uppercase tracking-widest text-emerald-300 font-extrabold block">Instituto Salvadoreño del Seguro Social</span>
-                        <h1 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Hospital Médico Quirúrgico &bull; Panel de Sistemas 🎅</h1>
+                        <h1 id="userHeaderTitle" class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Panel de Sistemas 🎅</h1>
                     </div>
                 </div>
                 
@@ -363,7 +363,7 @@
         </main>
         
         <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 font-medium flex items-center justify-center space-x-2">
-            <span>Hospital Médico Quirúrgico &bull; Instituto Salvadoreño del Seguro Social 2026</span>
+            <span>Instituto Salvadoreño del Seguro Social 2026</span>
         </footer>
     </div>
 
@@ -455,6 +455,13 @@
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Centro de Atención</label>
                     <input type="text" id="newCentro" placeholder="Ej. MQ, CEIBA, ZACAMIL" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-700/20 active:scale-95 transition-all">Crear Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL DE CAMBIO DE CLAVE DE ACCESO AL PANEL (CELDA G2) -->
     <div id="changeAccessPassModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 animate-fade-in">
@@ -494,29 +501,27 @@
 
     <!-- SCRIPT PRINCIPAL -->
     <script>
-        // CONFIGURACIÓN MULTI-USUARIO Y HOJAS VINCULADAS
-        const SHARED_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv";
-
+        // CONFIGURACIÓN MULTI-USUARIO Y DE HOJAS/SCRIPTS INDEPENDIENTES
         const USERS_DATABASE = {
             "hmq": {
-                pass: "punto2026", // Clave por defecto si falla la lectura inicial
+                pass: "punto2026", // Clave por defecto si falla la lectura inicial de la celda G2
                 label: "Hospital Médico Quirúrgico",
-                csvUrl: SHARED_CSV_URL
+                csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv",
+                scriptUrl: "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec"
             },
             "especialidades": {
-                pass: "especialidades2026", // Clave por defecto si falla la lectura inicial
+                pass: "especialidades2026", // Clave por defecto si falla la lectura inicial de la celda G2
                 label: "Hospital de Especialidades",
-                csvUrl: SHARED_CSV_URL
+                csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSk60OZ9X-XnXu_nM4lrhzOtKUPLuAlz4g-ffR-cYKWOpQiAVETLczh0qqsmGYkuEIjc8DmuakPImDs/pub?output=csv",
+                scriptUrl: "https://script.google.com/macros/s/AKfycbxDdXD-QXB869e6oNWPUOeT81yNzEPc0U8uIkZCOJSlcod399nNmyqLGHIiEmJ-3aAX/exec"
             }
         };
 
-        // URL de tu Google Apps Script de escritura
-        const appsScriptUrl = "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec";
-
         let currentActiveUser = null;
         let currentCsvUrl = "";
+        let currentScriptUrl = "";
 
-        // Al cargar la página, intentamos leer las claves G2 directamente desde las hojas CSV de cada usuario
+        // Al cargar la página, intentamos leer las claves G2 directamente desde los CSVs
         window.addEventListener('DOMContentLoaded', () => {
             preloadAccessPasswords();
         });
@@ -640,11 +645,14 @@
             if (USERS_DATABASE[u] && USERS_DATABASE[u].pass === p) {
                 currentActiveUser = u;
                 currentCsvUrl = USERS_DATABASE[u].csvUrl;
+                currentScriptUrl = USERS_DATABASE[u].scriptUrl;
 
                 errorDiv.classList.add('hidden');
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'flex';
                 
+                document.getElementById('userHeaderTitle').innerHTML = `${USERS_DATABASE[u].label} &bull; Panel de Sistemas 🎅`;
+
                 showToast(`Bienvenido (${USERS_DATABASE[u].label})`);
                 loadSheetData();
                 startSessionTimer();
@@ -658,6 +666,7 @@
             closeModal('timeoutModal');
             currentActiveUser = null;
             currentCsvUrl = "";
+            currentScriptUrl = "";
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('loginUser').value = '';
@@ -904,7 +913,7 @@
             closeModal('editModal');
             renderSystems(allData);
 
-            // Enviar actualización con el usuario/hoja activa
+            // Enviar actualización al script correspondiente
             const payload = {
                 hoja: currentActiveUser,
                 sistema: item.sistema,
@@ -913,7 +922,7 @@
                 syncVinculados: shouldSync
             };
 
-            fetch(appsScriptUrl, {
+            fetch(currentScriptUrl, {
                 method: "POST",
                 mode: "no-cors",
                 headers: {
@@ -983,7 +992,7 @@
 
             showToast("Actualizando clave de acceso G2...");
 
-            fetch(appsScriptUrl, {
+            fetch(currentScriptUrl, {
                 method: "POST",
                 mode: "no-cors",
                 headers: {
