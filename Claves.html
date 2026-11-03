@@ -284,6 +284,10 @@
                         <i class="fa-solid fa-right-from-bracket text-xs"></i>
                         <span>Salir</span>
                     </button>
+                    <!-- Botón discreto y pequeño para cambiar clave G2 -->
+                    <button onclick="openChangeAccessPassModal()" class="p-2 text-slate-400 hover:text-amber-300 hover:bg-slate-800/60 rounded-lg transition-all text-[11px] opacity-60 hover:opacity-100 flex items-center justify-center" title="Ajustes de clave G2">
+                        <i class="fa-solid fa-key"></i>
+                    </button>
                 </div>
             </div>
         </header>
@@ -452,9 +456,37 @@
                     <input type="text" id="newCentro" placeholder="Ej. MQ, CEIBA, ZACAMIL" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:outline-none">
                 </div>
 
+    <!-- MODAL DE CAMBIO DE CLAVE DE ACCESO AL PANEL (CELDA G2) -->
+    <div id="changeAccessPassModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 overflow-hidden animate-pop border border-slate-100">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-shield-keyhole text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">Cambiar Clave de Ingreso</h3>
+                        <p class="text-xs text-slate-400">Actualiza la celda G2 en Google Sheets</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('changeAccessPassModal')" class="text-slate-400 hover:text-slate-600 text-lg transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form onsubmit="handleChangeAccessPass(event)">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Usuario Activo</label>
+                    <input type="text" id="accessPassUserLabel" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
+                </div>
+                <div class="mb-5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Nueva Clave de Ingreso (Celda G2)</label>
+                    <input type="text" id="newAccessPassInput" required placeholder="Ej. punto2026" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-700/20 active:scale-95 transition-all">Crear Registro</button>
+                    <button type="button" onclick="closeModal('changeAccessPassModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-amber-600/20 active:scale-95 transition-all">Guardar en Celda G2</button>
                 </div>
             </form>
         </div>
@@ -462,11 +494,51 @@
 
     <!-- SCRIPT PRINCIPAL -->
     <script>
-        const AUTH_USER = "hmq";
-        const AUTH_PASS = "punto2026";
-        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv";
+        // CONFIGURACIÓN MULTI-USUARIO Y HOJAS VINCULADAS
+        const USERS_DATABASE = {
+            "hmq": {
+                pass: "punto2026", // Clave por defecto si falla la lectura
+                label: "Hospital Médico Quirúrgico",
+                csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?gid=0&single=true&output=csv"
+            },
+            "especialidades": {
+                pass: "especialidades2026",
+                label: "Hospital de Especialidades",
+                csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?single=true&output=csv" 
+            }
+        };
+
         // URL de tu Google Apps Script de escritura
         const appsScriptUrl = "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec";
+
+        let currentActiveUser = null;
+        let currentCsvUrl = "";
+
+        // Al cargar la página, intentamos leer las claves G2 directamente desde las hojas CSV de cada usuario
+        window.addEventListener('DOMContentLoaded', () => {
+            preloadAccessPasswords();
+        });
+
+        function preloadAccessPasswords() {
+            Object.keys(USERS_DATABASE).forEach(u => {
+                const url = USERS_DATABASE[u].csvUrl;
+                if (!url) return;
+                Papa.parse(url, {
+                    download: true,
+                    header: false,
+                    skipEmptyLines: false,
+                    complete: function(results) {
+                        if (results.data && results.data.length >= 2) {
+                            // Fila 2 en Sheets es el índice 1, Columna G es el índice 6
+                            const g2Value = results.data[1] && results.data[1][6] ? String(results.data[1][6]).trim() : "";
+                            if (g2Value) {
+                                USERS_DATABASE[u].pass = g2Value;
+                            }
+                        }
+                    }
+                });
+            });
+        }
 
         // TIMER VARIABLES
         let sessionTimer = null;
@@ -559,15 +631,19 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('loginUser').value.trim();
+            const u = document.getElementById('loginUser').value.trim().toLowerCase();
             const p = document.getElementById('loginPass').value.trim();
             const errorDiv = document.getElementById('loginError');
 
-            if (u === AUTH_USER && p === AUTH_PASS) {
+            if (USERS_DATABASE[u] && USERS_DATABASE[u].pass === p) {
+                currentActiveUser = u;
+                currentCsvUrl = USERS_DATABASE[u].csvUrl;
+
                 errorDiv.classList.add('hidden');
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'flex';
-                showToast("Acceso Autorizado. Bienvenido.");
+                
+                showToast(`Bienvenido (${USERS_DATABASE[u].label})`);
                 loadSheetData();
                 startSessionTimer();
             } else {
@@ -578,6 +654,8 @@
         function logout() {
             clearTimers();
             closeModal('timeoutModal');
+            currentActiveUser = null;
+            currentCsvUrl = "";
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('loginUser').value = '';
@@ -587,9 +665,14 @@
         }
 
         function loadSheetData() {
-            Papa.parse(csvUrl, {
+            if (!currentCsvUrl) {
+                useFallback();
+                return;
+            }
+
+            Papa.parse(currentCsvUrl, {
                 download: true,
-                header: false, // Parse as raw array of rows to reliably capture columns A, B, C, D, E regardless of header names
+                header: false,
                 skipEmptyLines: true,
                 complete: function(results) {
                     if (results.data && results.data.length > 0) {
@@ -597,24 +680,20 @@
                         let currentSystem = "";
                         
                         results.data.forEach((row, idx) => {
-                            // Extract by exact position: A=0, B=1, C=2, D=3, E=4
                             const colA = row[0] ? String(row[0]).trim() : "";
                             const colB = row[1] ? String(row[1]).trim() : "";
                             const colC = row[2] ? String(row[2]).trim() : "";
                             const colD = row[3] ? String(row[3]).trim() : "";
                             const colE = row[4] ? String(row[4]).trim() : "";
 
-                            // Ignore top title/header row if it matches "Sistema" or "sistema"
                             if (colA.toLowerCase() === "sistema" && colB.toLowerCase() === "usuario") {
                                 return;
                             }
 
-                            // Fill merged cells for Column A (Sistema)
                             if (colA !== "") {
                                 currentSystem = colA.toUpperCase();
                             }
 
-                            // Keep record if there's user data, pass data, or system name
                             if (colB !== "" || colC !== "" || colD !== "" || colE !== "") {
                                 parsed.push({
                                     originalIndex: parsed.length,
@@ -810,7 +889,6 @@
 
             showToast("Guardando cambios en Google Sheets...");
 
-            // 1. Actualizar el estado local de la app
             allData[index].contrasena = newPass;
 
             if (shouldSync && oldPass !== "") {
@@ -824,8 +902,9 @@
             closeModal('editModal');
             renderSystems(allData);
 
-            // 2. Enviar actualización en tiempo real a Google Sheets mediante Apps Script
+            // Enviar actualización con el usuario/hoja activa
             const payload = {
+                hoja: currentActiveUser,
                 sistema: item.sistema,
                 usuario: item.usuario,
                 nuevaContrasena: newPass,
@@ -882,6 +961,45 @@
             updateCount();
             renderSystems(allData);
             showToast("Nuevo registro creado correctamente.");
+        }
+
+        function openChangeAccessPassModal() {
+            if (!currentActiveUser) return;
+            document.getElementById('accessPassUserLabel').value = `${currentActiveUser.toUpperCase()} (${USERS_DATABASE[currentActiveUser].label})`;
+            document.getElementById('newAccessPassInput').value = USERS_DATABASE[currentActiveUser].pass;
+            document.getElementById('changeAccessPassModal').classList.remove('hidden');
+            document.getElementById('changeAccessPassModal').classList.add('flex');
+        }
+
+        function handleChangeAccessPass(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('newAccessPassInput').value.trim();
+            if (!newPass) return;
+
+            USERS_DATABASE[currentActiveUser].pass = newPass;
+            closeModal('changeAccessPassModal');
+
+            showToast("Actualizando clave de acceso G2...");
+
+            fetch(appsScriptUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    hoja: currentActiveUser,
+                    action: "updateG2",
+                    nuevaClaveG2: newPass
+                })
+            })
+            .then(() => {
+                showToast("¡Clave de acceso G2 actualizada en Sheets!");
+            })
+            .catch(err => {
+                console.error("Error al actualizar G2:", err);
+                showToast("Actualizada localmente", false);
+            });
         }
 
         function closeModal(modalId) {
