@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
@@ -64,8 +64,8 @@
         /* Estilo de la celda compacta estilo plantilla Excel */
         .shift-cell {
             font-size: 0.68rem;
-            line-height: 1.1;
-            font-weight: 700;
+            line-height: 1.15;
+            font-weight: 800;
         }
     </style>
 </head>
@@ -97,6 +97,10 @@
                 <button onclick="clearSchedule()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-1 transition">
                     <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                     <span>Limpiar</span>
+                </button>
+                <button onclick="exportImage()" class="bg-purple-700 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-1 shadow transition">
+                    <i data-lucide="image" class="w-4 h-4"></i>
+                    <span>Descargar Imagen HD</span>
                 </button>
                 <button onclick="window.print()" class="bg-blue-700 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-1 shadow transition">
                     <i data-lucide="printer" class="w-4 h-4"></i>
@@ -186,7 +190,7 @@
                     <thead>
                         <!-- Fila Superior de Encabezados (Nombres) -->
                         <tr id="header-row-names" class="bg-slate-100 text-slate-800 border-b border-slate-300 font-bold text-xs uppercase sticky top-0 z-20">
-                            <th class="p-2 border-r border-slate-300 min-w-[70px] bg-slate-200 sticky left-0 z-30 shadow-sm">DÍA</th>
+                            <th class="p-2 border-r border-slate-300 min-w-[75px] bg-slate-200 sticky left-0 z-30 shadow-sm">DÍA</th>
                         </tr>
                         <!-- Fila Secundaria de Menú Desplegable de Roles -->
                         <tr id="header-row-roles" class="bg-amber-100/80 text-slate-800 border-b-2 border-slate-400 font-bold text-[10px] uppercase sticky top-[33px] z-20">
@@ -422,7 +426,7 @@
             const headerRoles = document.getElementById('header-row-roles');
             const tbody = document.getElementById('schedule-tbody');
 
-            headerNames.innerHTML = `<th class="p-2 border-r border-slate-300 min-w-[70px] bg-slate-200 sticky left-0 z-30 shadow-sm text-center">DÍA</th>`;
+            headerNames.innerHTML = `<th class="p-2 border-r border-slate-300 min-w-[75px] bg-slate-200 sticky left-0 z-30 shadow-sm text-center">DÍA</th>`;
             headerRoles.innerHTML = `<th class="p-1 border-r border-slate-300 bg-amber-200/90 sticky left-0 z-30 text-center font-black text-[9px] text-amber-900">TIPO TURNO</th>`;
 
             EMPLOYEES.forEach(emp => {
@@ -437,7 +441,8 @@
                 thRole.className = "p-1 border-r border-slate-300 min-w-[130px] bg-amber-100/80 text-center";
                 
                 const selectRole = document.createElement('select');
-                selectRole.className = "w-full text-[9px] font-bold p-1 rounded bg-white border border-amber-300 text-amber-900 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer shadow-xs";
+                selectRole.className = "role-select-box w-full text-[9px] font-bold p-1 rounded bg-white border border-amber-300 text-amber-900 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer shadow-xs";
+                selectRole.dataset.empId = emp.id;
                 selectRole.onchange = (e) => onRoleChange(emp.id, e.target.value);
 
                 const rolesOptions = [
@@ -600,8 +605,8 @@
             return `
                 <div class="rounded border p-0.5 flex items-center justify-between shadow-xs ${currentShift.cssClass} shift-cell">
                     <span class="w-6 text-left truncate text-[9px] font-black">${currentShift.code}</span>
-                    <span class="flex-1 text-center truncate text-[9px] px-0.5">${currentShift.label}</span>
-                    <span class="w-3 text-right font-bold text-[9px]">${currentShift.hours}</span>
+                    <span class="flex-1 text-center truncate text-[9px] px-0.5 font-bold">${currentShift.label}</span>
+                    <span class="w-3 text-right font-black text-[9px]">${currentShift.hours}</span>
                 </div>
             `;
         }
@@ -853,17 +858,15 @@
             }
 
             if (editingShiftKey) {
-                // Editar turno existente
                 SHIFTS[editingShiftKey].hours = hours;
                 SHIFTS[editingShiftKey].label = label;
             } else {
-                // Crear nuevo turno
                 const cssClass = `shift-${code.replace(/[^A-Z0-9]/gi, '')}`;
                 SHIFTS[code] = {
                     code: code,
                     label: label,
                     hours: hours,
-                    cssClass: "shift-0018" // Estilo por defecto
+                    cssClass: "shift-0018"
                 };
             }
 
@@ -1071,6 +1074,72 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        // EXPORTACIÓN A IMAGEN HD NÍTIDA
+        function exportImage() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const tableElement = document.getElementById('schedule-table');
+            const scrollContainer = tableElement.parentElement;
+
+            // Reemplazar temporalmente los selectores <select> por etiquetas de texto nítidas
+            const selectElements = tableElement.querySelectorAll('select.role-select-box');
+            const originalSelectStates = [];
+
+            selectElements.forEach(select => {
+                const parent = select.parentElement;
+                const textVal = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : select.value;
+                
+                originalSelectStates.push({ select, parent, nextSibling: select.nextSibling });
+
+                const textBadge = document.createElement('div');
+                textBadge.className = "temp-export-badge py-1 px-1 bg-amber-200/90 text-amber-950 font-black text-[10px] rounded border border-amber-400 text-center uppercase tracking-tight";
+                textBadge.innerText = textVal;
+                
+                select.style.display = 'none';
+                parent.appendChild(textBadge);
+            });
+
+            // Ajustes temporales del contenedor para captura completa
+            const originalMaxHeight = scrollContainer.style.maxHeight;
+            const originalOverflow = scrollContainer.style.overflow;
+            
+            scrollContainer.style.maxHeight = 'none';
+            scrollContainer.style.overflow = 'visible';
+
+            // Captura con html2canvas a alta densidad de píxeles (Scale: 3)
+            html2canvas(tableElement, {
+                scale: 3, 
+                useCORS: true,
+                backgroundColor: "#ffffff",
+                windowWidth: tableElement.scrollWidth + 100,
+                width: tableElement.scrollWidth,
+                logging: false
+            }).then(canvas => {
+                // Restaurar selectores originales
+                selectElements.forEach(select => select.style.display = '');
+                tableElement.querySelectorAll('.temp-export-badge').forEach(badge => badge.remove());
+
+                // Restaurar contenedor
+                scrollContainer.style.maxHeight = originalMaxHeight;
+                scrollContainer.style.overflow = originalOverflow;
+
+                // Descargar PNG
+                const imageURI = canvas.toDataURL("image/png", 1.0);
+                const link = document.createElement("a");
+                link.download = `Horario_ISSS_${year}_${month}_HD.png`;
+                link.href = imageURI;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }).catch(err => {
+                // Restaurar en caso de error
+                selectElements.forEach(select => select.style.display = '');
+                tableElement.querySelectorAll('.temp-export-badge').forEach(badge => badge.remove());
+                scrollContainer.style.maxHeight = originalMaxHeight;
+                scrollContainer.style.overflow = originalOverflow;
+                console.error("Error al exportar imagen HD:", err);
+            });
         }
     </script>
 </body>
