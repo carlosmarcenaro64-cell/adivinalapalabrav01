@@ -367,6 +367,8 @@
         const AUTH_USER = "hmq";
         const AUTH_PASS = "punto2026";
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv";
+        // URL de tu Google Apps Script de escritura
+        const appsScriptUrl = "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec";
 
         // TIMER VARIABLES
         let sessionTimer = null;
@@ -706,7 +708,11 @@
             const newPass = document.getElementById('editPassword').value;
             const oldPass = allData[index].contrasena;
             const shouldSync = document.getElementById('syncLinked').checked;
+            const item = allData[index];
 
+            showToast("Guardando cambios en Google Sheets...");
+
+            // 1. Actualizar el estado local de la app
             allData[index].contrasena = newPass;
 
             if (shouldSync && oldPass !== "") {
@@ -719,7 +725,30 @@
 
             closeModal('editModal');
             renderSystems(allData);
-            showToast("Contraseña y sistemas vinculados actualizados");
+
+            // 2. Enviar actualización en tiempo real a Google Sheets mediante Apps Script
+            const payload = {
+                sistema: item.sistema,
+                usuario: item.usuario,
+                nuevaContrasena: newPass,
+                syncVinculados: shouldSync
+            };
+
+            fetch(appsScriptUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                showToast("¡Contraseña actualizada en Google Sheets!");
+            })
+            .catch(err => {
+                console.error("Error al sincronizar:", err);
+                showToast("Actualizado en pantalla (error al conectar con Sheets)", false);
+            });
         }
 
         function openCreateModal() {
@@ -735,34 +764,43 @@
             const nuevaPassword = document.getElementById('newPassword').value.trim();
             const nuevoCentro = document.getElementById('newCentro').value.trim();
 
+            const hoy = new Date();
+            const dd = String(hoy.getDate()).padStart(2, '0');
+            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            const yy = String(hoy.getFullYear()).slice(-2);
+            const fechaHoy = `${dd}/${mm}/${yy}`;
+
             const newRow = {
                 originalIndex: allData.length,
                 sistema: nuevoSistema,
                 usuario: nuevoUsuario,
                 contrasena: nuevaPassword,
                 centro_de_atencion: nuevoCentro,
-                actualizada: new Date().toLocaleDateString('es-SV', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                actualizada: fechaHoy
             };
 
             allData.push(newRow);
-            updateCount();
             closeModal('createModal');
+            updateCount();
             renderSystems(allData);
-            showToast("Nuevo registro creado exitosamente");
+            showToast("Nuevo registro creado correctamente.");
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-            document.getElementById(modalId).classList.remove('flex');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
         }
 
+        // Búsqueda en tiempo real
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const filtered = allData.filter(row => {
                 return row.sistema.toLowerCase().includes(searchTerm) ||
                        row.usuario.toLowerCase().includes(searchTerm) ||
-                       row.centro_de_atencion.toLowerCase().includes(searchTerm) ||
-                       row.actualizada.toLowerCase().includes(searchTerm);
+                       row.centro_de_atencion.toLowerCase().includes(searchTerm);
             });
             renderSystems(filtered);
         });
