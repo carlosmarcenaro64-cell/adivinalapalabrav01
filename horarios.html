@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador y Gestor de Horarios - Plantilla Médica/Farmacia</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* Colores dinámicos y estilizados de los turnos */
+        .shift-0018 { background-color: #dbeafe; color: #1e3a8a; border-color: #93c5fd; } /* 6AM - 2PM */
+        .shift-0552 { background-color: #fef08a; color: #713f12; border-color: #fde047; } /* 6PM - 6AM Noche */
+        .shift-0302 { background-color: #ccfbf1; color: #115e59; border-color: #5eead4; } /* 10AM - 6PM */
+        .shift-VAC   { background-color: #fef08a; color: #854d0e; border-color: #eab308; background-image: linear-gradient(45deg, #fde047 25%, #fef08a 25%, #fef08a 50%, #fde047 50%, #fde047 75%, #fef08a 75%, #fef08a 100%); background-size: 12px 12px; } /* Vacaciones */
+        .shift-0210 { background-color: #fbcfe8; color: #831843; border-color: #f472b6; } /* 8AM - 4PM */
+        .shift-0138 { background-color: #fed7aa; color: #7c2d12; border-color: #fdba74; } /* 7AM - 3PM */
+        .shift-LIBRE{ background-color: #f1f5f9; color: #64748b; border-color: #cbd5e1; } /* Libre */
+        .shift-ASUETO{ background-color: #e9d5ff; color: #581c87; border-color: #c084fc; } /* Asueto */
+        .shift-PERM { background-color: #fee2e2; color: #991b1b; border-color: #fca5a5; } /* Permiso */
+
+        /* Estilo para impresión */
+        @media print {
+            body { background-color: white !important; font-size: 9px; }
+            .no-print { display: none !important; }
+            .print-full-width { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+            .overflow-x-auto { overflow: visible !important; max-height: none !important; }
+            .table-container { box-shadow: none !important; border: 1px solid #000 !important; }
+            th, td { border: 1px solid #666 !important; padding: 1px 2px !important; }
+            .sticky { position: static !important; }
+        }
+
+        /* Scrollbars personalizados para la matriz de tabla */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 10px;
+            width: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .shift-cell {
+            font-size: 0.68rem;
+            line-height: 1.1;
+            font-weight: 700;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+    <!-- TOP NAVBAR -->
+    <header class="bg-slate-900 text-white shadow-md no-print border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-600/30">
+                    <i data-lucide="calendar-check-2" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight">Sistema de Control de Horarios</h1>
+                    <p class="text-xs text-slate-400">Planificación Automatizada, Control de Personal y Coberturas</p>
+                </div>
+            </div>
+
+            <!-- Acciones Principales -->
+            <div class="flex items-center flex-wrap gap-2">
+                <button id="btn-generate" onclick="generateSchedule()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow transition active:scale-95">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Generar Automático</span>
+                </button>
+                <button onclick="openEmployeeManager()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Personal</span>
+                </button>
+                <button onclick="openShiftManager()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition">
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+                    <span>Catálogo Turnos</span>
+                </button>
+                <button onclick="clearSchedule()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    <span>Limpiar</span>
+                </button>
+                <div class="h-6 w-px bg-slate-700 mx-1"></div>
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow transition">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Imprimir</span>
+                </button>
+                <button onclick="exportCSV()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>CSV</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-full w-full mx-auto p-4 flex flex-col gap-4">
+        
+        <!-- PANEL DE CONTROL Y CONFIGURACIÓN -->
+        <div class="no-print bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-3 mb-3">
+                <div class="flex items-center space-x-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Mes y Año</label>
+                        <input type="month" id="month-picker" value="2026-11" onchange="initTable()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Meta Horas / Empleado</label>
+                        <div class="flex items-center space-x-1">
+                            <input type="number" id="target-hours" value="160" class="w-20 border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-bold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="calculateTotals()">
+                            <span class="text-xs font-bold text-slate-500">hrs</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen de Estado -->
+                <div id="coverage-status-banner" class="flex items-center space-x-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-2 rounded-lg text-xs font-semibold">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
+                    <span>Reglas de Cobertura y Horas Totales Verificadas</span>
+                </div>
+            </div>
+
+            <!-- Reglas y Restricciones Configurables -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center space-x-1">
+                        <i data-lucide="sun" class="w-4 h-4 text-amber-500"></i>
+                        <span>Mañana (6 AM - 2 PM)</span>
+                    </h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-600">Lunes a Viernes mín:</span>
+                        <input type="number" id="min-morning-weekday" value="3" min="0" class="w-12 border border-slate-300 rounded px-1.5 py-0.5 text-center font-bold" onchange="validateCoverage()">
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center space-x-1">
+                        <i data-lucide="moon" class="w-4 h-4 text-indigo-500"></i>
+                        <span>Noche (6 PM - 6 AM)</span>
+                    </h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-600">Mínimo Diario Requerido:</span>
+                        <input type="number" id="min-night-daily" value="2" min="0" class="w-12 border border-slate-300 rounded px-1.5 py-0.5 text-center font-bold" onchange="validateCoverage()">
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center space-x-1">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-rose-500"></i>
+                        <span>Restricciones de Descanso</span>
+                    </h3>
+                    <div class="flex items-center justify-between text-slate-600">
+                        <span>Descanso Post-Noche (0552):</span>
+                        <span class="font-bold text-slate-700">24 horas mín.</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-1.5 flex items-center space-x-1">
+                        <i data-lucide="palette" class="w-4 h-4 text-blue-500"></i>
+                        <span>Leyenda de Turnos Activos</span>
+                    </h3>
+                    <div id="shift-legend" class="flex flex-wrap gap-1 text-[9px]">
+                        <!-- Leyenda generada dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA PRINCIPAL DE MATRIZ DE HORARIOS -->
+        <div class="bg-white rounded-xl shadow-md border border-slate-300 overflow-hidden print-full-width">
+            <div class="overflow-x-auto custom-scrollbar max-h-[70vh]">
+                <table id="schedule-table" class="w-full text-center border-collapse text-slate-800">
+                    <thead>
+                        <!-- Fila Superior de Encabezados (Nombres) -->
+                        <tr id="header-row-names" class="bg-slate-100 text-slate-800 border-b border-slate-300 font-bold text-xs uppercase sticky top-0 z-20">
+                            <th class="p-2 border-r border-slate-300 min-w-[70px] bg-slate-200 sticky left-0 z-30 shadow-sm">DÍA</th>
+                            <!-- Los nombres de los empleados se insertan dinámicamente -->
+                        </tr>
+                        <!-- Fila Secundaria de Cargos / Turno Fijo -->
+                        <tr id="header-row-roles" class="bg-amber-100/60 text-slate-800 border-b-2 border-slate-400 font-bold text-[10px] uppercase sticky top-[33px] z-20">
+                            <th class="p-1 border-r border-slate-300 bg-amber-200/80 sticky left-0 z-30">DESCRIPCIÓN</th>
+                            <!-- Cargos insertados dinámicamente -->
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-tbody" class="text-xs">
+                        <!-- Generado dinámicamente día a día -->
+                    </tbody>
+                    <tfoot>
+                        <!-- Fila Inferior de TOTAL DE HORAS -->
+                        <tr id="footer-totals" class="bg-slate-900 text-white font-extrabold text-xs sticky bottom-0 z-20 border-t-2 border-slate-900">
+                            <td class="p-2 border-r border-slate-700 bg-slate-950 sticky left-0 z-30 uppercase tracking-wider text-left pl-2">TOTAL HORAS</td>
+                            <!-- Totales por empleado insertados dinámicamente -->
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- DASHBOARD DE ESTADÍSTICAS RÁPIDAS -->
+        <div class="no-print grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
+                <div class="p-3 bg-blue-100 text-blue-600 rounded-lg">
+                    <i data-lucide="clock" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-500 font-semibold block uppercase">Total Horas Programadas</span>
+                    <span id="stat-total-hours" class="text-xl font-extrabold text-slate-800">0 hrs</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
+                <div class="p-3 bg-amber-100 text-amber-700 rounded-lg">
+                    <i data-lucide="moon" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-500 font-semibold block uppercase">Turnos de Noche Asignados</span>
+                    <span id="stat-night-shifts" class="text-xl font-extrabold text-slate-800">0</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3">
+                <div class="p-3 bg-emerald-100 text-emerald-700 rounded-lg">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-500 font-semibold block uppercase">Empleados en Plantilla</span>
+                    <span id="stat-total-staff" class="text-xl font-extrabold text-slate-800">0</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL PARA EDICIÓN DE CELDA INDIVIDUAL -->
+    <div id="cell-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-5 border border-slate-200 animate-in fade-in zoom-in duration-150">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-blue-600"></i>
+                    <span>Cambiar Turno</span>
+                </h3>
+                <button onclick="closeModal('cell-modal')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <p id="modal-subtitle" class="text-xs text-slate-500 mb-4 font-medium"></p>
+
+            <div class="grid grid-cols-2 gap-2 mb-4" id="shift-options">
+                <!-- Opciones de Turno insertadas dinámicamente -->
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+                <button onclick="closeModal('cell-modal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTOR DE EMPLEADOS -->
+    <div id="employee-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-5 border border-slate-200">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                    <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+                    <span>Gestión de Personal</span>
+                </h3>
+                <button onclick="closeModal('employee-modal')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Formulario agregar -->
+            <form onsubmit="addEmployee(event)" class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4 bg-slate-50 p-3 rounded-lg border">
+                <input type="text" id="new-emp-name" placeholder="Nombre completo" required class="border rounded px-2 py-1.5 text-xs">
+                <input type="text" id="new-emp-role" placeholder="Cargo / Rol (opcional)" class="border rounded px-2 py-1.5 text-xs">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold px-3 py-1.5 flex items-center justify-center space-x-1">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Agregar</span>
+                </button>
+            </form>
+
+            <div class="max-h-60 overflow-y-auto custom-scrollbar border rounded-lg">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 font-bold border-b">
+                        <tr>
+                            <th class="p-2">Nombre</th>
+                            <th class="p-2">Cargo</th>
+                            <th class="p-2 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employee-list-tbody">
+                        <!-- Lista insertada dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-4">
+                <button onclick="closeModal('employee-modal')" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTOR DE TURNOS -->
+    <div id="shift-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-xl w-full p-5 border border-slate-200">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                    <i data-lucide="clock" class="w-5 h-5 text-blue-600"></i>
+                    <span>Catálogo de Turnos y Horarios</span>
+                </h3>
+                <button onclick="closeModal('shift-modal')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="max-h-80 overflow-y-auto custom-scrollbar border rounded-lg mb-4">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-100 font-bold border-b">
+                        <tr>
+                            <th class="p-2">Código</th>
+                            <th class="p-2">Descripción</th>
+                            <th class="p-2 text-center">Horas</th>
+                            <th class="p-2 text-center">Clase Visual</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shift-list-tbody">
+                        <!-- Lista de turnos -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal('shift-modal')" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // CONFIGURACIÓN INICIAL DE EMPLEADOS
+        let EMPLOYEES = [
+            { id: 1, name: "ESTEFANY GABRIELA ARIAS VILLANUEVA", role: "" },
+            { id: 2, name: "CARLOS ANTONIO ARTEAGA ROJAS", role: "TURNO DE CIERRE DE DÍA" },
+            { id: 3, name: "KEVIN OFILIO CLAROS PINEDA", role: "TURNO DE NOCHE" },
+            { id: 4, name: "MARÍA DE LOS ÁNGELES CHÁVEZ VÁSQUEZ", role: "TURNO DE NOCHE" },
+            { id: 5, name: "LUIS ERNESTO CAÑAS HUEZO", role: "TURNO DE NOCHE" },
+            { id: 6, name: "CARLOS ADALID LOPEZ", role: "" },
+            { id: 7, name: "JORGE ALBERTO LÓPEZ SARAVIA", role: "TURNO DE NOCHE" },
+            { id: 8, name: "MARIA ALEJANDRA MEJIA AYALA", role: "" },
+            { id: 9, name: "CARLOS MANUEL PANAMEÑO MARCENARO", role: "TURNO DE NOCHE" },
+            { id: 10, name: "RICARDO RODRIGO PALACIOS RAMOS", role: "" },
+            { id: 11, name: "NATALIA GABRIELA REYES RAMIREZ", role: "FARMACIA" },
+            { id: 12, name: "JONATHAN SAMUEL RIVERA RIVERA", role: "" }
+        ];
+
+        // DEFINICIÓN DE CATÁLOGO DE TURNOS
+        let SHIFTS = {
+            "0018": { code: "0018", label: "6AM A 2PM", hours: 8, cssClass: "shift-0018" },
+            "0552": { code: "0552", label: "6PM A 6AM", hours: 12, cssClass: "shift-0552" },
+            "0302": { code: "0302", label: "10AM A 6PM", hours: 8, cssClass: "shift-0302" },
+            "0210": { code: "0210", label: "8AM A 4PM", hours: 8, cssClass: "shift-0210" },
+            "0138": { code: "0138", label: "7AM A 3PM", hours: 8, cssClass: "shift-0138" },
+            "VAC":  { code: "V.", label: "VACACIÓN", hours: 0, cssClass: "shift-VAC" },
+            "LIBRE":{ code: "LIBRE", label: "LIBRE", hours: 0, cssClass: "shift-LIBRE" },
+            "ASUETO":{ code: "A", label: "ASUETO", hours: 0, cssClass: "shift-ASUETO" },
+            "PERM": { code: "PERM", label: "PERMISO", hours: 0, cssClass: "shift-PERM" }
+        };
+
+        // MATRIZ DE DATOS [dayIndex][employeeId] = shiftKey
+        let scheduleData = {};
+        let activeEditCell = { day: null, empId: null };
+
+        const DAY_NAMES = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+
+        window.onload = function() {
+            renderShiftLegend();
+            initTable();
+            lucide.createIcons();
+        };
+
+        function renderShiftLegend() {
+            const container = document.getElementById('shift-legend');
+            container.innerHTML = '';
+            Object.keys(SHIFTS).forEach(key => {
+                const s = SHIFTS[key];
+                const span = document.createElement('span');
+                span.className = `px-1.5 py-0.5 rounded font-bold ${s.cssClass}`;
+                span.innerText = `${s.code} (${s.hours}h)`;
+                container.appendChild(span);
+            });
+        }
+
+        function initTable() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            const headerNames = document.getElementById('header-row-names');
+            const headerRoles = document.getElementById('header-row-roles');
+            const tbody = document.getElementById('schedule-tbody');
+
+            headerNames.innerHTML = `<th class="p-2 border-r border-slate-300 min-w-[70px] bg-slate-200 sticky left-0 z-30 shadow-sm text-center">DÍA</th>`;
+            headerRoles.innerHTML = `<th class="p-1 border-r border-slate-300 bg-slate-300/80 sticky left-0 z-30 text-center"></th>`;
+
+            EMPLOYEES.forEach(emp => {
+                const thName = document.createElement('th');
+                thName.className = "p-2 border-r border-slate-300 min-w-[125px] max-w-[135px] text-[10px] font-extrabold leading-tight tracking-tight text-center bg-slate-100";
+                thName.innerText = emp.name;
+                headerNames.appendChild(thName);
+
+                const thRole = document.createElement('th');
+                thRole.className = "p-1 border-r border-slate-300 min-w-[125px] text-[9px] font-bold text-amber-900 bg-amber-100/80 text-center uppercase";
+                thRole.innerText = emp.role || "-";
+                headerRoles.appendChild(thRole);
+            });
+
+            tbody.innerHTML = '';
+            scheduleData = {};
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month - 1, day);
+                const dayOfWeekStr = DAY_NAMES[date.getDay()];
+                const isWeekend = (date.getDay() === 0 || date.getDay() === 6);
+
+                scheduleData[day] = {};
+
+                const tr = document.createElement('tr');
+                tr.className = `border-b border-slate-200 transition-colors ${isWeekend ? 'bg-slate-100/70 font-semibold' : 'hover:bg-slate-50'}`;
+                tr.id = `row-day-${day}`;
+
+                const dayTd = document.createElement('td');
+                dayTd.className = `p-1 border-r border-slate-300 font-bold text-center text-xs sticky left-0 z-10 shadow-sm ${isWeekend ? 'bg-slate-300/90 text-slate-800' : 'bg-slate-200 text-slate-700'}`;
+                dayTd.innerHTML = `<span class="inline-block w-5 text-right">${String(day).padStart(2, '0')}</span> <span class="text-[10px] uppercase font-bold text-slate-500">${dayOfWeekStr}</span>`;
+                tr.appendChild(dayTd);
+
+                EMPLOYEES.forEach(emp => {
+                    scheduleData[day][emp.id] = "LIBRE";
+
+                    const td = document.createElement('td');
+                    td.id = `cell-${day}-${emp.id}`;
+                    td.className = "p-0.5 border-r border-slate-200 cursor-pointer hover:opacity-80 transition-all";
+                    td.onclick = () => openEditModal(day, emp.id);
+                    td.innerHTML = renderCellContent(SHIFTS["LIBRE"]);
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            }
+
+            renderFooterRow();
+            populateSampleData();
+        }
+
+        function renderCellContent(shiftObj) {
+            return `
+                <div class="rounded border p-0.5 flex items-center justify-between shadow-xs ${shiftObj.cssClass} shift-cell">
+                    <span class="w-6 text-left truncate text-[9px] font-black">${shiftObj.code}</span>
+                    <span class="flex-1 text-center truncate text-[9px] px-0.5">${shiftObj.label}</span>
+                    <span class="w-3 text-right font-bold text-[9px]">${shiftObj.hours}</span>
+                </div>
+            `;
+        }
+
+        function renderFooterRow() {
+            const footerRow = document.getElementById('footer-totals');
+            footerRow.innerHTML = `<td class="p-2 border-r border-slate-700 bg-slate-950 sticky left-0 z-30 uppercase tracking-wider text-center text-[10px] font-black">TOTAL HORAS</td>`;
+
+            EMPLOYEES.forEach(emp => {
+                const td = document.createElement('td');
+                td.id = `total-emp-${emp.id}`;
+                td.className = "p-2 border-r border-slate-800 text-center font-black text-sm text-emerald-400 bg-slate-900";
+                td.innerText = "0";
+                footerRow.appendChild(td);
+            });
+        }
+
+        function openEditModal(day, empId) {
+            activeEditCell = { day, empId };
+            const emp = EMPLOYEES.find(e => e.id === empId);
+            const currentShiftKey = scheduleData[day][empId];
+
+            document.getElementById('modal-subtitle').innerText = `Día ${day} - ${emp.name}`;
+            
+            const container = document.getElementById('shift-options');
+            container.innerHTML = '';
+
+            Object.keys(SHIFTS).forEach(key => {
+                const shift = SHIFTS[key];
+                const isSelected = key === currentShiftKey;
+                
+                const btn = document.createElement('button');
+                btn.className = `p-2 rounded-lg border text-left flex items-center justify-between transition ${shift.cssClass} ${isSelected ? 'ring-2 ring-blue-600 font-bold' : 'opacity-90 hover:opacity-100'}`;
+                btn.onclick = () => selectShift(key);
+                btn.innerHTML = `
+                    <div>
+                        <div class="font-extrabold text-xs">${shift.code} - ${shift.label}</div>
+                        <div class="text-[10px] opacity-80">${shift.hours} horas</div>
+                    </div>
+                    ${isSelected ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}
+                `;
+                container.appendChild(btn);
+            });
+
+            lucide.createIcons();
+            document.getElementById('cell-modal').classList.remove('hidden');
+            document.getElementById('cell-modal').classList.add('flex');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+        }
+
+        function selectShift(shiftKey) {
+            const { day, empId } = activeEditCell;
+            if (day && empId) {
+                scheduleData[day][empId] = shiftKey;
+                const cell = document.getElementById(`cell-${day}-${empId}`);
+                if (cell) cell.innerHTML = renderCellContent(SHIFTS[shiftKey]);
+                calculateTotals();
+                validateCoverage();
+            }
+            closeModal('cell-modal');
+        }
+
+        // GENERACIÓN INTELIGENTE MEJORADA CON CONTROL DE DESCANSO
+        function generateSchedule() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            // Limpieza inicial respetando vacaciones preexistentes o fijas
+            for (let d = 1; d <= daysInMonth; d++) {
+                EMPLOYEES.forEach(emp => {
+                    if (emp.id === 3) {
+                        scheduleData[d][emp.id] = "VAC";
+                    } else {
+                        scheduleData[d][emp.id] = "LIBRE";
+                    }
+                });
+            }
+
+            const nightStaffPool = EMPLOYEES.filter(e => e.role.includes("NOCHE")).map(e => e.id);
+            if (nightStaffPool.length === 0) nightStaffPool.push(...EMPLOYEES.map(e => e.id));
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(year, month - 1, d);
+                const isWeekday = (date.getDay() >= 1 && date.getDay() <= 5);
+
+                // 1. Asignar Noches (evitando turnos consecutivos)
+                let nightAssigned = 0;
+                const offset = (d % nightStaffPool.length);
+
+                for (let i = 0; i < nightStaffPool.length && nightAssigned < 2; i++) {
+                    const empId = nightStaffPool[(i + offset) % nightStaffPool.length];
+                    if (scheduleData[d][empId] === "VAC") continue;
+
+                    // Restricción: No trabajar noche si trabajó la noche anterior
+                    if (d > 1 && scheduleData[d-1][empId] === "0552") continue;
+
+                    scheduleData[d][empId] = "0552";
+                    nightAssigned++;
+                }
+
+                // 2. Asignar Roles Fijos / Especiales
+                EMPLOYEES.forEach(emp => {
+                    if (scheduleData[d][emp.id] !== "LIBRE") return;
+
+                    // Regla de Descanso obligatorio post-noche
+                    if (d > 1 && scheduleData[d-1][emp.id] === "0552") {
+                        scheduleData[d][emp.id] = "LIBRE";
+                        return;
+                    }
+
+                    if (emp.name.includes("NATALIA")) {
+                        scheduleData[d][emp.id] = isWeekday ? "0138" : "LIBRE";
+                    } else if (emp.name.includes("JONATHAN")) {
+                        scheduleData[d][emp.id] = isWeekday ? "0210" : "LIBRE";
+                    } else if (emp.role.includes("CIERRE")) {
+                        scheduleData[d][emp.id] = isWeekday ? "0302" : "LIBRE";
+                    }
+                });
+
+                // 3. Cobertura Turno Mañana (0018)
+                let morningCount = 0;
+                EMPLOYEES.forEach(emp => {
+                    if (scheduleData[d][emp.id] === "LIBRE") {
+                        if (isWeekday && morningCount < 4) {
+                            scheduleData[d][emp.id] = "0018";
+                            morningCount++;
+                        } else if (!isWeekday && morningCount < 2) {
+                            scheduleData[d][emp.id] = "0018";
+                            morningCount++;
+                        }
+                    }
+                });
+            }
+
+            updateAllCellsUI();
+            calculateTotals();
+            validateCoverage();
+        }
+
+        function populateSampleData() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(year, month - 1, d);
+                const dayOfWeek = date.getDay();
+
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) scheduleData[d][1] = "0018"; else scheduleData[d][1] = "LIBRE";
+                if (d === 2) scheduleData[d][2] = "ASUETO"; else if (dayOfWeek >= 1 && dayOfWeek <= 5) scheduleData[d][2] = "0302"; else scheduleData[d][2] = "LIBRE";
+                scheduleData[d][3] = "VAC";
+                if ([1,2,3,4,5,9,10,11,12,13,16,17,18,19,20,24,25,26,27,28,29,30].includes(d)) scheduleData[d][4] = "0552"; else scheduleData[d][4] = "LIBRE";
+                if ([1,2,3,4,8,9,10,11,15,16,17,18,22,23,24,25,29,30].includes(d)) scheduleData[d][5] = "0018"; else if ([5,7,12,14,19,21,26,28].includes(d)) scheduleData[d][5] = "0552"; else scheduleData[d][5] = "LIBRE";
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) scheduleData[d][6] = "0018"; else if (d === 7) scheduleData[d][6] = "0552"; else scheduleData[d][6] = "LIBRE";
+                if ([2,3,4,5,8,9,10,11,12,13,16,17,18,19,20,24,25,26,27,28].includes(d)) scheduleData[d][7] = "0552"; else scheduleData[d][7] = "LIBRE";
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) scheduleData[d][8] = "0018"; else scheduleData[d][8] = "LIBRE";
+                if ([1,3,4,5,6,9,10,11,13,16,17,18,19,22,23,25,26,27,29,30].includes(d)) scheduleData[d][9] = "0552"; else if (d === 2) scheduleData[d][9] = "LIBRE"; else scheduleData[d][9] = "0018";
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) scheduleData[d][10] = "0018"; else scheduleData[d][10] = "LIBRE";
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) scheduleData[d][11] = "0138"; else scheduleData[d][11] = "LIBRE";
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) scheduleData[d][12] = "0210"; else scheduleData[d][12] = "LIBRE";
+            }
+
+            updateAllCellsUI();
+            calculateTotals();
+            validateCoverage();
+        }
+
+        function updateAllCellsUI() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                EMPLOYEES.forEach(emp => {
+                    const shiftKey = scheduleData[d][emp.id] || "LIBRE";
+                    const cell = document.getElementById(`cell-${d}-${emp.id}`);
+                    if (cell) {
+                        cell.innerHTML = renderCellContent(SHIFTS[shiftKey]);
+                    }
+                });
+            }
+        }
+
+        function calculateTotals() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const targetHours = parseInt(document.getElementById('target-hours').value) || 160;
+
+            let grandTotalHours = 0;
+            let totalNightShifts = 0;
+
+            EMPLOYEES.forEach(emp => {
+                let total = 0;
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const shiftKey = scheduleData[d][emp.id];
+                    if (shiftKey && SHIFTS[shiftKey]) {
+                        total += SHIFTS[shiftKey].hours;
+                        if (shiftKey === "0552") totalNightShifts++;
+                    }
+                }
+                grandTotalHours += total;
+
+                const totalTd = document.getElementById(`total-emp-${emp.id}`);
+                if (totalTd) {
+                    totalTd.innerText = total;
+                    if (total === targetHours) {
+                        totalTd.className = "p-2 border-r border-slate-800 text-center font-black text-sm text-emerald-400 bg-slate-900";
+                    } else if (total > targetHours) {
+                        totalTd.className = "p-2 border-r border-slate-800 text-center font-black text-sm text-amber-400 bg-slate-900";
+                    } else {
+                        totalTd.className = "p-2 border-r border-slate-800 text-center font-black text-sm text-rose-400 bg-slate-900";
+                    }
+                }
+            });
+
+            // Actualizar Dashboard
+            document.getElementById('stat-total-hours').innerText = `${grandTotalHours} hrs`;
+            document.getElementById('stat-night-shifts').innerText = totalNightShifts;
+            document.getElementById('stat-total-staff').innerText = EMPLOYEES.length;
+        }
+
+        function validateCoverage() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const minMorning = parseInt(document.getElementById('min-morning-weekday').value) || 3;
+            const minNight = parseInt(document.getElementById('min-night-daily').value) || 2;
+
+            let warnings = 0;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(year, month - 1, d);
+                const isWeekday = (date.getDay() >= 1 && date.getDay() <= 5);
+
+                let morningCount = 0;
+                let nightCount = 0;
+
+                EMPLOYEES.forEach(emp => {
+                    const shiftKey = scheduleData[d][emp.id];
+                    if (shiftKey === "0018") morningCount++;
+                    if (shiftKey === "0552") nightCount++;
+                });
+
+                const row = document.getElementById(`row-day-${d}`);
+                if ((isWeekday && morningCount < minMorning) || (nightCount < minNight)) {
+                    warnings++;
+                    if (row) row.classList.add('bg-rose-50/80');
+                } else {
+                    if (row) row.classList.remove('bg-rose-50/80');
+                }
+            }
+
+            const banner = document.getElementById('coverage-status-banner');
+            if (warnings === 0) {
+                banner.className = "flex items-center space-x-2 bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1.5 rounded-lg text-xs font-semibold";
+                banner.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i><span>Cobertura de Personal Cumplida al 100%</span>`;
+            } else {
+                banner.className = "flex items-center space-x-2 bg-amber-50 border border-amber-200 text-amber-800 px-3 py-1.5 rounded-lg text-xs font-semibold";
+                banner.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i><span>${warnings} días con déficit de cobertura detectado</span>`;
+            }
+            lucide.createIcons();
+        }
+
+        function clearSchedule() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                EMPLOYEES.forEach(emp => {
+                    scheduleData[d][emp.id] = "LIBRE";
+                });
+            }
+            updateAllCellsUI();
+            calculateTotals();
+            validateCoverage();
+        }
+
+        // GESTOR DE EMPLEADOS
+        function openEmployeeManager() {
+            renderEmployeeList();
+            document.getElementById('employee-modal').classList.remove('hidden');
+            document.getElementById('employee-modal').classList.add('flex');
+        }
+
+        function renderEmployeeList() {
+            const tbody = document.getElementById('employee-list-tbody');
+            tbody.innerHTML = '';
+            EMPLOYEES.forEach(emp => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-slate-50";
+                tr.innerHTML = `
+                    <td class="p-2 font-bold">${emp.name}</td>
+                    <td class="p-2 text-slate-500">${emp.role || '-'}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="removeEmployee(${emp.id})" class="text-rose-600 hover:text-rose-800 font-bold p-1">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function addEmployee(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('new-emp-name');
+            const roleInput = document.getElementById('new-emp-role');
+            
+            const newId = EMPLOYEES.length > 0 ? Math.max(...EMPLOYEES.map(e => e.id)) + 1 : 1;
+            EMPLOYEES.push({
+                id: newId,
+                name: nameInput.value.trim().toUpperCase(),
+                role: roleInput.value.trim().toUpperCase()
+            });
+
+            nameInput.value = '';
+            roleInput.value = '';
+
+            renderEmployeeList();
+            initTable();
+        }
+
+        function removeEmployee(id) {
+            EMPLOYEES = EMPLOYEES.filter(e => e.id !== id);
+            renderEmployeeList();
+            initTable();
+        }
+
+        // GESTOR DE TURNOS
+        function openShiftManager() {
+            const tbody = document.getElementById('shift-list-tbody');
+            tbody.innerHTML = '';
+            Object.keys(SHIFTS).forEach(key => {
+                const s = SHIFTS[key];
+                const tr = document.createElement('tr');
+                tr.className = "border-b";
+                tr.innerHTML = `
+                    <td class="p-2 font-black">${s.code}</td>
+                    <td class="p-2 font-medium">${s.label}</td>
+                    <td class="p-2 text-center font-bold">${s.hours} hrs</td>
+                    <td class="p-2 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${s.cssClass}">${s.code}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('shift-modal').classList.remove('hidden');
+            document.getElementById('shift-modal').classList.add('flex');
+        }
+
+        // EXPORTAR A CSV
+        function exportCSV() {
+            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            let header = "DIA," + EMPLOYEES.map(e => `"${e.name}"`).join(",");
+            csvContent += header + "\r\n";
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                let row = `Día ${d}`;
+                EMPLOYEES.forEach(emp => {
+                    const shiftKey = scheduleData[d][emp.id];
+                    const shift = SHIFTS[shiftKey] || SHIFTS["LIBRE"];
+                    row += `,"${shift.code} (${shift.hours}h)"`;
+                });
+                csvContent += row + "\r\n";
+            }
+
+            let totalsRow = "TOTAL HORAS";
+            EMPLOYEES.forEach(emp => {
+                const totalTd = document.getElementById(`total-emp-${emp.id}`);
+                totalsRow += `,"${totalTd ? totalTd.innerText : 0} hrs"`;
+            });
+            csvContent += totalsRow + "\r\n";
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Horarios_${year}_${month}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
