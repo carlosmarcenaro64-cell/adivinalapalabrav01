@@ -938,6 +938,19 @@
         function closeUserManager() {
             document.getElementById('user-manager-modal').classList.add('hidden');
             document.getElementById('user-manager-modal').classList.remove('flex');
+        // FUNCIÓN MEJORADA PARA ENVIAR CAMBIOS A GOOGLE SHEETS
+        async function sendToGoogleSheet(payload) {
+            try {
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+                console.log("Cambio enviado correctamente a Apps Script:", payload.action);
+            } catch (e) {
+                console.warn("Error enviando cambios a Google Sheets:", e);
+            }
         }
 
         function createAccountByAdmin() {
@@ -953,6 +966,13 @@
             if (!DB_EMPLOYEES_BY_USER[newUser]) {
                 DB_EMPLOYEES_BY_USER[newUser] = [];
             }
+
+            // Guardar usuario en Google Sheets (Columnas A y B)
+            sendToGoogleSheet({
+                action: "saveUser",
+                usuario: newUser,
+                contrasena: newPass
+            });
 
             document.getElementById('admin-new-user').value = "";
             document.getElementById('admin-new-pass').value = "";
@@ -1110,6 +1130,13 @@
                 return;
             }
 
+            // Sincronizar eliminación con Google Sheets
+            sendToGoogleSheet({
+                action: "deleteEmployee",
+                de_usuario: currentUsername,
+                id: id
+            });
+
             EMPLOYEES = EMPLOYEES.filter(emp => emp.id !== id);
             if (currentUsername) {
                 DB_EMPLOYEES_BY_USER[currentUsername] = EMPLOYEES;
@@ -1128,6 +1155,8 @@
                 return;
             }
 
+            let empIdToSave = editingEmployeeId;
+
             if (editingEmployeeId) {
                 const emp = EMPLOYEES.find(e => e.id === editingEmployeeId);
                 if (emp) {
@@ -1135,14 +1164,23 @@
                     emp.role = role;
                 }
             } else {
-                const newId = EMPLOYEES.length > 0 ? Math.max(...EMPLOYEES.map(e => e.id)) + 1 : 1;
-                const newEmp = { id: newId, name, role, defaultShift: "0018" };
+                empIdToSave = EMPLOYEES.length > 0 ? Math.max(...EMPLOYEES.map(e => e.id)) + 1 : 1;
+                const newEmp = { id: empIdToSave, name, role, defaultShift: "0018" };
                 EMPLOYEES.push(newEmp);
             }
 
             if (currentUsername) {
                 DB_EMPLOYEES_BY_USER[currentUsername] = EMPLOYEES;
             }
+
+            // Guardar cambios del empleado en Google Sheets
+            sendToGoogleSheet({
+                action: "saveEmployee",
+                de_usuario: currentUsername,
+                id: empIdToSave,
+                personal: name,
+                tipo_turno: role
+            });
 
             resetEmployeeForm();
             renderEmployeeList();
