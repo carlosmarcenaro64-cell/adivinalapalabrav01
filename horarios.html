@@ -1269,6 +1269,36 @@
             populateEmployeeRoleSelect();
         }
 
+        function renderEmployeeList() {
+            const container = document.getElementById('emp-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            EMPLOYEES.forEach(emp => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800";
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-400 font-bold text-[10px] font-mono border border-indigo-300 dark:border-indigo-800">${emp.id}</span>
+                        <div>
+                            <p class="font-extrabold text-slate-800 dark:text-slate-100 text-xs">${emp.name}</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Rol: <span class="text-sky-600 dark:text-sky-400 font-semibold">${emp.role || '-'}</span></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="editEmployee(${emp.id})" class="p-1.5 text-slate-500 hover:text-sky-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition" title="Editar Empleado">
+                            <i data-lucide="edit" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteEmployee(${emp.id})" class="p-1.5 text-slate-500 hover:text-rose-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition" title="Eliminar Empleado">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
         function populateEmployeeRoleSelect() {
             const select = document.getElementById('emp-input-role');
             if (!select) return;
