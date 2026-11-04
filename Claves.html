@@ -182,9 +182,27 @@
             0% { background-position: 0 0; }
             100% { background-position: 40px 40px; }
         }
+
+        /* Copos de Nieve Animados */
+        @keyframes snowFall {
+            0% { transform: translateY(-10vh); }
+            100% { transform: translateY(100vh); }
+        }
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #ffffff;
+            user-select: none;
+            pointer-events: none;
+            z-index: 9999;
+            animation: snowFall linear infinite;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-800 antialiased min-h-screen selection:bg-blue-500 selection:text-white">
+
+    <!-- CONTENEDOR DE NIEVE DE FONDO -->
+    <div id="snowContainer" class="fixed inset-0 pointer-events-none z-50"></div>
 
     <!-- NOTIFICACIÓN TOAST FLOTANTE -->
     <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700">
@@ -565,7 +583,24 @@
         // Al cargar la página, intentamos leer las claves G2 directamente desde los CSVs
         window.addEventListener('DOMContentLoaded', () => {
             preloadAccessPasswords();
+            createSnow();
         });
+
+        // Generar Nieve Cayendo en Toda la Pantalla
+        function createSnow() {
+            const container = document.getElementById("snowContainer");
+            if (!container) return;
+            for (let i = 0; i < 30; i++) {
+                const flake = document.createElement("div");
+                flake.className = "snowflake";
+                flake.textContent = "❄";
+                flake.style.left = Math.random() * 100 + "vw";
+                flake.style.animationDuration = (Math.random() * 5 + 5) + "s";
+                flake.style.opacity = Math.random() * 0.8 + 0.2;
+                flake.style.fontSize = (Math.random() * 10 + 10) + "px";
+                container.appendChild(flake);
+            }
+        }
 
         function preloadAccessPasswords() {
             Object.keys(USERS_DATABASE).forEach(u => {
