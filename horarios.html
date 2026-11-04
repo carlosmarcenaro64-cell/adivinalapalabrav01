@@ -659,26 +659,26 @@
 
             let parsedUsers = {};
             let parsedEmployeesByUser = {};
+            let parsedRolesByUser = {};
+            let parsedShiftsByUser = {};
 
             for (let i = 1; i < lines.length; i++) {
                 const cols = lines[i].split(",").map(c => c.replace(/^"|"$/g, '').trim());
                 
+                // Usuarios
                 const userA = cols[0] ? cols[0].toLowerCase() : "";
                 const passB = cols[1] ? cols[1] : "";
-
                 if (userA && passB) {
                     parsedUsers[userA] = { password: passB };
                 }
 
+                // Empleados
                 const deUsuarioD = cols[3] ? cols[3].toLowerCase() : "";
                 const idE = cols[4] ? parseInt(cols[4]) : null;
                 const personalF = cols[5] ? cols[5] : "";
                 const tipoTurnoG = cols[6] ? cols[6] : "-";
-
                 if (deUsuarioD && personalF) {
-                    if (!parsedEmployeesByUser[deUsuarioD]) {
-                        parsedEmployeesByUser[deUsuarioD] = [];
-                    }
+                    if (!parsedEmployeesByUser[deUsuarioD]) parsedEmployeesByUser[deUsuarioD] = [];
                     parsedEmployeesByUser[deUsuarioD].push({
                         id: idE || (parsedEmployeesByUser[deUsuarioD].length + 1),
                         name: personalF,
@@ -686,10 +686,38 @@
                         defaultShift: "0018"
                     });
                 }
+
+                // Roles (Cols I, J, K -> idx 8, 9, 10)
+                const roleUser = cols[8] ? cols[8].toLowerCase() : "";
+                const roleName = cols[9] ? cols[9] : "";
+                const roleSched = cols[10] ? cols[10] : "";
+                if (roleUser && roleName) {
+                    if (!parsedRolesByUser[roleUser]) parsedRolesByUser[roleUser] = [{ name: "-", schedule: "" }];
+                    if (!parsedRolesByUser[roleUser].some(r => r.name === roleName)) {
+                        parsedRolesByUser[roleUser].push({ name: roleName, schedule: roleSched });
+                    }
+                }
+
+                // Turnos (Cols M, N, O, P -> idx 12, 13, 14, 15)
+                const shiftUser = cols[12] ? cols[12].toLowerCase() : "";
+                const shiftCode = cols[13] ? cols[13].toUpperCase() : "";
+                const shiftHours = cols[14] ? parseInt(cols[14]) : 8;
+                const shiftLabel = cols[15] ? cols[15] : "";
+                if (shiftUser && shiftCode) {
+                    if (!parsedShiftsByUser[shiftUser]) parsedShiftsByUser[shiftUser] = {};
+                    parsedShiftsByUser[shiftUser][shiftCode] = {
+                        code: shiftCode,
+                        label: shiftLabel,
+                        hours: isNaN(shiftHours) ? 8 : shiftHours,
+                        cssClass: `shift-${shiftCode.replace(/[^A-Z0-9]/gi, '')}`
+                    };
+                }
             }
 
             if (Object.keys(parsedUsers).length > 0) DB_USERS = parsedUsers;
             if (Object.keys(parsedEmployeesByUser).length > 0) DB_EMPLOYEES_BY_USER = parsedEmployeesByUser;
+            if (window.DB_ROLES_BY_USER && Object.keys(parsedRolesByUser).length > 0) window.DB_ROLES_BY_USER = parsedRolesByUser;
+            if (window.DB_SHIFTS_BY_USER && Object.keys(parsedShiftsByUser).length > 0) window.DB_SHIFTS_BY_USER = parsedShiftsByUser;
         }
 
         function setupLoginLogic() {
@@ -708,6 +736,14 @@
                 if (DB_USERS[usernameInput] && String(DB_USERS[usernameInput].password) === String(passwordInput)) {
                     currentUsername = usernameInput;
                     EMPLOYEES = DB_EMPLOYEES_BY_USER[currentUsername] || [];
+
+                    // Cargar roles y turnos del usuario si existen
+                    if (window.DB_ROLES_BY_USER && window.DB_ROLES_BY_USER[currentUsername]) {
+                        ROLES = window.DB_ROLES_BY_USER[currentUsername];
+                    }
+                    if (window.DB_SHIFTS_BY_USER && window.DB_SHIFTS_BY_USER[currentUsername]) {
+                        Object.assign(SHIFTS, window.DB_SHIFTS_BY_USER[currentUsername]);
+                    }
 
                     // AL INGRESAR CON ÉXITO: ESTABLECER MODO CLARO DE FORMA PREDETERMINADA
                     applyTheme(false);
@@ -857,6 +893,18 @@
             const daysInMonth = new Date(year, month, 0).getDate();
             const dayShifts = ["0018", "0210", "0138", "0302"];
 
+            // Buscar si el rol tiene un horario/turno asignado en el catálogo de ROLES
+            const roleObj = ROLES.find(r => (typeof r === 'object' ? r.name : r) === emp.role);
+            let roleShiftCode = null;
+
+            if (roleObj && typeof roleObj === 'object' && roleObj.schedule) {
+                // Extrae el código si está guardado en formato "0138 (7AM A 3PM)" o busca el código directamente
+                const codeMatch = roleObj.schedule.match(/^([A-Za-z0-9]+)/);
+                if (codeMatch && SHIFTS[codeMatch[1]]) {
+                    roleShiftCode = codeMatch[1];
+                }
+            }
+
             for (let d = 1; d <= daysInMonth; d++) {
                 const date = new Date(year, month - 1, d);
                 const isWeekday = (date.getDay() >= 1 && date.getDay() <= 5);
@@ -869,7 +917,10 @@
                     else if (d > 1 && scheduleData[d-1][emp.id] === "0552") scheduleData[d][emp.id] = "LIBRE";
                     else scheduleData[d][emp.id] = ([1,3,5,7,9,11,13,15,17,19,21,23,25,27,29].includes(d)) ? "0552" : "LIBRE";
                 } else if (emp.role === "TURNO DE CIERRE DE DÍA") scheduleData[d][emp.id] = isAsueto ? "ASUETO" : isWeekday ? "0302" : "LIBRE";
-                else scheduleData[d][emp.id] = isAsueto ? "ASUETO" : isWeekday ? dayShifts[(emp.id + d) % dayShifts.length] : "LIBRE";
+                else if (roleShiftCode) {
+                    // Si el rol tiene asignado un turno específico (ejemplo CIRUGIA 1 -> 0138)
+                    scheduleData[d][emp.id] = isAsueto ? "ASUETO" : isWeekday ? roleShiftCode : "LIBRE";
+                } else scheduleData[d][emp.id] = isAsueto ? "ASUETO" : isWeekday ? dayShifts[(emp.id + d) % dayShifts.length] : "LIBRE";
             }
             updateEmployeeColumnUI(empId);
         }
@@ -1121,6 +1172,14 @@
                 alert("Los turnos del sistema (LIBRE, VAC, ASUETO) no se pueden eliminar.");
                 return;
             }
+
+            // Sincronizar eliminación con Google Sheets (Columnas M y N)
+            sendToGoogleSheet({
+                action: "deleteShift",
+                de_usuario: currentUsername,
+                codigo: key
+            });
+
             delete SHIFTS[key];
             renderShiftLegend();
             renderShiftList();
@@ -1143,6 +1202,15 @@
             } else {
                 SHIFTS[code] = { code, label, hours, cssClass: `shift-${code.replace(/[^A-Z0-9]/gi, '')}` || "shift-0018" };
             }
+
+            // Sincronizar guardado con Google Sheets (Columnas M, N, O, P)
+            sendToGoogleSheet({
+                action: "saveShift",
+                de_usuario: currentUsername,
+                codigo: code,
+                horas: hours,
+                descripcion: label
+            });
 
             renderShiftLegend();
             renderShiftList();
@@ -1342,6 +1410,13 @@
                 return;
             }
 
+            // Sincronizar eliminación con Google Sheets (Columnas I y J)
+            sendToGoogleSheet({
+                action: "deleteRole",
+                de_usuario: currentUsername,
+                rol: roleName
+            });
+
             ROLES = ROLES.filter(r => (typeof r === 'string' ? r : r.name) !== roleName);
             EMPLOYEES.forEach(e => {
                 if (e.role === roleName) e.role = "-";
@@ -1361,6 +1436,8 @@
                 return;
             }
 
+            const originalName = editingRoleName;
+
             if (editingRoleName) {
                 const idx = ROLES.findIndex(r => (typeof r === 'string' ? r : r.name) === editingRoleName);
                 if (idx !== -1) {
@@ -1377,6 +1454,15 @@
                     ROLES.push({ name: newName, schedule: newSchedule });
                 }
             }
+
+            // Sincronizar guardado con Google Sheets (Columnas I, J, K)
+            sendToGoogleSheet({
+                action: "saveRole",
+                de_usuario: currentUsername,
+                rol_original: originalName,
+                rol: newName,
+                turno_hora: newSchedule
+            });
 
             resetRoleForm();
             renderRoleList();
