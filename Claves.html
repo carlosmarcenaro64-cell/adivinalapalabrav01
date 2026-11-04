@@ -319,6 +319,22 @@
                 </div>
                 
                 <div class="flex items-center space-x-3">
+                    <!-- ACCESOS RÁPIDOS INLINE (PASTELITO Y CALENDARIO) -->
+                    <div id="floatingQuickLinks" class="hidden flex items-center space-x-2 mr-1">
+                        <a href="https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/Cumple.html" 
+                           target="_blank" 
+                           title="Celebración de Cumpleaños"
+                           class="w-8 h-8 bg-pink-500/80 hover:bg-pink-500 text-white rounded-xl flex items-center justify-center text-sm shadow-md border border-pink-400/40 transform hover:scale-110 active:scale-95 transition-all">
+                            🎂
+                        </a>
+                        <a href="https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/horarios.html" 
+                           target="_blank" 
+                           title="Horarios y Calendario"
+                           class="w-8 h-8 bg-blue-600/80 hover:bg-blue-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md border border-blue-400/40 transform hover:scale-110 active:scale-95 transition-all">
+                            📅
+                        </a>
+                    </div>
+
                     <button onclick="openCreateModal()" class="bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all flex items-center space-x-2">
                         <i class="fa-solid fa-plus text-xs"></i>
                         <span>Nuevo Acceso</span>
@@ -550,13 +566,13 @@
         // CONFIGURACIÓN MULTI-USUARIO Y DE HOJAS/SCRIPTS INDEPENDIENTES
         const USERS_DATABASE = {
             "hmq": {
-                pass: "punto2026", // Clave por defecto si falla la lectura inicial de la celda G2
+                pass: "punto2026", 
                 label: "Hospital Médico Quirúrgico",
                 csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv",
                 scriptUrl: "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec"
             },
             "especialidades": {
-                pass: "especialidades2026", // Clave por defecto si falla la lectura inicial de la celda G2
+                pass: "especialidades2026", 
                 label: "Hospital de Especialidades",
                 csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSk60OZ9X-XnXu_nM4lrhzOtKUPLuAlz4g-ffR-cYKWOpQiAVETLczh0qqsmGYkuEIjc8DmuakPImDs/pub?output=csv",
                 scriptUrl: "https://script.google.com/macros/s/AKfycbxDdXD-QXB869e6oNWPUOeT81yNzEPc0U8uIkZCOJSlcod399nNmyqLGHIiEmJ-3aAX/exec"
@@ -567,7 +583,6 @@
         let currentCsvUrl = "";
         let currentScriptUrl = "";
 
-        // Función para alternar visibilidad de contraseña en el Login
         function toggleLoginPassword() {
             const passInput = document.getElementById('loginPass');
             const passIcon = document.getElementById('loginPassIcon');
@@ -580,13 +595,11 @@
             }
         }
 
-        // Al cargar la página, intentamos leer las claves G2 directamente desde los CSVs
         window.addEventListener('DOMContentLoaded', () => {
             preloadAccessPasswords();
             createSnow();
         });
 
-        // Generar Nieve Cayendo en Toda la Pantalla
         function createSnow() {
             const container = document.getElementById("snowContainer");
             if (!container) return;
@@ -612,7 +625,6 @@
                     skipEmptyLines: false,
                     complete: function(results) {
                         if (results.data && results.data.length >= 2) {
-                            // Fila 2 en Sheets es el índice 1, Columna G es el índice 6
                             const g2Value = results.data[1] && results.data[1][6] ? String(results.data[1][6]).trim() : "";
                             if (g2Value) {
                                 USERS_DATABASE[u].pass = g2Value;
@@ -623,7 +635,6 @@
             });
         }
 
-        // TIMER VARIABLES
         let sessionTimer = null;
         let countdownTimer = null;
         let secondsLeft = 15;
@@ -727,6 +738,12 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'flex';
                 
+                // MOSTRAR BOTONES FLOTANTES AL INICIAR SESIÓN
+                const quickLinks = document.getElementById('floatingQuickLinks');
+                if (quickLinks) {
+                    quickLinks.classList.remove('hidden');
+                }
+
                 document.getElementById('userHeaderTitle').innerHTML = `${USERS_DATABASE[u].label} &bull; Panel de Sistemas 🎅`;
 
                 showToast(`Bienvenido (${USERS_DATABASE[u].label})`);
@@ -745,6 +762,13 @@
             currentScriptUrl = "";
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
+
+            // OCULTAR BOTONES FLOTANTES AL CERRAR SESIÓN
+            const quickLinks = document.getElementById('floatingQuickLinks');
+            if (quickLinks) {
+                quickLinks.classList.add('hidden');
+            }
+
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPass').value = '';
             document.getElementById('loginError').classList.add('hidden');
@@ -766,7 +790,7 @@
                         let parsed = [];
                         let currentSystem = "";
                         
-                        results.data.forEach((row, idx) => {
+                        results.data.forEach((row) => {
                             const colA = row[0] ? String(row[0]).trim() : "";
                             const colB = row[1] ? String(row[1]).trim() : "";
                             const colC = row[2] ? String(row[2]).trim() : "";
@@ -862,7 +886,6 @@
                 const items = grouped[sistema];
                 return `
                     <div class="bg-white rounded-3xl shadow-md overflow-hidden flex flex-col justify-between card-hover-effect animate-slide-up christmas-border" style="animation-delay: ${sIdx * 0.05}s">
-                        <!-- Cabecera de Tarjeta -->
                         <div class="bg-gradient-to-r from-red-900 via-blue-900 to-emerald-900 px-5 py-4 flex items-center justify-between text-white relative">
                             <div class="flex items-center space-x-2.5">
                                 <span class="text-base">🎁</span>
@@ -873,14 +896,12 @@
                             </span>
                         </div>
 
-                        <!-- Cuentas del Sistema -->
                         <div class="p-5 space-y-3.5 flex-1 bg-gradient-to-b from-white to-slate-50/50">
                             ${items.map(item => {
                                 const idx = item.originalIndex;
                                 const isVisible = visiblePasswords[idx];
                                 return `
                                     <div class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs transition-all hover:bg-slate-50 relative">
-                                        <!-- Fila 1: Usuario y Centro / Fecha -->
                                         <div class="flex justify-between items-start mb-2.5">
                                             <div>
                                                 <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Usuario (Col. B)</span>
@@ -910,7 +931,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Fila 2: Contraseña y Acciones -->
                                         <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-100">
                                             <div>
                                                 <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Contraseña (Col. C)</span>
@@ -989,7 +1009,6 @@
             closeModal('editModal');
             renderSystems(allData);
 
-            // Enviar actualización al script correspondiente
             const payload = {
                 hoja: currentActiveUser,
                 sistema: item.sistema,
@@ -1049,7 +1068,6 @@
             renderSystems(allData);
             showToast("Guardando nuevo registro en Google Sheets...");
 
-            // Guardar el nuevo registro directamente en Google Sheets
             fetch(currentScriptUrl, {
                 method: "POST",
                 mode: "no-cors",
@@ -1122,7 +1140,6 @@
             }
         }
 
-        // Búsqueda en tiempo real
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const filtered = allData.filter(row => {
