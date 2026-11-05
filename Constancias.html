@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🪪 Sistema de Constancias de Permanencia HMQ - ISSS</title>
-    <!-- Favicon Icon Badge (Carnet Médico ISSS con Avatar) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%23003366'/><path d='M16 14h22a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V18a4 4 0 0 1 4-4z' fill='%2338bdf8'/><path d='M25 21h4v4h-4zM27 19h-2v8h2z' fill='%23003366'/><path d='M18 33h14M18 39h10' stroke='%23003366' stroke-width='3' stroke-linecap='round'/><circle cx='46' cy='32' r='8' fill='%2338bdf8'/><path d='M34 48c0-5 5-8 12-8s12 3 12 8' fill='%2338bdf8'/></svg>">
+    <title>Sistema de Constancias de Permanencia HMQ - ISSS</title>
+    
+    <!-- SVG Favicon con el dibujo de Carnet Médico y Usuario -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%2300254d'/><rect x='10' y='10' width='26' height='44' rx='5' fill='%2338bdf8'/><path d='M21 16v6M18 19h6' stroke='%2300254d' stroke-width='2.5' stroke-linecap='round'/><path d='M14 30h10M14 36h8' stroke='%2300254d' stroke-width='2.5' stroke-linecap='round'/><circle cx='44' cy='28' r='9' fill='%2338bdf8'/><path d='M30 52c0-8 6-13 14-13s14 5 14 13' fill='%2338bdf8'/></svg>">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -115,8 +117,14 @@
             
             <!-- LOGO BADGE GRADIENT -->
             <div class="flex justify-center">
-                <div class="w-16 h-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30 text-2xl border border-white/20">
-                    <i class="fa-solid fa-id-card-clip"></i>
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30 border border-white/20">
+                    <svg class="w-10 h-10" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="8" width="28" height="48" rx="6" fill="#38BDF8"/>
+                        <path d="M22 16V24M18 20H26" stroke="#00254D" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M14 34H26M14 42H22" stroke="#00254D" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="46" cy="28" r="10" fill="#38BDF8"/>
+                        <path d="M30 54C30 45.1634 37.1634 38 46 38C54.8366 38 62 45.1634 62 54" fill="#38BDF8"/>
+                    </svg>
                 </div>
             </div>
 
@@ -176,7 +184,13 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3.5">
                     <div class="w-11 h-11 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 shadow-inner">
-                        <i class="fa-solid fa-hospital-user text-2xl text-cyan-300"></i>
+                        <svg class="w-7 h-7" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="8" width="28" height="48" rx="6" fill="#67E8F9"/>
+                            <path d="M22 16V24M18 20H26" stroke="#001938" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M14 34H26M14 42H22" stroke="#001938" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="46" cy="28" r="10" fill="#67E8F9"/>
+                            <path d="M30 54C30 45.1634 37.1634 38 46 38C54.8366 38 62 45.1634 62 54" fill="#67E8F9"/>
+                        </svg>
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
