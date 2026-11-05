@@ -121,7 +121,7 @@
             </form>
 
             <div class="text-center pt-2">
-                <p class="text-[11px] text-slate-400">Hospital Materno Infantil — Subdirección de Atención al Usuario</p>
+                <p class="text-[11px] text-slate-400">Hospital Médico Quirúrgico — Subdirección de Atención al Usuario</p>
             </div>
         </div>
     </div>
@@ -573,7 +573,7 @@
                 <div>
                     <h2 class="text-lg font-black tracking-tight text-slate-900 leading-none">INSTITUTO SALVADOREÑO DEL SEGURO SOCIAL</h2>
                     <p class="text-xs font-bold text-slate-700 mt-1">SUBDIRECCIÓN DE ATENCIÓN DIRECTA AL USUARIO</p>
-                    <p class="text-xs font-semibold text-slate-600">HOSPITAL MATERNO INFANTIL / HMQ</p>
+                    <p class="text-xs font-semibold text-slate-600">HOSPITAL MÉDICO QUIRÚRGICO / HMQ</p>
                 </div>
             </div>
             <div class="text-right">
@@ -690,7 +690,7 @@
                             </div>
                             <div>
                                 <h4 class="text-xs font-black text-slate-900 uppercase">INSTITUTO SALVADOREÑO DEL SEGURO SOCIAL</h4>
-                                <p class="text-[10px] text-slate-500 font-bold">HOSPITAL MATERNO INFANTIL / HMQ</p>
+                                <p class="text-[10px] text-slate-500 font-bold">HOSPITAL MÉDICO QUIRÚRGICO / HMQ</p>
                             </div>
                         </div>
                         <div class="text-right">
@@ -1424,7 +1424,7 @@
 
         function sendEmailRecord(record) {
             const email = document.getElementById('regEmail')?.value || '';
-            const subject = encodeURIComponent(`Constancia de Permanencia HMQ - ${record.nombre}`);
+            const subject = encodeURIComponent(`Constancia de permanencia`);
             
             let acompananteDetails = '';
             if (record.isAcompanante) {
@@ -1437,8 +1437,10 @@
 
             const body = encodeURIComponent(
                 `INSTITUTO SALVADOREÑO DEL SEGURO SOCIAL (ISSS)\n` +
-                `Hospital Materno Infantil - Constancia de Permanencia HMQ\n\n` +
-                `Detalles de la Visita:\n` +
+                `Hospital Médico Quirúrgico - Constancia de Permanencia HMQ\n\n` +
+                `Estimado(a) ${record.nombre},\n\n` +
+                `Adjunto a este correo encontrará el archivo PDF oficial con su Constancia de Permanencia en nuestras instalaciones.\n\n` +
+                `Resumen del Registro:\n` +
                 `- Nombre: ${record.nombre}\n` +
                 `- DUI / Afiliación: ${record.dui}\n` +
                 `- Empresa / Institución: ${record.empresa}\n` +
@@ -1447,11 +1449,18 @@
                 `- Hora Salida: ${record.horaSalida || 'N/A'}\n` +
                 `- Motivo: ${record.motivo}\n` +
                 acompananteDetails +
-                `- Entregado Por: ${record.quienEntrego}\n` +
-                `- Observaciones: ${record.observaciones || 'Ninguna'}\n\n` +
-                `Constancia emitida a través del Sistema HMQ Oficial.`
+                `- Entregado Por: ${record.quienEntrego}\n\n` +
+                `Atentamente,\n` +
+                `Subdirección de Atención Al Usuario - ISSS HMQ`
             );
-            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+
+            // Trigger PDF Download first then open mail client
+            generateAndDownloadPDF(record).then(() => {
+                showToast("PDF descargado. Abriendo gestor de correo...", "info");
+                setTimeout(() => {
+                    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+                }, 800);
+            });
         }
 
         async function generateAndDownloadPDF(record) {
@@ -1467,10 +1476,26 @@
             document.getElementById('printQuienEntrego').innerText = record.quienEntrego;
             document.getElementById('printCorrelativo').innerText = `HMQ-2026-${record.id.toString().slice(-4)}`;
 
+            const printAcompananteSec = document.getElementById('printSectionAcompanante');
+            if (record.isAcompanante) {
+                document.getElementById('printPacienteNombre').innerText = record.pacienteNombre || '---';
+                document.getElementById('printPacienteDui').innerText = record.pacienteDui || 'N/A';
+                document.getElementById('printPacienteParentesco').innerText = record.pacienteParentesco || 'N/A';
+                document.getElementById('printPacienteMotivo').innerText = record.pacienteMotivo || 'N/A';
+                printAcompananteSec.classList.remove('hidden');
+            } else {
+                printAcompananteSec.classList.add('hidden');
+            }
+
             const printElement = document.getElementById('printDocument');
             printElement.classList.remove('hidden');
 
             try {
+                showToast("Generando archivo PDF...", "info");
+                
+                // Wait for styles to settle before rendering
+                await new Promise(r => setTimeout(r, 150));
+
                 const canvas = await html2canvas(printElement, {
                     scale: 2,
                     useCORS: true,
@@ -1486,10 +1511,30 @@
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 const filename = `Constancia_Permanencia_${record.dui.replace(/[^a-zA-Z0-9]/g, '')}.pdf`;
                 pdf.save(filename);
+                showToast("PDF descargado correctamente");
+                return true;
             } catch (err) {
                 console.error("Error al generar PDF:", err);
+                showToast("Error al generar el documento PDF", "error");
+                return false;
             } finally {
                 printElement.classList.add('hidden');
+            }
+        }
+
+        async function executeActionChoice(choice) {
+            closeActionChooser();
+            const record = saveRecord();
+            if (!record) return;
+
+            if (choice === 'print') {
+                printRecord(record);
+            } else if (choice === 'email') {
+                // First download the PDF, then trigger mail client
+                await generateAndDownloadPDF(record);
+                setTimeout(() => {
+                    sendEmailRecord(record);
+                }, 800);
             }
         }
 
