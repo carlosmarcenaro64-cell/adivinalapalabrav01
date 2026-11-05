@@ -155,14 +155,14 @@
             </div>
             <div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-sm border border-slate-200/80">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado de Conexión</p>
-                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 mt-1">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Sheets Sincronizado
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Modo de Trabajo</p>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-full border border-cyan-200 mt-1">
+                        <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                        Captura Manual Libre
                     </span>
                 </div>
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
-                    <i class="fa-solid fa-cloud-check"></i>
+                <div class="w-12 h-12 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-keyboard"></i>
                 </div>
             </div>
         </div>
@@ -180,24 +180,24 @@
                             </div>
                             <div>
                                 <h2 class="text-base font-bold text-slate-800">Formulario de Control de Permanencia</h2>
-                                <p class="text-xs text-slate-500">Ingrese DUI o Nombre para autocompletar la empresa afiliada</p>
+                                <p class="text-xs text-slate-500">Complete directamente los datos de la persona o seleccione de visitas previas</p>
                             </div>
                         </div>
-                        <span class="text-xs font-mono text-slate-400">ID: HMQ-2026</span>
+                        <span class="text-xs font-mono text-slate-400">HMQ-2026</span>
                     </div>
 
                     <form id="formRegistro" onsubmit="saveRecord(event)" class="space-y-4">
                         
-                        <!-- BÚSQUEDA / SELECCIÓN DE AFILIADO -->
+                        <!-- BÚSQUEDA / OPCIONAL -->
                         <div class="relative">
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                <i class="fa-solid fa-magnifying-glass text-isss-600 mr-1"></i> Buscar Afiliado (DUI / Nombre) *
+                                <i class="fa-solid fa-magnifying-glass text-isss-600 mr-1"></i> Autocompletar desde Historial Local (Opcional)
                             </label>
                             <div class="relative">
-                                <input type="text" id="personSearchInput" autocomplete="off" placeholder="Escriba número de DUI (ej. 02087921-7) o Nombre de la persona..." 
-                                    class="w-full pl-10 pr-10 py-3 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-isss-600 focus:border-isss-600 transition font-medium text-slate-900 shadow-sm">
-                                <i class="fa-solid fa-id-card absolute left-3.5 top-3.5 text-slate-400"></i>
-                                <button type="button" onclick="clearSearch()" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                                <input type="text" id="personSearchInput" autocomplete="off" placeholder="Escriba para buscar si la persona ya fue registrada anteriormente..." 
+                                    class="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-isss-600 focus:border-isss-600 transition font-medium text-slate-900 shadow-sm">
+                                <i class="fa-solid fa-id-card absolute left-3.5 top-3 text-slate-400"></i>
+                                <button type="button" onclick="clearSearch()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
                                     <i class="fa-solid fa-circle-xmark"></i>
                                 </button>
                             </div>
@@ -207,25 +207,25 @@
                             </div>
                         </div>
 
-                        <!-- CAMPOS AUTOCOMPLETADOS -->
+                        <!-- CAMPOS EDITABLES DIRECTOS -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                             <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1">Nombre Completo del Afiliado</label>
-                                <input type="text" id="regNombre" required readonly placeholder="Seleccione un afiliado arriba" 
-                                    class="w-full px-3.5 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-semibold cursor-not-allowed">
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Nombre Completo del Afiliado *</label>
+                                <input type="text" id="regNombre" required placeholder="Ej. Rosa Elvi Aguilar González" 
+                                    class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-semibold focus:ring-2 focus:ring-isss-600">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1">Número DUI / Afiliación</label>
-                                <input type="text" id="regDui" required readonly placeholder="00000000-0" 
-                                    class="w-full px-3.5 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-semibold cursor-not-allowed">
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Número DUI / Afiliación *</label>
+                                <input type="text" id="regDui" required placeholder="02087921-7" 
+                                    class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-mono font-semibold focus:ring-2 focus:ring-isss-600">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Empresa / Institución</label>
-                            <input type="text" id="regEmpresa" required readonly placeholder="Nombre de la empresa o institución" 
-                                class="w-full px-3.5 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-semibold cursor-not-allowed">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Empresa / Institución *</label>
+                            <input type="text" id="regEmpresa" required placeholder="Ej. Alcaldía Santiago Nonualco" 
+                                class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-semibold focus:ring-2 focus:ring-isss-600">
                         </div>
 
                         <hr class="border-slate-100 my-2">
@@ -280,7 +280,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">ObservacionesAdicionales</label>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Observaciones Adicionales</label>
                             <input type="text" id="regObservaciones" placeholder="Detalles u observaciones especiales..." class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium focus:ring-2 focus:ring-isss-600">
                         </div>
 
@@ -302,36 +302,36 @@
                 <div class="lg:col-span-4 space-y-4">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
                         <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-info text-isss-600"></i> Guía Rapida de Operación
+                            <i class="fa-solid fa-circle-info text-isss-600"></i> Captura Directa Independiente
                         </h3>
                         <ul class="text-xs text-slate-600 space-y-2.5">
                             <li class="flex items-start gap-2">
                                 <span class="bg-isss-100 text-isss-700 rounded font-bold w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
-                                <span>Escriba el número de **DUI** o **Nombre** en el buscador superior para autocompletar la empresa.</span>
+                                <span>Escriba directamente el **Nombre**, **DUI** y **Empresa** de la persona.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <span class="bg-isss-100 text-isss-700 rounded font-bold w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
-                                <span>Verifique las horas de entrada y salida registradas.</span>
+                                <span>Complete las horas de entrada/salida y el motivo de atención.</span>
                             </li>
                             <li class="flex items-start gap-2">
                                 <span class="bg-isss-100 text-isss-700 rounded font-bold w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
-                                <span>Presione **Guardar e Imprimir** para emitir la constancia oficial al paciente.</span>
+                                <span>Presione **Guardar e Imprimir** para emitir la constancia. Todos los registros se guardarán automáticamente en la Bitácora local.</span>
                             </li>
                         </ul>
                     </div>
 
-                    <!-- Enlace directo con Hoja de Cálculo -->
-                    <div class="bg-gradient-to-br from-slate-900 to-isss-900 text-white rounded-2xl p-5 shadow-sm border border-slate-800">
+                    <!-- Botón Limpiar Formulario -->
+                    <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-sm border border-slate-800">
                         <div class="flex items-center space-x-2 mb-2 text-cyan-400 text-xs font-bold">
-                            <i class="fa-solid fa-sheet-plastic"></i>
-                            <span>Conexión Google Sheets</span>
+                            <i class="fa-solid fa-eraser"></i>
+                            <span>Nuevo Formulario Limpio</span>
                         </div>
                         <p class="text-xs text-slate-300 leading-relaxed mb-4">
-                            Sincronizado con la Hoja de Cálculo de Constancias de Permanencia HMQ de Google Drive.
+                            Reinicie el formulario para capturar un nuevo visitante desde cero.
                         </p>
-                        <button onclick="syncFromGoogleSheets()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-isss-900 font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-rotate"></i>
-                            <span>Forzar Actualización de Datos</span>
+                        <button onclick="clearSearch(); setNow('regHoraEntrada');" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2 border border-slate-700">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>Limpiar Campos</span>
                         </button>
                     </div>
                 </div>
@@ -634,6 +634,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('regFecha').value = today;
+            setNow('regHoraEntrada');
 
             const searchInput = document.getElementById('personSearchInput');
             if (searchInput) searchInput.addEventListener('input', handleSearchInput);
@@ -645,20 +646,9 @@
                 }
             });
 
-            // Cargar primero de IndexedDB si existe
-            try {
-                const storedDb = await loadFromIndexedDB();
-                if (storedDb && storedDb.length > 0) {
-                    database = storedDb;
-                }
-            } catch(e) {
-                console.warn("IndexedDB no disponible, usando RAM local", e);
-            }
-
             updateStats();
             renderHistoryTable();
             onDbSearchChange();
-            syncFromGoogleSheets();
         });
 
         // Tab Switcher
@@ -675,7 +665,7 @@
             activeBtn.classList.remove('text-slate-300');
         }
 
-        // Live Search Affiliates across 41,000+ items
+        // Search previous records in history
         function handleSearchInput(e) {
             const query = e.target.value.toLowerCase().trim();
             const resultsContainer = document.getElementById('searchResults');
@@ -686,21 +676,26 @@
                 return;
             }
 
+            const sourceList = [...history, ...database];
             const matches = [];
-            for (let i = 0; i < database.length; i++) {
-                const item = database[i];
-                if ((item.nombre && item.nombre.toLowerCase().includes(query)) || 
-                    (item.dui && item.dui.includes(query))) {
+            const seenDuis = new Set();
+
+            for (let i = 0; i < sourceList.length; i++) {
+                const item = sourceList[i];
+                if (!seenDuis.has(item.dui) && 
+                    ((item.nombre && item.nombre.toLowerCase().includes(query)) || 
+                     (item.dui && item.dui.includes(query)))) {
+                    seenDuis.add(item.dui);
                     matches.push(item);
-                    if (matches.length >= 15) break; // Limit dropdown results to 15 items for top performance
+                    if (matches.length >= 10) break;
                 }
             }
 
             if (matches.length === 0) {
-                resultsContainer.innerHTML = `<div class="p-3 text-xs text-slate-400 italic text-center">No se encontraron afiliados que coincidan</div>`;
+                resultsContainer.innerHTML = `<div class="p-3 text-xs text-slate-400 italic text-center">No hay registros previos con ese dato (puede escribir los datos manualmente abajo)</div>`;
             } else {
                 resultsContainer.innerHTML = matches.map(m => `
-                    <div onclick="selectPerson(${m.id})" class="p-3 hover:bg-slate-50 cursor-pointer transition flex items-center justify-between">
+                    <div onclick="selectPersonFromObj(${JSON.stringify(m).replace(/"/g, '&quot;')})" class="p-3 hover:bg-slate-50 cursor-pointer transition flex items-center justify-between">
                         <div>
                             <p class="font-bold text-xs text-slate-800">${m.nombre}</p>
                             <p class="text-[11px] text-slate-500">${m.empresa || 'Sin empresa'}</p>
@@ -712,10 +707,8 @@
             resultsContainer.classList.remove('hidden');
         }
 
-        function selectPerson(id) {
-            const person = database.find(p => p.id === id);
+        function selectPersonFromObj(person) {
             if (!person) return;
-
             document.getElementById('regNombre').value = person.nombre;
             document.getElementById('regDui').value = person.dui;
             document.getElementById('regEmpresa').value = person.empresa;
