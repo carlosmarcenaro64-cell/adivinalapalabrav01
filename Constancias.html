@@ -9,10 +9,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas and jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Google Fonts Inter & Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- jsPDF & html2canvas for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -329,9 +335,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1.5">Motivo / Área de Atención *</label>
-                                <input type="text" id="regMotivo" required placeholder="Ej. REPROGRAMACION DE DC CITA, Rayos X..." list="listMotivos" 
+                                <input type="text" id="regMotivo" required placeholder="Ej. Acompañante, Rayos X, USG..." list="listMotivos" oninput="toggleAcompananteFields()" onchange="toggleAcompananteFields()"
                                     class="input-styled w-full px-4 py-2.5 text-sm bg-slate-50/50 border border-slate-300 rounded-xl text-slate-800 font-semibold focus:bg-white focus:ring-2 focus:ring-isss-600">
                                 <datalist id="listMotivos">
+                                    <option value="Acompañante">
+                                    <option value="Acompañante de Paciente">
                                     <option value="REPROGRAMACION DE DC CITA">
                                     <option value="Rayos X">
                                     <option value="Laboratorio">
@@ -350,6 +358,47 @@
                                     <option value="Francisco Bonilla (MINSAL)">Francisco Bonilla (MINSAL)</option>
                                     <option value="Carlos Marcenaro">Carlos Marcenaro</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN DINÁMICA: DATOS DEL PACIENTE ACOMPAÑADO -->
+                        <div id="sectionAcompanante" class="hidden p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-3.5">
+                            <div class="flex items-center space-x-2 text-amber-900 border-b border-amber-200/60 pb-2">
+                                <i class="fa-solid fa-user-nurse text-amber-700"></i>
+                                <h3 class="text-xs font-extrabold uppercase tracking-wider">Información del Paciente Acompañado</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre del Paciente *</label>
+                                    <input type="text" id="regPacienteNombre" placeholder="Nombre completo del paciente" 
+                                        class="input-styled w-full px-3.5 py-2 text-sm bg-white border border-amber-300 rounded-xl text-slate-900 font-bold focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">DUI del Paciente</label>
+                                    <input type="text" id="regPacienteDui" placeholder="00000000-0" 
+                                        class="input-styled w-full px-3.5 py-2 text-sm bg-white border border-amber-300 rounded-xl text-slate-900 font-mono font-bold focus:ring-2 focus:ring-amber-500">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Motivo de la Consulta del Paciente</label>
+                                    <input type="text" id="regPacienteMotivoConsulta" placeholder="Ej. Consulta Externa, Ultrasonografía, Cirugía..." 
+                                        class="input-styled w-full px-3.5 py-2 text-sm bg-white border border-amber-300 rounded-xl text-slate-900 font-semibold focus:ring-2 focus:ring-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Parentesco con el Paciente</label>
+                                    <select id="regPacienteParentesco" class="input-styled w-full px-3.5 py-2 text-sm bg-white border border-amber-300 rounded-xl text-slate-900 font-semibold focus:ring-2 focus:ring-amber-500">
+                                        <option value="">Seleccione parentesco...</option>
+                                        <option value="Esposo / Esposa">Esposo / Esposa</option>
+                                        <option value="Madre / Padre">Madre / Padre</option>
+                                        <option value="Hijo / Hija">Hijo / Hija</option>
+                                        <option value="Hermano / Hermana">Hermano / Hermana</option>
+                                        <option value="Abuelo / Abuela">Abuelo / Abuela</option>
+                                        <option value="Familiar Directo">Familiar Directo</option>
+                                        <option value="Tutor / Encargado">Tutor / Encargado</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -582,7 +631,11 @@
 
             <div class="pt-2">
                 <p><strong class="text-slate-900">MOTIVO / ATENCIÓN:</strong> <span id="printMotivo" class="font-semibold">---</span></p>
-                <p class="mt-1"><strong class="text-slate-900">OBSERVACIONES:</strong> <span id="printObservaciones" class="font-semibold">---</span></p>
+                <div id="printSectionAcompanante" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs space-y-1">
+                    <p><strong class="text-amber-900">PACIENTE ACOMPAÑADO:</strong> <span id="printPacienteNombre" class="font-bold">---</span> (DUI: <span id="printPacienteDui" class="font-mono">---</span>)</p>
+                    <p><strong class="text-amber-900">PARENTESCO:</strong> <span id="printPacienteParentesco">---</span> | <strong class="text-amber-900">CONSULTA DEL PACIENTE:</strong> <span id="printPacienteMotivo">---</span></p>
+                </div>
+                <p class="mt-2"><strong class="text-slate-900">OBSERVACIONES:</strong> <span id="printObservaciones" class="font-semibold">---</span></p>
             </div>
 
             <p class="pt-4 text-xs text-slate-600 italic">
@@ -688,6 +741,14 @@
                     <!-- Motivo & Observaciones -->
                     <div class="text-xs space-y-1 pt-1 text-slate-700">
                         <p><strong class="text-slate-900">Motivo:</strong> <span id="previewMotivo" class="font-medium">---</span></p>
+                        
+                        <!-- Previa de Acompañante -->
+                        <div id="previewAcompananteBox" class="hidden my-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg space-y-1 text-amber-900">
+                            <p class="font-bold text-[11px] uppercase tracking-wider text-amber-800"><i class="fa-solid fa-user-nurse mr-1"></i> Detalles de Acompañamiento</p>
+                            <p><strong>Paciente:</strong> <span id="previewPacienteNombre">---</span> (DUI: <span id="previewPacienteDui">---</span>)</p>
+                            <p><strong>Parentesco:</strong> <span id="previewPacienteParentesco">---</span> | <strong>Consulta:</strong> <span id="previewPacienteMotivo">---</span></p>
+                        </div>
+
                         <p><strong class="text-slate-900">Entregado por:</strong> <span id="previewQuienEntrego" class="font-medium">---</span></p>
                         <p><strong class="text-slate-900">Observaciones:</strong> <span id="previewObservaciones" class="font-medium">---</span></p>
                     </div>
@@ -703,8 +764,8 @@
                         <span>Imprimir Constancia</span>
                     </button>
                     <button onclick="executeActionChoice('email')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-xs">
-                        <i class="fa-solid fa-paper-plane text-sm"></i>
-                        <span>Enviar por Correo</span>
+                        <i class="fa-solid fa-file-pdf text-sm"></i>
+                        <span>Descargar PDF y Abrir Correo</span>
                     </button>
                 </div>
                 <div class="text-center pt-1">
@@ -959,6 +1020,18 @@
             document.getElementById(inputId).value = `${hours}:${minutes} ${ampm}`;
         }
 
+        function toggleAcompananteFields() {
+            const motivoVal = (document.getElementById('regMotivo')?.value || '').toLowerCase();
+            const section = document.getElementById('sectionAcompanante');
+            if (!section) return;
+
+            if (motivoVal.includes('acompañante') || motivoVal.includes('acompanante')) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
         // Save Record
         function saveRecord(e) {
             if (e) e.preventDefault();
@@ -972,6 +1045,13 @@
             const motivo = document.getElementById('regMotivo').value;
             const quienEntrego = document.getElementById('regQuienEntrego').value;
             const observaciones = document.getElementById('regObservaciones').value;
+
+            // Datos Acompañante
+            const isAcompanante = motivo.toLowerCase().includes('acompañante') || motivo.toLowerCase().includes('acompanante');
+            const pacienteNombre = isAcompanante ? (document.getElementById('regPacienteNombre')?.value || '') : '';
+            const pacienteDui = isAcompanante ? (document.getElementById('regPacienteDui')?.value || '') : '';
+            const pacienteMotivo = isAcompanante ? (document.getElementById('regPacienteMotivoConsulta')?.value || '') : '';
+            const pacienteParentesco = isAcompanante ? (document.getElementById('regPacienteParentesco')?.value || '') : '';
 
             if (!nombre || !dui) {
                 showToast("Por favor complete los campos requeridos", "error");
@@ -988,7 +1068,12 @@
                 horaSalida,
                 motivo,
                 quienEntrego,
-                observaciones
+                observaciones,
+                isAcompanante,
+                pacienteNombre,
+                pacienteDui,
+                pacienteMotivo,
+                pacienteParentesco
             };
 
             history.unshift(record);
@@ -1014,6 +1099,12 @@
             const quienEntrego = document.getElementById('regQuienEntrego').value;
             const observaciones = document.getElementById('regObservaciones').value;
 
+            const isAcompanante = motivo.toLowerCase().includes('acompañante') || motivo.toLowerCase().includes('acompanante');
+            const pacienteNombre = document.getElementById('regPacienteNombre')?.value || '';
+            const pacienteDui = document.getElementById('regPacienteDui')?.value || '';
+            const pacienteMotivo = document.getElementById('regPacienteMotivoConsulta')?.value || '';
+            const pacienteParentesco = document.getElementById('regPacienteParentesco')?.value || '';
+
             if (!nombre || !dui) {
                 showToast("Por favor complete los campos obligatorios antes de continuar", "error");
                 return;
@@ -1030,6 +1121,18 @@
             document.getElementById('previewQuienEntrego').innerText = quienEntrego;
             document.getElementById('previewObservaciones').innerText = observaciones || 'NINGUNA';
             document.getElementById('previewCorrelativo').innerText = `HMQ-2026-${Date.now().toString().slice(-4)}`;
+
+            // Populate preview acompanante box
+            const previewBox = document.getElementById('previewAcompananteBox');
+            if (isAcompanante) {
+                document.getElementById('previewPacienteNombre').innerText = pacienteNombre || '---';
+                document.getElementById('previewPacienteDui').innerText = pacienteDui || 'N/A';
+                document.getElementById('previewPacienteParentesco').innerText = pacienteParentesco || 'N/A';
+                document.getElementById('previewPacienteMotivo').innerText = pacienteMotivo || 'N/A';
+                previewBox.classList.remove('hidden');
+            } else {
+                previewBox.classList.add('hidden');
+            }
 
             document.getElementById('actionChoiceModal').classList.remove('hidden');
         }
@@ -1050,13 +1153,6 @@
             }
         }
 
-        function saveAndPrintCurrent(e) {
-            const record = saveRecord(e);
-            if (record) {
-                printRecord(record);
-            }
-        }
-
         function printRecord(record) {
             document.getElementById('printNombre').innerText = record.nombre;
             document.getElementById('printDui').innerText = record.dui;
@@ -1068,6 +1164,17 @@
             document.getElementById('printObservaciones').innerText = record.observaciones || 'NINGUNA';
             document.getElementById('printQuienEntrego').innerText = record.quienEntrego;
             document.getElementById('printCorrelativo').innerText = `HMQ-2026-${record.id.toString().slice(-4)}`;
+
+            const printAcompananteSec = document.getElementById('printSectionAcompanante');
+            if (record.isAcompanante) {
+                document.getElementById('printPacienteNombre').innerText = record.pacienteNombre || '---';
+                document.getElementById('printPacienteDui').innerText = record.pacienteDui || 'N/A';
+                document.getElementById('printPacienteParentesco').innerText = record.pacienteParentesco || 'N/A';
+                document.getElementById('printPacienteMotivo').innerText = record.pacienteMotivo || 'N/A';
+                printAcompananteSec.classList.remove('hidden');
+            } else {
+                printAcompananteSec.classList.add('hidden');
+            }
 
             const printDoc = document.getElementById('printDocument');
             printDoc.classList.remove('hidden');
@@ -1318,6 +1425,16 @@
         function sendEmailRecord(record) {
             const email = document.getElementById('regEmail')?.value || '';
             const subject = encodeURIComponent(`Constancia de Permanencia HMQ - ${record.nombre}`);
+            
+            let acompananteDetails = '';
+            if (record.isAcompanante) {
+                acompananteDetails = `\nDetalles del Acompañamiento:\n` +
+                `- Paciente Acompañado: ${record.pacienteNombre || 'N/A'}\n` +
+                `- DUI del Paciente: ${record.pacienteDui || 'N/A'}\n` +
+                `- Parentesco: ${record.pacienteParentesco || 'N/A'}\n` +
+                `- Consulta del Paciente: ${record.pacienteMotivo || 'N/A'}\n`;
+            }
+
             const body = encodeURIComponent(
                 `INSTITUTO SALVADOREÑO DEL SEGURO SOCIAL (ISSS)\n` +
                 `Hospital Materno Infantil - Constancia de Permanencia HMQ\n\n` +
@@ -1329,11 +1446,51 @@
                 `- Hora Entrada: ${record.horaEntrada || 'N/A'}\n` +
                 `- Hora Salida: ${record.horaSalida || 'N/A'}\n` +
                 `- Motivo: ${record.motivo}\n` +
+                acompananteDetails +
                 `- Entregado Por: ${record.quienEntrego}\n` +
                 `- Observaciones: ${record.observaciones || 'Ninguna'}\n\n` +
                 `Constancia emitida a través del Sistema HMQ Oficial.`
             );
             window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        }
+
+        async function generateAndDownloadPDF(record) {
+            // Fill print layout for PDF capture
+            document.getElementById('printNombre').innerText = record.nombre;
+            document.getElementById('printDui').innerText = record.dui;
+            document.getElementById('printEmpresa').innerText = record.empresa;
+            document.getElementById('printFecha').innerText = record.fecha;
+            document.getElementById('printHoraEntrada').innerText = record.horaEntrada || '--:--';
+            document.getElementById('printHoraSalida').innerText = record.horaSalida || '--:--';
+            document.getElementById('printMotivo').innerText = record.motivo;
+            document.getElementById('printObservaciones').innerText = record.observaciones || 'NINGUNA';
+            document.getElementById('printQuienEntrego').innerText = record.quienEntrego;
+            document.getElementById('printCorrelativo').innerText = `HMQ-2026-${record.id.toString().slice(-4)}`;
+
+            const printElement = document.getElementById('printDocument');
+            printElement.classList.remove('hidden');
+
+            try {
+                const canvas = await html2canvas(printElement, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210; 
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                const filename = `Constancia_Permanencia_${record.dui.replace(/[^a-zA-Z0-9]/g, '')}.pdf`;
+                pdf.save(filename);
+            } catch (err) {
+                console.error("Error al generar PDF:", err);
+            } finally {
+                printElement.classList.add('hidden');
+            }
         }
 
         function saveAndEmailCurrent(e) {
