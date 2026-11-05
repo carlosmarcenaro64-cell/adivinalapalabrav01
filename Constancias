@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Constancias de Permanencia HMQ - ISSS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        isss: {
+                            50: '#f0f4f9',
+                            100: '#dce5f2',
+                            200: '#bdcfe5',
+                            600: '#0a4b94',
+                            700: '#003366', // ISSS Official Deep Blue
+                            800: '#00254d',
+                            900: '#001938',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-isss-700 selection:text-white">
+
+    <!-- Header Principal Institucional -->
+    <header class="no-print bg-gradient-to-r from-isss-900 via-isss-700 to-isss-800 text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+            <div class="flex items-center justify-between">
+                <!-- Branding -->
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-11 h-11 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 shadow-inner">
+                        <i class="fa-solid fa-hospital-user text-2xl text-cyan-300"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-cyan-500/20 text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded border border-cyan-400/30 uppercase tracking-widest">ISSS Oficial</span>
+                            <span class="text-xs text-slate-300 font-medium">Atención Directa al Usuario</span>
+                        </div>
+                        <h1 class="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-2">
+                            CONSTANCIAS DE PERMANENCIA HMQ
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción Global -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="syncFromGoogleSheets()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-lg border border-white/20 transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-arrows-rotate text-cyan-300"></i>
+                        <span class="hidden sm:inline">Sincronizar Sheets</span>
+                    </button>
+                    <button onclick="openPrintPreviewCurrent()" class="bg-cyan-500 hover:bg-cyan-400 text-isss-900 font-bold text-xs px-4 py-2 rounded-lg transition flex items-center gap-2 shadow-md">
+                        <i class="fa-solid fa-print"></i>
+                        <span class="hidden sm:inline">Imprimir Constancia</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="bg-isss-900/50 backdrop-blur border-t border-white/10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <nav class="flex space-x-1" aria-label="Tabs">
+                    <button onclick="switchTab('nuevo')" id="tab-nuevo" class="tab-btn px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 border-b-2 border-cyan-400 text-cyan-300 bg-white/10">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>Nuevo Registro</span>
+                    </button>
+                    <button onclick="switchTab('historial')" id="tab-historial" class="tab-btn px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5">
+                        <i class="fa-solid fa-rectangle-list"></i>
+                        <span>Bitácora de Salidas</span>
+                        <span id="badgeHistorialCount" class="bg-cyan-500/30 text-cyan-200 text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+                    </button>
+                    <button onclick="switchTab('database')" id="tab-database" class="tab-btn px-4 py-2.5 text-xs font-semibold rounded-t-lg transition flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/5">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>Base de Datos</span>
+                        <span id="badgeDbCount" class="bg-white/20 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 no-print">
+
+        <!-- METRIC CARDS OVERVIEW -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-sm border border-slate-200/80">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Registros Hoy</p>
+                    <h3 class="text-2xl font-black text-isss-700 mt-1" id="statToday">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-isss-50 text-isss-700 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-sm border border-slate-200/80">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Afiliados</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1" id="statTotalDb">0</h3>
+                </div>
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-sm border border-slate-200/80">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Encargado Frecuente</p>
+                    <h3 class="text-sm font-bold text-slate-700 mt-1 truncate max-w-[150px]" id="statTopEncargado">Carlos Lopez</h3>
+                </div>
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-sm border border-slate-200/80">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado de Conexión</p>
+                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 mt-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Sheets Sincronizado
+                    </span>
+                </div>
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-solid fa-cloud-check"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 1: NUEVO REGISTRO -->
+        <div id="content-nuevo" class="tab-content block space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Formulario de Entrada -->
+                <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+                    <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 bg-isss-700 text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Formulario de Control de Permanencia</h2>
+                                <p class="text-xs text-slate-500">Ingrese DUI o Nombre para autocompletar la empresa afiliada</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-mono text-slate-400">ID: HMQ-2026</span>
+                    </div>
+
+                    <form id="formRegistro" onsubmit="saveRecord(event)" class="space-y-4">
+                        
+                        <!-- BÚSQUEDA / SELECCIÓN DE AFILIADO -->
+                        <div class="relative">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                <i class="fa-solid fa-magnifying-glass text-isss-600 mr-1"></i> Buscar Afiliado (DUI / Nombre) *
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="personSearchInput" autocomplete="off" placeholder="Escriba número de DUI (ej. 02087921-7) o Nombre de la persona..." 
+                                    class="w-full pl-10 pr-10 py-3 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-isss-600 focus:border-isss-600 transition font-medium text-slate-900 shadow-sm">
+                                <i class="fa-solid fa-id-card absolute left-3.5 top-3.5 text-slate-400"></i>
+                                <button type="button" onclick="clearSearch()" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
+                            </div>
+
+                            <!-- Autocomplete Dropdown -->
+                            <div id="searchResults" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                            </div>
+                        </div>
+
+                        <!-- CAMPOS AUTOCOMPLETADOS -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Nombre Completo del Afiliado</label>
+                                <input type="text" id="regNombre" required readonly placeholder="Seleccione un afiliado arriba" 
+                                    class="w-full px-3.5 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-semibold cursor-not-allowed">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Número DUI / Afiliación</label>
+                                <input type="text" id="regDui" required readonly placeholder="00000000-0" 
+                                    class="w-full px-3.5 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-semibold cursor-not-allowed">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Empresa / Institución</label>
+                            <input type="text" id="regEmpresa" required readonly placeholder="Nombre de la empresa o institución" 
+                                class="w-full px-3.5 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-semibold cursor-not-allowed">
+                        </div>
+
+                        <hr class="border-slate-100 my-2">
+
+                        <!-- DATOS DEL REGISTRO DE ATENCIÓN -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de Registro</label>
+                                <input type="date" id="regFecha" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium focus:ring-2 focus:ring-isss-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">
+                                    Hora Entrada 
+                                    <button type="button" onclick="setNow('regHoraEntrada')" class="text-[10px] text-isss-600 underline ml-1 font-bold">Ahora</button>
+                                </label>
+                                <input type="text" id="regHoraEntrada" required placeholder="ej. 6:00 a.m." class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium focus:ring-2 focus:ring-isss-600">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">
+                                    Hora Salida
+                                    <button type="button" onclick="setNow('regHoraSalida')" class="text-[10px] text-isss-600 underline ml-1 font-bold">Ahora</button>
+                                </label>
+                                <input type="text" id="regHoraSalida" placeholder="ej. 6:20 a.m." class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium focus:ring-2 focus:ring-isss-600">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Motivo / Área de Atención</label>
+                                <input type="text" id="regMotivo" required placeholder="Ej. REPROGRAMACION DE DC CITA, Rayos X, USG" list="listMotivos" 
+                                    class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium focus:ring-2 focus:ring-isss-600">
+                                <datalist id="listMotivos">
+                                    <option value="REPROGRAMACION DE DC CITA">
+                                    <option value="Rayos X">
+                                    <option value="Laboratorio">
+                                    <option value="EMERGENCIA">
+                                    <option value="Consulta Externa MO">
+                                    <option value="Trabajo Social">
+                                    <option value="Agendamiento de Cita USG">
+                                </datalist>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Quién Entregó</label>
+                                <select id="regQuienEntrego" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium focus:ring-2 focus:ring-isss-600">
+                                    <option value="Carlos Lopez">Carlos Lopez</option>
+                                    <option value="María Mejía">María Mejía</option>
+                                    <option value="Francisco Bonilla (MINSAL)">Francisco Bonilla (MINSAL)</option>
+                                    <option value="Carlos Marcenaro">Carlos Marcenaro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">ObservacionesAdicionales</label>
+                            <input type="text" id="regObservaciones" placeholder="Detalles u observaciones especiales..." class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium focus:ring-2 focus:ring-isss-600">
+                        </div>
+
+                        <!-- Botones del Formulario -->
+                        <div class="flex items-center space-x-3 pt-3">
+                            <button type="submit" class="flex-1 bg-isss-700 hover:bg-isss-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Guardar en Bitácora</span>
+                            </button>
+                            <button type="button" onclick="saveAndPrintCurrent(event)" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-print"></i>
+                                <span>Guardar e Imprimir</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Panel Lateral - Instrucciones y Acceso Rápido -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-isss-600"></i> Guía Rapida de Operación
+                        </h3>
+                        <ul class="text-xs text-slate-600 space-y-2.5">
+                            <li class="flex items-start gap-2">
+                                <span class="bg-isss-100 text-isss-700 rounded font-bold w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">1</span>
+                                <span>Escriba el número de **DUI** o **Nombre** en el buscador superior para autocompletar la empresa.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="bg-isss-100 text-isss-700 rounded font-bold w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">2</span>
+                                <span>Verifique las horas de entrada y salida registradas.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="bg-isss-100 text-isss-700 rounded font-bold w-4 h-4 flex items-center justify-center text-[10px] shrink-0 mt-0.5">3</span>
+                                <span>Presione **Guardar e Imprimir** para emitir la constancia oficial al paciente.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Enlace directo con Hoja de Cálculo -->
+                    <div class="bg-gradient-to-br from-slate-900 to-isss-900 text-white rounded-2xl p-5 shadow-sm border border-slate-800">
+                        <div class="flex items-center space-x-2 mb-2 text-cyan-400 text-xs font-bold">
+                            <i class="fa-solid fa-sheet-plastic"></i>
+                            <span>Conexión Google Sheets</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                            Sincronizado con la Hoja de Cálculo de Constancias de Permanencia HMQ de Google Drive.
+                        </p>
+                        <button onclick="syncFromGoogleSheets()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-isss-900 font-bold text-xs py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Forzar Actualización de Datos</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 2: HISTORIAL BITÁCORA -->
+        <div id="content-historial" class="tab-content hidden space-y-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">Bitácora de Registros de Permanencia HMQ</h2>
+                        <p class="text-xs text-slate-500">Historial completo de registros emitidos en la clínica</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="filterHistoryInput" oninput="renderHistoryTable()" placeholder="Filtrar por nombre, DUI, motivo..." 
+                            class="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-800 w-64 focus:ring-2 focus:ring-isss-600">
+                        <button onclick="exportHistoryCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Exportar CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Historial -->
+                <div class="overflow-x-auto custom-scrollbar mt-4">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Fecha</th>
+                                <th class="p-3">Nombre</th>
+                                <th class="p-3">DUI / Afiliación</th>
+                                <th class="p-3">Empresa</th>
+                                <th class="p-3 text-center">Horario</th>
+                                <th class="p-3">Motivo</th>
+                                <th class="p-3">Entregó</th>
+                                <th class="p-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                            <!-- Injected JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: BASE DE DATOS DE AFILIADOS -->
+        <div id="content-database" class="tab-content hidden space-y-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">Catálogo de Afiliados y Empresas (ISSS)</h2>
+                        <p class="text-xs text-slate-500">Base de datos masiva cargada (Total: <span id="dbTotalCountHeader" class="font-bold text-isss-700">0</span> afiliados)</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="filterDbInput" oninput="onDbSearchChange()" placeholder="Buscar entre +41,000 registros..." 
+                            class="px-3.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-800 w-64 focus:ring-2 focus:ring-isss-600">
+                        <button onclick="openAddPersonModal()" class="bg-isss-700 hover:bg-isss-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Nuevo Afiliado</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar mt-4">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">#</th>
+                                <th class="p-3">Nombre del Afiliado</th>
+                                <th class="p-3">DUI / Afiliación</th>
+                                <th class="p-3">Empresa / Institución</th>
+                                <th class="p-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="databaseTableBody" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                            <!-- Injected JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- CONTROLES DE PAGINACIÓN -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100 text-xs text-slate-600">
+                    <div id="paginationInfo">Mostrando 0 a 0 de 0 registros</div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="changePage(-1)" id="btnPrevPage" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg font-bold disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
+                        </button>
+                        <span class="font-bold text-slate-800" id="currentPageDisplay">Pág. 1</span>
+                        <button onclick="changePage(1)" id="btnNextPage" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg font-bold disabled:opacity-40 disabled:cursor-not-allowed">
+                            Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- VISTA PREVIA IMPRESIÓN CONSTANCIA OFICIAL (PRINT FORMAT) -->
+    <div id="printDocument" class="hidden print-only max-w-3xl mx-auto p-8 bg-white text-slate-900 border border-slate-300 shadow-none">
+        
+        <!-- MEMBRETE OFICIAL ISSS -->
+        <div class="border-b-2 border-slate-900 pb-4 mb-6 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 border-2 border-slate-900 rounded-full flex items-center justify-center font-black text-xl text-slate-900">
+                    ISSS
+                </div>
+                <div>
+                    <h2 class="text-lg font-black tracking-tight text-slate-900 leading-none">INSTITUTO SALVADOREÑO DEL SEGURO SOCIAL</h2>
+                    <p class="text-xs font-bold text-slate-700 mt-1">SUBDIRECCIÓN DE ATENCIÓN DIRECTA AL USUARIO</p>
+                    <p class="text-xs font-semibold text-slate-600">HOSPITAL MATERNO INFANTIL / HMQ</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs font-mono font-bold block">CORRELATIVO:</span>
+                <span class="text-sm font-mono font-black text-isss-700" id="printCorrelativo">HMQ-2026-001</span>
+            </div>
+        </div>
+
+        <!-- TÍTULO DE LA CONSTANCIA -->
+        <div class="text-center my-6">
+            <h3 class="text-xl font-black uppercase tracking-wider border-b-2 border-slate-900 inline-block px-4 pb-1">
+                CONSTANCIA DE PERMANENCIA
+            </h3>
+        </div>
+
+        <!-- CUERPO DEL DOCUMENTO -->
+        <div class="space-y-4 text-sm leading-relaxed my-8 text-justify">
+            <p>
+                Por medio de la presente se hace constar que el (la) usuario (a):
+            </p>
+
+            <div class="bg-slate-50 border border-slate-300 rounded-lg p-4 my-4 space-y-2 font-medium">
+                <div class="grid grid-cols-3">
+                    <span class="font-bold text-slate-700">NOMBRE:</span>
+                    <span class="col-span-2 font-black text-slate-900 uppercase" id="printNombre">---</span>
+                </div>
+                <div class="grid grid-cols-3">
+                    <span class="font-bold text-slate-700">N° DUI / AFILIACIÓN:</span>
+                    <span class="col-span-2 font-mono font-bold text-slate-900" id="printDui">---</span>
+                </div>
+                <div class="grid grid-cols-3">
+                    <span class="font-bold text-slate-700">EMPRESA / INSTITUCIÓN:</span>
+                    <span class="col-span-2 font-bold text-slate-900 uppercase" id="printEmpresa">---</span>
+                </div>
+            </div>
+
+            <p>
+                Ha permanecido en las instalaciones del Centro Médico en la fecha y horario que se detalla a continuación:
+            </p>
+
+            <div class="grid grid-cols-3 gap-4 border border-slate-300 rounded-lg p-3 text-center bg-slate-50">
+                <div>
+                    <span class="block text-xs font-bold text-slate-500 uppercase">FECHA</span>
+                    <span class="font-bold text-slate-900 text-sm" id="printFecha">--/--/----</span>
+                </div>
+                <div>
+                    <span class="block text-xs font-bold text-slate-500 uppercase">HORA ENTRADA</span>
+                    <span class="font-bold text-slate-900 text-sm" id="printHoraEntrada">--:--</span>
+                </div>
+                <div>
+                    <span class="block text-xs font-bold text-slate-500 uppercase">HORA SALIDA</span>
+                    <span class="font-bold text-slate-900 text-sm" id="printHoraSalida">--:--</span>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <p><strong class="text-slate-900">MOTIVO / ATENCIÓN:</strong> <span id="printMotivo" class="font-semibold">---</span></p>
+                <p class="mt-1"><strong class="text-slate-900">OBSERVACIONES:</strong> <span id="printObservaciones" class="font-semibold">---</span></p>
+            </div>
+
+            <p class="pt-4 text-xs text-slate-600 italic">
+                Se extiende la presente constancia a solicitud del interesado para los fines que estime convenientes.
+            </p>
+        </div>
+
+        <!-- FIRMAS Y SELLO -->
+        <div class="mt-16 pt-8 grid grid-cols-2 gap-8 text-center">
+            <div class="border-t border-slate-800 pt-2">
+                <p class="font-bold text-xs text-slate-900 uppercase" id="printQuienEntrego">ENTREGADO POR</p>
+                <p class="text-[10px] text-slate-500">Atención Al Usuario - ISSS</p>
+            </div>
+            <div class="border-t border-slate-800 pt-2 flex flex-col items-center">
+                <p class="font-bold text-xs text-slate-900 uppercase">SELLO OFICIAL HMQ</p>
+                <div class="w-16 h-16 border border-dashed border-slate-400 rounded-full mt-1 flex items-center justify-center text-[9px] text-slate-400 italic">
+                    SELLO
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL AGREGAR PERSONA -->
+    <div id="addPersonModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-base">Agregar Nuevo Afiliado</h3>
+                <button onclick="closeAddPersonModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form onsubmit="saveNewPerson(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre Completo *</label>
+                    <input type="text" id="newPersonNombre" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">DUI / Afiliación *</label>
+                    <input type="text" id="newPersonDui" required placeholder="00000000-0" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Empresa / Institución *</label>
+                    <input type="text" id="newPersonEmpresa" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-800 font-medium">
+                </div>
+                <div class="flex justify-end space-x-2 pt-3">
+                    <button type="button" onclick="closeAddPersonModal()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-isss-700 rounded-lg hover:bg-isss-800">Guardar Afiliado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastNotification" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700 no-print">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toastMessage" class="text-xs font-medium">Operación completada</span>
+    </div>
+
+    <!-- APPLICATION LOGIC JS -->
+    <script>
+        const DEFAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTb6SmBz8vG74F6RxyFeK-h9k6hVoqUBTeOv8CASqB8NN7B0YJ0oPCNv-AOTve7xbpIV8I8_n2oHu4d/pub?output=csv";
+
+        // Initial Seed Database from Image
+        const initialDatabase = [
+            { id: 1, nombre: "ROSA ELVI AGUILAR GONZALEZ", dui: "02087921-7", empresa: "ALCALDIA SANTIAGO NONUALCO" },
+            { id: 2, nombre: "KELSY JAZMIN COLOCHO DE PORTILLO", dui: "00550501-7", empresa: "hospital de niños benjamin bloom" },
+            { id: 3, nombre: "DANIA YAMILETH GARCIA GARCIA", dui: "06116761-1", empresa: "HOSPITAL POLICLINICO ZACAMIL" },
+            { id: 4, nombre: "MANUEL DE JESUS RAMIREZ RAMOS", dui: "00122396-5", empresa: "MAYORA ARQUITECTOS CONSULTORES" }
+        ];
+
+        let database = initialDatabase;
+        let history = JSON.parse(localStorage.getItem('hmq_history')) || [];
+        let currentActiveRecord = null;
+
+        // PAGINATION STATE FOR LARGE DB
+        let currentPage = 1;
+        const pageSize = 50;
+        let filteredDatabase = [];
+
+        // --- INDEXEDDB IMPLEMENTATION FOR LARGE DB STORAGE (+100,000 RECORDS) ---
+        let dbInstance = null;
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('HMQ_Database', 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('afiliados')) {
+                        const store = db.createObjectStore('afiliados', { keyPath: 'id' });
+                        store.createIndex('nombre', 'nombre', { unique: false });
+                        store.createIndex('dui', 'dui', { unique: false });
+                    }
+                };
+                request.onsuccess = (e) => {
+                    dbInstance = e.target.result;
+                    resolve(dbInstance);
+                };
+                request.onerror = (e) => reject(e);
+            });
+        }
+
+        async function saveToIndexedDB(records) {
+            if (!dbInstance) await initIndexedDB();
+            return new Promise((resolve, reject) => {
+                const tx = dbInstance.transaction('afiliados', 'readwrite');
+                const store = tx.objectStore('afiliados');
+                store.clear(); // Limpiar previo
+                for (let i = 0; i < records.length; i++) {
+                    store.put(records[i]);
+                }
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = (e) => reject(e);
+            });
+        }
+
+        async function loadFromIndexedDB() {
+            if (!dbInstance) await initIndexedDB();
+            return new Promise((resolve, reject) => {
+                const tx = dbInstance.transaction('afiliados', 'readonly');
+                const store = tx.objectStore('afiliados');
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = (e) => reject(e);
+            });
+        }
+
+        // On Load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('regFecha').value = today;
+
+            const searchInput = document.getElementById('personSearchInput');
+            if (searchInput) searchInput.addEventListener('input', handleSearchInput);
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#personSearchInput') && !e.target.closest('#searchResults')) {
+                    const results = document.getElementById('searchResults');
+                    if (results) results.classList.add('hidden');
+                }
+            });
+
+            // Cargar primero de IndexedDB si existe
+            try {
+                const storedDb = await loadFromIndexedDB();
+                if (storedDb && storedDb.length > 0) {
+                    database = storedDb;
+                }
+            } catch(e) {
+                console.warn("IndexedDB no disponible, usando RAM local", e);
+            }
+
+            updateStats();
+            renderHistoryTable();
+            onDbSearchChange();
+            syncFromGoogleSheets();
+        });
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-b-2', 'border-cyan-400', 'text-cyan-300', 'bg-white/10');
+                el.classList.add('text-slate-300');
+            });
+
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.add('border-b-2', 'border-cyan-400', 'text-cyan-300', 'bg-white/10');
+            activeBtn.classList.remove('text-slate-300');
+        }
+
+        // Live Search Affiliates across 41,000+ items
+        function handleSearchInput(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (!query || query.length < 2) {
+                resultsContainer.classList.add('hidden');
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            const matches = [];
+            for (let i = 0; i < database.length; i++) {
+                const item = database[i];
+                if ((item.nombre && item.nombre.toLowerCase().includes(query)) || 
+                    (item.dui && item.dui.includes(query))) {
+                    matches.push(item);
+                    if (matches.length >= 15) break; // Limit dropdown results to 15 items for top performance
+                }
+            }
+
+            if (matches.length === 0) {
+                resultsContainer.innerHTML = `<div class="p-3 text-xs text-slate-400 italic text-center">No se encontraron afiliados que coincidan</div>`;
+            } else {
+                resultsContainer.innerHTML = matches.map(m => `
+                    <div onclick="selectPerson(${m.id})" class="p-3 hover:bg-slate-50 cursor-pointer transition flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-xs text-slate-800">${m.nombre}</p>
+                            <p class="text-[11px] text-slate-500">${m.empresa || 'Sin empresa'}</p>
+                        </div>
+                        <span class="font-mono text-xs font-bold text-isss-700 bg-isss-50 px-2 py-0.5 rounded border border-isss-100">${m.dui}</span>
+                    </div>
+                `).join('');
+            }
+            resultsContainer.classList.remove('hidden');
+        }
+
+        function selectPerson(id) {
+            const person = database.find(p => p.id === id);
+            if (!person) return;
+
+            document.getElementById('regNombre').value = person.nombre;
+            document.getElementById('regDui').value = person.dui;
+            document.getElementById('regEmpresa').value = person.empresa;
+            document.getElementById('personSearchInput').value = `${person.nombre} (${person.dui})`;
+            document.getElementById('searchResults').classList.add('hidden');
+        }
+
+        function clearSearch() {
+            document.getElementById('personSearchInput').value = '';
+            document.getElementById('regNombre').value = '';
+            document.getElementById('regDui').value = '';
+            document.getElementById('regEmpresa').value = '';
+            document.getElementById('searchResults').classList.add('hidden');
+        }
+
+        function setNow(inputId) {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+            hours = hours % 12 || 12;
+            document.getElementById(inputId).value = `${hours}:${minutes} ${ampm}`;
+        }
+
+        // Save Record
+        function saveRecord(e) {
+            if (e) e.preventDefault();
+
+            const nombre = document.getElementById('regNombre').value;
+            const dui = document.getElementById('regDui').value;
+            const empresa = document.getElementById('regEmpresa').value;
+            const fecha = document.getElementById('regFecha').value;
+            const horaEntrada = document.getElementById('regHoraEntrada').value;
+            const horaSalida = document.getElementById('regHoraSalida').value;
+            const motivo = document.getElementById('regMotivo').value;
+            const quienEntrego = document.getElementById('regQuienEntrego').value;
+            const observaciones = document.getElementById('regObservaciones').value;
+
+            if (!nombre || !dui) {
+                showToast("Por favor seleccione un afiliado primero", "error");
+                return null;
+            }
+
+            const record = {
+                id: Date.now(),
+                fecha,
+                nombre,
+                dui,
+                empresa,
+                horaEntrada,
+                horaSalida,
+                motivo,
+                quienEntrego,
+                observaciones
+            };
+
+            history.unshift(record);
+            localStorage.setItem('hmq_history', JSON.stringify(history));
+
+            currentActiveRecord = record;
+            updateStats();
+            renderHistoryTable();
+            showToast("Registro guardado exitosamente en la bitácora");
+            return record;
+        }
+
+        function saveAndPrintCurrent(e) {
+            const record = saveRecord(e);
+            if (record) {
+                printRecord(record);
+            }
+        }
+
+        function printRecord(record) {
+            document.getElementById('printNombre').innerText = record.nombre;
+            document.getElementById('printDui').innerText = record.dui;
+            document.getElementById('printEmpresa').innerText = record.empresa;
+            document.getElementById('printFecha').innerText = record.fecha;
+            document.getElementById('printHoraEntrada').innerText = record.horaEntrada || '--:--';
+            document.getElementById('printHoraSalida').innerText = record.horaSalida || '--:--';
+            document.getElementById('printMotivo').innerText = record.motivo;
+            document.getElementById('printObservaciones').innerText = record.observaciones || 'NINGUNA';
+            document.getElementById('printQuienEntrego').innerText = record.quienEntrego;
+            document.getElementById('printCorrelativo').innerText = `HMQ-2026-${record.id.toString().slice(-4)}`;
+
+            const printDoc = document.getElementById('printDocument');
+            printDoc.classList.remove('hidden');
+            window.print();
+            printDoc.classList.add('hidden');
+        }
+
+        function openPrintPreviewCurrent() {
+            if (history.length > 0) {
+                printRecord(history[0]);
+            } else {
+                showToast("No hay registros recientes para imprimir", "error");
+            }
+        }
+
+        // Render History Table
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            const filter = document.getElementById('filterHistoryInput')?.value.toLowerCase() || '';
+
+            const filtered = history.filter(h => 
+                h.nombre.toLowerCase().includes(filter) ||
+                h.dui.toLowerCase().includes(filter) ||
+                h.motivo.toLowerCase().includes(filter)
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">No hay registros en la bitácora</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(r => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-mono text-[11px]">${r.fecha}</td>
+                    <td class="p-3 font-bold text-slate-800">${r.nombre}</td>
+                    <td class="p-3 font-mono text-isss-700">${r.dui}</td>
+                    <td class="p-3 text-slate-600">${r.empresa}</td>
+                    <td class="p-3 text-center font-mono text-[11px]">
+                        <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded">${r.horaEntrada || '-'}</span>
+                        <span class="text-slate-400">→</span>
+                        <span class="bg-isss-50 text-isss-700 px-1.5 py-0.5 rounded font-bold">${r.horaSalida || '-'}</span>
+                    </td>
+                    <td class="p-3"><span class="bg-cyan-50 text-cyan-800 text-[10px] font-bold px-2 py-0.5 rounded border border-cyan-200">${r.motivo}</span></td>
+                    <td class="p-3 text-slate-600">${r.quienEntrego}</td>
+                    <td class="p-3 text-center">
+                        <button onclick='printRecord(${JSON.stringify(r)})' class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-1.5 rounded-md transition" title="Imprimir Constancia">
+                            <i class="fa-solid fa-print"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('badgeHistorialCount').innerText = history.length;
+        }
+
+        // DATABASE SEARCH & PAGINATION LOGIC FOR +41,000 RECORDS
+        function onDbSearchChange() {
+            const filter = document.getElementById('filterDbInput')?.value.toLowerCase().trim() || '';
+            if (!filter) {
+                filteredDatabase = database;
+            } else {
+                filteredDatabase = database.filter(d => 
+                    (d.nombre && d.nombre.toLowerCase().includes(filter)) ||
+                    (d.dui && d.dui.includes(filter)) ||
+                    (d.empresa && d.empresa.toLowerCase().includes(filter))
+                );
+            }
+            currentPage = 1;
+            renderDatabaseTable();
+        }
+
+        function renderDatabaseTable() {
+            const tbody = document.getElementById('databaseTableBody');
+            const total = filteredDatabase.length;
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = Math.min(startIdx + pageSize, total);
+            const pageRecords = filteredDatabase.slice(startIdx, endIdx);
+
+            if (pageRecords.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">No se encontraron afiliados en este filtro</td></tr>`;
+            } else {
+                tbody.innerHTML = pageRecords.map((d, index) => `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-mono text-slate-400">${startIdx + index + 1}</td>
+                        <td class="p-3 font-bold text-slate-800">${d.nombre || ''}</td>
+                        <td class="p-3 font-mono text-isss-700 font-semibold">${d.dui || ''}</td>
+                        <td class="p-3 text-slate-600">${d.empresa || 'N/A'}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="selectPerson(${d.id}); switchTab('nuevo');" class="bg-isss-50 hover:bg-isss-100 text-isss-700 px-2.5 py-1 rounded text-[11px] font-bold transition">
+                                Seleccionar
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Update Pagination UI
+            const totalPages = Math.ceil(total / pageSize) || 1;
+            document.getElementById('currentPageDisplay').innerText = `Pág. ${currentPage} de ${totalPages}`;
+            document.getElementById('paginationInfo').innerText = `Mostrando ${total > 0 ? startIdx + 1 : 0} a ${endIdx} de ${total.toLocaleString()} registros`;
+            document.getElementById('btnPrevPage').disabled = currentPage <= 1;
+            document.getElementById('btnNextPage').disabled = currentPage >= totalPages;
+
+            // Global badges
+            document.getElementById('badgeDbCount').innerText = database.length.toLocaleString();
+            document.getElementById('statTotalDb').innerText = database.length.toLocaleString();
+            document.getElementById('dbTotalCountHeader').innerText = database.length.toLocaleString();
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredDatabase.length / pageSize) || 1;
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            renderDatabaseTable();
+        }
+
+        // CSV Parser para manejar archivos grandes (+41,000 registros) de Google Sheets
+        function parseCSVLine(text) {
+            const p = [];
+            let c = '';
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const ch = text[i];
+                if (ch === '"') {
+                    if (inQuotes && text[i+1] === '"') {
+                        c += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (ch === ',' && !inQuotes) {
+                    p.push(c.trim());
+                    c = '';
+                } else {
+                    c += ch;
+                }
+            }
+            p.push(c.trim());
+            return p;
+        }
+
+        // Sync with Google Sheets (+41,000 records support with IndexedDB storage)
+        async function syncFromGoogleSheets() {
+            try {
+                showToast("Sincronizando la base completa de Google Sheets...", "info");
+                const response = await fetch(DEFAULT_CSV_URL);
+                if (!response.ok) throw new Error("Error al comunicarse con Google Sheets");
+                
+                const text = await response.text();
+                const lines = text.split(/\r\n|\n/);
+                const results = [];
+                let idCounter = 1;
+
+                // Process lines in memory checking columns C (2), D (3), and E (4)
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    if (!line || line.trim() === '') continue;
+                    
+                    const cols = parseCSVLine(line);
+                    if (cols.length >= 4) {
+                        const nombre = (cols[2] || "").trim();
+                        const dui = (cols[3] || "").trim();
+                        const empresa = (cols[4] || "").trim();
+
+                        if (nombre.length > 1 && nombre.toUpperCase() !== "NOMBRE") {
+                            results.push({
+                                id: idCounter++,
+                                nombre: nombre.toUpperCase(),
+                                dui: dui,
+                                empresa: empresa
+                            });
+                        }
+                    }
+                }
+
+                if (results.length > 0) {
+                    database = results;
+                    await saveToIndexedDB(database);
+                    onDbSearchChange();
+                    showToast(`Éxito: ¡Base de datos de ${database.length.toLocaleString()} afiliados sincronizada e indexada!`);
+                }
+            } catch (err) {
+                console.error("Sync error:", err);
+                showToast("Cargando base de datos guardada...", "info");
+            }
+        }
+
+        // Modal Add Person
+        function openAddPersonModal() {
+            document.getElementById('addPersonModal').classList.remove('hidden');
+        }
+
+        function closeAddPersonModal() {
+            document.getElementById('addPersonModal').classList.add('hidden');
+        }
+
+        function saveNewPerson(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('newPersonNombre').value.toUpperCase();
+            const dui = document.getElementById('newPersonDui').value;
+            const empresa = document.getElementById('newPersonEmpresa').value;
+
+            const newPerson = { id: Date.now(), nombre, dui, empresa };
+            database.unshift(newPerson);
+            try {
+                localStorage.setItem('hmq_db', JSON.stringify(database));
+            } catch (err) {}
+
+            onDbSearchChange();
+            closeAddPersonModal();
+            showToast("Nuevo afiliado agregado correctamente");
+        }
+
+        function updateStats() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayCount = history.filter(h => h.fecha === todayStr).length;
+            document.getElementById('statToday').innerText = todayCount;
+        }
+
+        function exportHistoryCSV() {
+            if (history.length === 0) {
+                showToast("No hay datos para exportar", "error");
+                return;
+            }
+
+            let csv = "Fecha,Nombre,DUI,Empresa,Hora Entrada,Hora Salida,Motivo,Quien Entrego,Observaciones\n";
+            history.forEach(r => {
+                csv += `"${r.fecha}","${r.nombre}","${r.dui}","${r.empresa}","${r.horaEntrada}","${r.horaSalida}","${r.motivo}","${r.quienEntrego}","${r.observaciones}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Bitacora_HMQ_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+            if (type === "error") {
+                toastIcon.className = "fa-solid fa-triangle-exclamation text-rose-400 text-lg";
+            } else if (type === "info") {
+                toastIcon.className = "fa-solid fa-circle-info text-cyan-400 text-lg";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
+            }
+
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3500);
+        }
+    </script>
+</body>
+</html>
