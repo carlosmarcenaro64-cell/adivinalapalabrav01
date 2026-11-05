@@ -758,14 +758,18 @@
             <!-- Modal Action Buttons Footer -->
             <div class="p-5 bg-white border-t border-slate-100 shrink-0 space-y-3">
                 <p class="text-xs font-bold text-slate-600 text-center">Seleccione la opción para emitir este documento:</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button onclick="executeActionChoice('print')" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button onclick="executeActionChoice('print')" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-xs">
                         <i class="fa-solid fa-print text-sm"></i>
-                        <span>Imprimir Constancia</span>
+                        <span>Imprimir</span>
                     </button>
-                    <button onclick="executeActionChoice('email')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-xs">
+                    <button onclick="executeActionChoice('email')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-xs">
                         <i class="fa-solid fa-file-pdf text-sm"></i>
-                        <span>Descargar PDF y Abrir Correo</span>
+                        <span>Correo Electrónico</span>
+                    </button>
+                    <button onclick="executeActionChoice('whatsapp')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-xs">
+                        <i class="fa-brands fa-whatsapp text-base"></i>
+                        <span>Enviar por WhatsApp</span>
                     </button>
                 </div>
                 <div class="text-center pt-1">
@@ -775,6 +779,43 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- MODAL INGRESO NÚMERO WHATSAPP -->
+    <div id="whatsappModal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
+            <div class="flex items-center space-x-3 text-green-700">
+                <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl font-bold">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-slate-900">Enviar por WhatsApp</h3>
+                    <p class="text-xs text-slate-500 font-medium">HMQ - Constancia de Permanencia</p>
+                </div>
+            </div>
+            
+            <form onsubmit="confirmSendWhatsApp(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Número de Teléfono / WhatsApp *</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400">+503</span>
+                        <input type="tel" id="whatsappPhoneInput" required placeholder="7000-0000" 
+                            class="w-full pl-14 pr-3.5 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-green-600 focus:border-green-600">
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Se abrirá el chat con la constancia redactada.</p>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeWhatsAppModal()" class="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-md flex items-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Abrir Chat</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1078,68 +1119,13 @@
 
             history.unshift(record);
             localStorage.setItem('hmq_history', JSON.stringify(history));
-
-            currentActiveRecord = record;
             updateStats();
             renderHistoryTable();
-            showToast("Registro guardado exitosamente en la bitácora");
+            showToast("Constancia guardada en la bitácora");
             return record;
         }
 
-        // CONTROL DEL MODAL DE VISTA PREVIA Y ACCIONES (IMPRIMIR / EMAIL)
-        function openActionChooser(e) {
-            if (e) e.preventDefault();
-            const nombre = document.getElementById('regNombre').value.trim();
-            const dui = document.getElementById('regDui').value.trim();
-            const empresa = document.getElementById('regEmpresa').value.trim();
-            const fecha = document.getElementById('regFecha').value;
-            const horaEntrada = document.getElementById('regHoraEntrada').value;
-            const horaSalida = document.getElementById('regHoraSalida').value;
-            const motivo = document.getElementById('regMotivo').value;
-            const quienEntrego = document.getElementById('regQuienEntrego').value;
-            const observaciones = document.getElementById('regObservaciones').value;
-
-            const isAcompanante = motivo.toLowerCase().includes('acompañante') || motivo.toLowerCase().includes('acompanante');
-            const pacienteNombre = document.getElementById('regPacienteNombre')?.value || '';
-            const pacienteDui = document.getElementById('regPacienteDui')?.value || '';
-            const pacienteMotivo = document.getElementById('regPacienteMotivoConsulta')?.value || '';
-            const pacienteParentesco = document.getElementById('regPacienteParentesco')?.value || '';
-
-            if (!nombre || !dui) {
-                showToast("Por favor complete los campos obligatorios antes de continuar", "error");
-                return;
-            }
-
-            // Populate Live Preview Modal Elements
-            document.getElementById('previewNombre').innerText = nombre;
-            document.getElementById('previewDui').innerText = dui;
-            document.getElementById('previewEmpresa').innerText = empresa || 'N/A';
-            document.getElementById('previewFecha').innerText = fecha;
-            document.getElementById('previewHoraEntrada').innerText = horaEntrada || '--:--';
-            document.getElementById('previewHoraSalida').innerText = horaSalida || '--:--';
-            document.getElementById('previewMotivo').innerText = motivo || 'N/A';
-            document.getElementById('previewQuienEntrego').innerText = quienEntrego;
-            document.getElementById('previewObservaciones').innerText = observaciones || 'NINGUNA';
-            document.getElementById('previewCorrelativo').innerText = `HMQ-2026-${Date.now().toString().slice(-4)}`;
-
-            // Populate preview acompanante box
-            const previewBox = document.getElementById('previewAcompananteBox');
-            if (isAcompanante) {
-                document.getElementById('previewPacienteNombre').innerText = pacienteNombre || '---';
-                document.getElementById('previewPacienteDui').innerText = pacienteDui || 'N/A';
-                document.getElementById('previewPacienteParentesco').innerText = pacienteParentesco || 'N/A';
-                document.getElementById('previewPacienteMotivo').innerText = pacienteMotivo || 'N/A';
-                previewBox.classList.remove('hidden');
-            } else {
-                previewBox.classList.add('hidden');
-            }
-
-            document.getElementById('actionChoiceModal').classList.remove('hidden');
-        }
-
-        function closeActionChooser() {
-            document.getElementById('actionChoiceModal').classList.add('hidden');
-        }
+        let pendingWhatsAppRecord = null;
 
         function executeActionChoice(choice) {
             closeActionChooser();
@@ -1150,7 +1136,68 @@
                 printRecord(record);
             } else if (choice === 'email') {
                 sendEmailRecord(record);
+            } else if (choice === 'whatsapp') {
+                openWhatsAppPrompt(record);
             }
+        }
+
+        function openWhatsAppPrompt(record) {
+            pendingWhatsAppRecord = record;
+            document.getElementById('whatsappPhoneInput').value = '';
+            document.getElementById('whatsappModal').classList.remove('hidden');
+        }
+
+        function closeWhatsAppModal() {
+            document.getElementById('whatsappModal').classList.add('hidden');
+            pendingWhatsAppRecord = null;
+        }
+
+        async function confirmSendWhatsApp(e) {
+            if (e) e.preventDefault();
+            const phoneRaw = document.getElementById('whatsappPhoneInput').value.replace(/[^0-9]/g, '');
+            if (!phoneRaw || phoneRaw.length < 8) {
+                showToast("Por favor ingrese un número de teléfono válido", "error");
+                return;
+            }
+
+            const record = pendingWhatsAppRecord || history[0];
+            closeWhatsAppModal();
+
+            if (!record) return;
+
+            await generateAndDownloadPDF(record);
+
+            let acompananteDetails = '';
+            if (record.isAcompanante) {
+                acompananteDetails = `\n*Detalles del Acompañamiento:*\n` +
+                `- *Paciente:* ${record.pacienteNombre || 'N/A'}\n` +
+                `- *DUI Paciente:* ${record.pacienteDui || 'N/A'}\n` +
+                `- *Parentesco:* ${record.pacienteParentesco || 'N/A'}\n` +
+                `- *Motivo Consulta:* ${record.pacienteMotivo || 'N/A'}\n`;
+            }
+
+            const message = 
+                `*INSTITUTO SALVADOREÑO DEL SEGURO SOCIAL (ISSS)*\n` +
+                `*Hospital Médico Quirúrgico (HMQ)*\n` +
+                `*CONSTANCIA DE PERMANENCIA*\n\n` +
+                `📄 *Detalles del Comprobante:*\n` +
+                `- *Nombre:* ${record.nombre}\n` +
+                `- *DUI / Afiliación:* ${record.dui}\n` +
+                `- *Empresa / Inst.:* ${record.empresa}\n` +
+                `- *Fecha:* ${record.fecha}\n` +
+                `- *Hora Entrada:* ${record.horaEntrada || 'N/A'}\n` +
+                `- *Hora Salida:* ${record.horaSalida || 'N/A'}\n` +
+                `- *Motivo:* ${record.motivo}\n` +
+                acompananteDetails +
+                `- *Entregado Por:* ${record.quienEntrego}\n` +
+                `- *Observaciones:* ${record.observaciones || 'Ninguna'}\n\n` +
+                `📌 *Nota:* El PDF de la constancia oficial se ha descargado a su equipo para ser adjuntado a este chat.`;
+
+            const formattedPhone = phoneRaw.length === 8 ? `503${phoneRaw}` : phoneRaw;
+            const waUrl = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(message)}`;
+
+            window.open(waUrl, '_blank');
+            showToast("Abriendo WhatsApp y descargando PDF...");
         }
 
         function printRecord(record) {
@@ -1190,7 +1237,6 @@
             }
         }
 
-        // Render History Table
         function renderHistoryTable() {
             const tbody = document.getElementById('historyTableBody');
             const filter = document.getElementById('filterHistoryInput')?.value.toLowerCase() || '';
@@ -1226,6 +1272,9 @@
                         <button onclick='sendEmailRecord(${JSON.stringify(r)})' class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1.5 rounded-md transition" title="Enviar por Correo">
                             <i class="fa-solid fa-envelope"></i>
                         </button>
+                        <button onclick='openWhatsAppPrompt(${JSON.stringify(r)})' class="bg-green-50 hover:bg-green-100 text-green-700 p-1.5 rounded-md transition" title="Enviar por WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </button>
                     </td>
                 </tr>
             `).join('');
@@ -1233,7 +1282,6 @@
             document.getElementById('badgeHistorialCount').innerText = history.length;
         }
 
-        // DATABASE SEARCH & PAGINATION LOGIC FOR +41,000 RECORDS
         function onDbSearchChange() {
             const filter = (document.getElementById('filterDbInput')?.value || '').toLowerCase().trim();
             if (!filter) {
@@ -1334,13 +1382,11 @@
             onDbSearchChange();
             showToast("Nuevo afiliado agregado correctamente");
             
-            // Clean form
             document.getElementById('newPersonNombre').value = '';
             document.getElementById('newPersonDui').value = '';
             document.getElementById('newPersonEmpresa').value = '';
         }
 
-        // GOOGLE SHEETS CSV SYNC PROCESSOR
         async function syncFromGoogleSheets() {
             showToast("Descargando actualización de Google Sheets...", "info");
             try {
@@ -1356,10 +1402,8 @@
                     const line = lines[i].trim();
                     if (!line) continue;
                     
-                    // Simple CSV Split
                     const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                     
-                    // Indice C (2): Nombre, D (3): DUI, E (4): Empresa
                     if (cols.length >= 4) {
                         const nombre = cols[2] || '';
                         const dui = cols[3] || '';
@@ -1454,7 +1498,6 @@
                 `Subdirección de Atención Al Usuario - ISSS HMQ`
             );
 
-            // Trigger PDF Download first then open mail client
             generateAndDownloadPDF(record).then(() => {
                 showToast("PDF descargado. Abriendo gestor de correo...", "info");
                 setTimeout(() => {
@@ -1464,7 +1507,6 @@
         }
 
         async function generateAndDownloadPDF(record) {
-            // Fill print layout for PDF capture
             document.getElementById('printNombre').innerText = record.nombre;
             document.getElementById('printDui').innerText = record.dui;
             document.getElementById('printEmpresa').innerText = record.empresa;
@@ -1492,8 +1534,6 @@
 
             try {
                 showToast("Generando archivo PDF...", "info");
-                
-                // Wait for styles to settle before rendering
                 await new Promise(r => setTimeout(r, 150));
 
                 const canvas = await html2canvas(printElement, {
@@ -1522,27 +1562,58 @@
             }
         }
 
-        async function executeActionChoice(choice) {
-            closeActionChooser();
-            const record = saveRecord();
-            if (!record) return;
+        function openActionChooser(e) {
+            if (e) e.preventDefault();
+            const nombre = document.getElementById('regNombre').value;
+            const dui = document.getElementById('regDui').value;
+            const empresa = document.getElementById('regEmpresa').value;
 
-            if (choice === 'print') {
-                printRecord(record);
-            } else if (choice === 'email') {
-                // First download the PDF, then trigger mail client
-                await generateAndDownloadPDF(record);
-                setTimeout(() => {
-                    sendEmailRecord(record);
-                }, 800);
+            if (!nombre || !dui) {
+                showToast("Por favor complete los campos obligatorios", "error");
+                return;
             }
+
+            const fecha = document.getElementById('regFecha').value;
+            const horaEntrada = document.getElementById('regHoraEntrada').value;
+            const horaSalida = document.getElementById('regHoraSalida').value;
+            const motivo = document.getElementById('regMotivo').value;
+            const quienEntrego = document.getElementById('regQuienEntrego').value;
+            const observaciones = document.getElementById('regObservaciones').value;
+
+            const isAcompanante = motivo.toLowerCase().includes('acompañante') || motivo.toLowerCase().includes('acompanante');
+            const pacienteNombre = isAcompanante ? (document.getElementById('regPacienteNombre')?.value || '') : '';
+            const pacienteDui = isAcompanante ? (document.getElementById('regPacienteDui')?.value || '') : '';
+            const pacienteMotivo = isAcompanante ? (document.getElementById('regPacienteMotivoConsulta')?.value || '') : '';
+            const pacienteParentesco = isAcompanante ? (document.getElementById('regPacienteParentesco')?.value || '') : '';
+
+            // Populate Preview Modal
+            document.getElementById('previewNombre').innerText = nombre;
+            document.getElementById('previewDui').innerText = dui;
+            document.getElementById('previewEmpresa').innerText = empresa;
+            document.getElementById('previewFecha').innerText = fecha;
+            document.getElementById('previewHoraEntrada').innerText = horaEntrada || '--:--';
+            document.getElementById('previewHoraSalida').innerText = horaSalida || '--:--';
+            document.getElementById('previewMotivo').innerText = motivo;
+            document.getElementById('previewQuienEntrego').innerText = quienEntrego;
+            document.getElementById('previewObservaciones').innerText = observaciones || 'NINGUNA';
+            document.getElementById('previewCorrelativo').innerText = `HMQ-2026-${Date.now().toString().slice(-4)}`;
+
+            const previewAcompBox = document.getElementById('previewAcompananteBox');
+            if (isAcompanante) {
+                document.getElementById('previewPacienteNombre').innerText = pacienteNombre || '---';
+                document.getElementById('previewPacienteDui').innerText = pacienteDui || 'N/A';
+                document.getElementById('previewPacienteParentesco').innerText = pacienteParentesco || 'N/A';
+                document.getElementById('previewPacienteMotivo').innerText = pacienteMotivo || 'N/A';
+                previewAcompBox.classList.remove('hidden');
+            } else {
+                previewAcompBox.classList.add('hidden');
+            }
+
+            document.getElementById('actionChoiceModal').classList.remove('hidden');
         }
 
-        function saveAndEmailCurrent(e) {
-            const record = saveRecord(e);
-            if (record) {
-                sendEmailRecord(record);
-            }
+        function closeActionChooser() {
+            document.getElementById('actionChoiceModal').classList.add('hidden');
         }
 
         function updateStats() {
