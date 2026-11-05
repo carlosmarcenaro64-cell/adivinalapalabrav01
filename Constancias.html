@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Constancias de Permanencia HMQ - ISSS</title>
+    <title>🪪 Sistema de Constancias de Permanencia HMQ - ISSS</title>
+    <!-- Favicon Icon Badge (Carnet Médico ISSS con Avatar) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%23003366'/><path d='M16 14h22a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V18a4 4 0 0 1 4-4z' fill='%2338bdf8'/><path d='M25 21h4v4h-4zM27 19h-2v8h2z' fill='%23003366'/><path d='M18 33h14M18 39h10' stroke='%23003366' stroke-width='3' stroke-linecap='round'/><circle cx='46' cy='32' r='8' fill='%2338bdf8'/><path d='M34 48c0-5 5-8 12-8s12 3 12 8' fill='%2338bdf8'/></svg>">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -81,58 +83,90 @@
             background: #94a3b8;
         }
         @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background: white !important; }
+            body * {
+                visibility: hidden !important;
+            }
+            #printableArea, #printableArea * {
+                visibility: visible !important;
+            }
+            #printableArea {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 20px !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: white !important;
+            }
+            .no-print {
+                display: none !important;
+            }
         }
     </style>
 </head>
 <body class="h-full flex flex-col text-slate-800 antialiased selection:bg-isss-700 selection:text-white">
 
     <!-- PANTALLA DE INICIO DE SESIÓN -->
-    <div id="loginGate" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-100 animate-fadeIn">
-            <div class="text-center space-y-2">
-                <div class="w-16 h-16 bg-isss-700 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg text-2xl font-black">
-                    ISSS
+    <div id="loginGate" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-gradient-to-b from-slate-100/90 to-slate-200/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl max-w-sm w-full p-8 border border-white/80 space-y-6 text-slate-700 animate-fadeIn relative">
+            
+            <!-- LOGO BADGE GRADIENT -->
+            <div class="flex justify-center">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30 text-2xl border border-white/20">
+                    <i class="fa-solid fa-id-card-clip"></i>
                 </div>
-                <h2 class="text-xl font-black text-slate-900 tracking-tight">Acceso al Sistema HMQ</h2>
-                <p class="text-xs text-slate-500 font-medium">Hospital Médico Quirúrgico — ISSS</p>
             </div>
 
+            <!-- ENCABEZADOS -->
+            <div class="text-center space-y-2">
+                <span class="inline-block bg-blue-50 text-blue-600 font-bold text-[10px] px-3 py-1 rounded-full border border-blue-200/60 uppercase tracking-wider shadow-sm">
+                    INSTITUTO SALVADOREÑO DEL SEGURO SOCIAL
+                </span>
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Sistema De Constancias De Permanencia</h2>
+                <p class="text-xs text-slate-500 font-medium">Control y Consulta de Accesos Institucionales</p>
+            </div>
+
+            <!-- FORMULARIO DE ACCESO -->
             <form onsubmit="authenticateUser(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Usuario / Código</label>
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider pl-1">USUARIO</label>
                     <div class="relative">
-                        <input type="text" id="loginUser" required placeholder="hmq" 
-                            class="w-full pl-10 pr-3.5 py-3 text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-900 font-semibold focus:ring-2 focus:ring-isss-700 focus:border-isss-700">
-                        <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <span class="absolute left-4 top-3.5 text-slate-400 text-sm">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </span>
+                        <input type="text" id="loginUser" required placeholder="Ingrese el usuario" 
+                            class="w-full pl-11 pr-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition shadow-inner">
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Contraseña de Acceso</label>
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider pl-1">CONTRASEÑA</label>
                     <div class="relative">
+                        <span class="absolute left-4 top-3.5 text-slate-400 text-sm">
+                            <i class="fa-solid fa-key"></i>
+                        </span>
                         <input type="password" id="loginPassword" required placeholder="••••••••" 
-                            class="w-full pl-10 pr-3.5 py-3 text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-900 font-semibold focus:ring-2 focus:ring-isss-700 focus:border-isss-700">
-                        <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400"></i>
+                            class="w-full pl-11 pr-10 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition shadow-inner">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 text-sm transition">
+                            <i id="togglePasswordIcon" class="fa-solid fa-eye"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div id="loginError" class="hidden text-xs text-rose-600 bg-rose-50 border border-rose-200 font-bold p-3 rounded-xl flex items-center gap-2">
+                <div id="loginError" class="hidden text-xs text-rose-600 bg-rose-50 border border-rose-200 font-bold p-3 rounded-2xl flex items-center gap-2 animate-fadeIn">
                     <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
                     <span>Usuario o clave incorrectos. Intente de nuevo.</span>
                 </div>
 
-                <button type="submit" class="w-full bg-isss-700 hover:bg-isss-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg hover:shadow-xl transition flex items-center justify-center space-x-2 text-sm">
-                    <i class="fa-solid fa-right-to-bracket"></i>
-                    <span>Ingresar al Sistema</span>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-900 hover:from-blue-700 hover:to-indigo-950 text-white font-black py-3.5 px-5 rounded-2xl shadow-lg shadow-blue-700/25 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 text-sm tracking-wide">
+                    <span>Acceder al Sistema</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
                 </button>
             </form>
 
-            <div class="text-center pt-2">
-                <p class="text-[11px] text-slate-400">Hospital Médico Quirúrgico — Atención al Usuario</p>
-            </div>
         </div>
     </div>
 
@@ -701,6 +735,18 @@
                 if (gate) gate.classList.add('hidden');
             } else {
                 if (gate) gate.classList.remove('hidden');
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('loginPassword');
+            const icon = document.getElementById('togglePasswordIcon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                pwdInput.type = 'password';
+                icon.className = 'fa-solid fa-eye';
             }
         }
 
