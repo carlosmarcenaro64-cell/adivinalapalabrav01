@@ -15,6 +15,14 @@
     <!-- FontAwesome para iconos animados -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Configuración PWA (Instalable en Teléfonos Android / iOS) -->
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Claves%20ISSS%22%2C%22short_name%22%3A%22Claves%20ISSS%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230d1b2a%22%2C%22theme_color%22%3A%22%230d1b2a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D'http%253A%22%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%253D'0%25200%2520512%2520512'%2520fill%253D'%25232563eb'%253E%253Crect%2520width%253D'512'%2520height%253D'512'%2520rx%253D'100'%2520fill%253D'%25230d1b2a'%2F%253E%253Cpath%2520d%253D'M384%2520192h-32v-48c0-53-43-96-96-96s-96%252043-96%252096v48h-32c-17.7%25200-32%252014.3-32%252032v224c0%252017.7%252014.3%252032%252032%252032h256c17.7%25200%252032-14.3%252032-32V224c0-17.7-14.3-32-32-32zm-128%2520160c-17.7%25200-32-14.3-32-32s14.3-32%252032-32%252032%252014.3%252032%252032-14.3%252032-32%252032zm48-160H208v-48c0-26.5%252021.5-48%252048-48s48%252021.5%252048%252048v48z'%2520fill%253D'%25233b82f6'%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Claves ISSS">
+    <meta name="theme-color" content="#0d1b2a">
+
     <script>
         tailwind.config = {
             theme: {
@@ -200,6 +208,27 @@
     </style>
 </head>
 <body class="bg-slate-900 text-slate-800 antialiased min-h-screen selection:bg-blue-500 selection:text-white">
+
+    <!-- BANNER PWA PARA INSTALAR EN MÓVIL -->
+    <div id="pwaInstallBanner" class="hidden fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50 bg-slate-900/95 backdrop-blur-md text-white p-4 rounded-2xl border border-blue-500/50 shadow-2xl animate-pop flex items-center justify-between gap-3">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-lg shadow-md shrink-0">
+                📱
+            </div>
+            <div>
+                <h4 class="text-xs font-bold text-white">Instalar Claves ISSS</h4>
+                <p id="pwaDesc" class="text-[11px] text-slate-300">Añade esta app a tu pantalla de inicio.</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2 shrink-0">
+            <button id="pwaInstallBtn" onclick="installPWA()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md transition-all active:scale-95">
+                Instalar
+            </button>
+            <button onclick="dismissPWABanner()" class="text-slate-400 hover:text-white p-1 text-sm">
+                ✕
+            </button>
+        </div>
+    </div>
 
     <!-- CONTENEDOR DE NIEVE DE FONDO -->
     <div id="snowContainer" class="fixed inset-0 pointer-events-none z-50"></div>
@@ -615,6 +644,7 @@
             }
         }
 
+        // Prelectura de usuarios y claves desde Columnas A y B
         function preloadAccessPasswords() {
             Object.keys(USERS_DATABASE).forEach(u => {
                 const url = USERS_DATABASE[u].csvUrl;
@@ -622,12 +652,17 @@
                 Papa.parse(url, {
                     download: true,
                     header: false,
-                    skipEmptyLines: false,
+                    skipEmptyLines: true,
                     complete: function(results) {
-                        if (results.data && results.data.length >= 2) {
-                            const g2Value = results.data[1] && results.data[1][6] ? String(results.data[1][6]).trim() : "";
-                            if (g2Value) {
-                                USERS_DATABASE[u].pass = g2Value;
+                        if (results.data && results.data.length >= 4) {
+                            // Buscar en las filas de la Columna A y B la clave del usuario
+                            for (let i = 3; i < results.data.length; i++) {
+                                const userCol = results.data[i][0] ? String(results.data[i][0]).trim().toLowerCase() : "";
+                                const passCol = results.data[i][1] ? String(results.data[i][1]).trim() : "";
+                                if (userCol === u && passCol !== "") {
+                                    USERS_DATABASE[u].pass = passCol;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -678,29 +713,12 @@
         }
 
         const fallbackData = [
-            { sistema: "AGENDA", usuario: "A004046", contrasena: "Agosto2026.", centro_de_atencion: "CEIBA", actualizada: "27/08/26" },
-            { sistema: "AGENDA", usuario: "P002529", contrasena: "Carlos2026..", centro_de_atencion: "ZACAMIL", actualizada: "10/10/26" },
-            { sistema: "AGENDA", usuario: "C004199", contrasena: "Sept2026.", centro_de_atencion: "ONCOLOGIA", actualizada: "10/11/26" },
-            { sistema: "AGENDA", usuario: "A003641", contrasena: "Marcenaro24", centro_de_atencion: "MQ", actualizada: "14/10/26" },
-            { sistema: "AGENDA", usuario: "R002715", contrasena: "", centro_de_atencion: "Oncología", actualizada: "" },
-            { sistema: "AGENDA", usuario: "L001838", contrasena: "Aguila11", centro_de_atencion: "HMQ", actualizada: "03/11/26" },
-            { sistema: "WED IMPACTO", usuario: "A003641", contrasena: "Arias1212", centro_de_atencion: "", actualizada: "25/09/26" },
-            { sistema: "WED IMPACTO", usuario: "C004199", contrasena: "Isss2026", centro_de_atencion: "sobrevivencia", actualizada: "08/09/26" },
-            { sistema: "WED IMPACTO", usuario: "L001838", contrasena: "Noviembre26", centro_de_atencion: "", actualizada: "02/11/26" },
-            { sistema: "WED IMPACTO", usuario: "P002529", contrasena: "Octubre2026", centro_de_atencion: "", actualizada: "04/10/26" },
-            { sistema: "EMERGENCIA", usuario: "P002123", contrasena: "Noviembre26", centro_de_atencion: "MQ", actualizada: "28/10/26" },
-            { sistema: "EMERGENCIA", usuario: "C004199", contrasena: "Septiembr3", centro_de_atencion: "MQ", actualizada: "14/09/26" },
-            { sistema: "EMERGENCIA", usuario: "R002715", contrasena: "", centro_de_atencion: "MQ", actualizada: "" },
-            { sistema: "DOMICILIAR", usuario: "C004199", contrasena: "Octubre2026.", centro_de_atencion: "", actualizada: "28/09/26" },
-            { sistema: "DOMICILIAR", usuario: "L001838", contrasena: "Noviembre26", centro_de_atencion: "MQ", actualizada: "02/11/26" },
-            { sistema: "DOMICILIAR", usuario: "A003641", contrasena: "Isss2026", centro_de_atencion: "MQ", actualizada: "14/10/26" },
-            { sistema: "DOMICILIAR", usuario: "P002529", contrasena: "Carlos2026..", centro_de_atencion: "MQ", actualizada: "03/11/26" },
-            { sistema: "COMPUTADORAS A.T.", usuario: "Punt0S3guro26.", contrasena: "", centro_de_atencion: "", actualizada: "23/10/26" },
-            { sistema: "COMPUTADORAS MEDICOS", usuario: "J", contrasena: "", centro_de_atencion: "", actualizada: "15/09/26" },
-            { sistema: "CORREO ELECTRONICO", usuario: "hospitalhmqisss@gmail.com", contrasena: "Atencion.usuario.2026", centro_de_atencion: "MQ", actualizada: "" },
-            { sistema: "VOCEO", usuario: "puntoseguro.hmq", contrasena: "Punt0S3guro26.", centro_de_atencion: "", actualizada: "23/10/26" },
-            { sistema: "INCAPACIDADES", usuario: "P002529", contrasena: "Carlos2026..", centro_de_atencion: "MQ", actualizada: "03/11/26" },
-            { sistema: "EXPEDIENTE CLINICO", usuario: "C004199", contrasena: "Septiembr3", centro_de_atencion: "MQ", actualizada: "14/09/26" }
+            { de_usuario: "hmq", sistema: "AGENDA", usuario: "A004046", contrasena: "Agosto2026.", centro_de_atencion: "CEIBA", actualizada: "06/11/26" },
+            { de_usuario: "hmq", sistema: "AGENDA", usuario: "P002529", contrasena: "Carlos2026..", centro_de_atencion: "ZACAMIL", actualizada: "10/10/26" },
+            { de_usuario: "hmq", sistema: "AGENDA", usuario: "C004199", contrasena: "Sept2026.", centro_de_atencion: "ONCOLOGIA", actualizada: "10/11/26" },
+            { de_usuario: "hmq", sistema: "AGENDA", usuario: "A003641", contrasena: "Arias1212", centro_de_atencion: "MQ", actualizada: "04/11/26" },
+            { de_usuario: "hmq", sistema: "WED IMPACTO", usuario: "A003641", contrasena: "Arias1212", centro_de_atencion: "", actualizada: "04/11/26" },
+            { de_usuario: "hmq", sistema: "CORREO ELECTRONICO", usuario: "hospitalhmqisss@gmail.com", contrasena: "Atencion.usuario.2026", centro_de_atencion: "MQ", actualizada: "" }
         ];
 
         let allData = [];
@@ -738,7 +756,6 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'flex';
                 
-                // MOSTRAR BOTONES FLOTANTES AL INICIAR SESIÓN
                 const quickLinks = document.getElementById('floatingQuickLinks');
                 if (quickLinks) {
                     quickLinks.classList.remove('hidden');
@@ -762,8 +779,7 @@
             currentScriptUrl = "";
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
-
-            // OCULTAR BOTONES FLOTANTES AL CERRAR SESIÓN
+            
             const quickLinks = document.getElementById('floatingQuickLinks');
             if (quickLinks) {
                 quickLinks.classList.add('hidden');
@@ -775,6 +791,7 @@
             showToast("Sesión cerrada correctamente", false);
         }
 
+        // Carga y parseo según la nueva estructura de columnas (D=de usuario, E=Sistema, F=Usuario, G=Contraseña, H=Centro, I=Actualizada)
         function loadSheetData() {
             if (!currentCsvUrl) {
                 useFallback();
@@ -791,29 +808,41 @@
                         let currentSystem = "";
                         
                         results.data.forEach((row) => {
-                            const colA = row[0] ? String(row[0]).trim() : "";
-                            const colB = row[1] ? String(row[1]).trim() : "";
-                            const colC = row[2] ? String(row[2]).trim() : "";
-                            const colD = row[3] ? String(row[3]).trim() : "";
+                            // Mapeo según la captura enviada:
+                            // Col D (3) = de usuario
+                            // Col E (4) = Sistema
+                            // Col F (5) = Usuario
+                            // Col G (6) = Contraseña
+                            // Col H (7) = Centro
+                            // Col I (8) = Actualizada
+                            const colDeUsuario = row[3] ? String(row[3]).trim().toLowerCase() : "";
                             const colE = row[4] ? String(row[4]).trim() : "";
+                            const colF = row[5] ? String(row[5]).trim() : "";
+                            const colG = row[6] ? String(row[6]).trim() : "";
+                            const colH = row[7] ? String(row[7]).trim() : "";
+                            const colI = row[8] ? String(row[8]).trim() : "";
 
-                            if (colA.toLowerCase() === "sistema" && colB.toLowerCase() === "usuario") {
+                            if (colE.toLowerCase() === "sistema" && colF.toLowerCase() === "usuario") {
                                 return;
                             }
 
-                            if (colA !== "") {
-                                currentSystem = colA.toUpperCase();
+                            if (colE !== "") {
+                                currentSystem = colE.toUpperCase();
                             }
 
-                            if (colB !== "" || colC !== "" || colD !== "" || colE !== "") {
-                                parsed.push({
-                                    originalIndex: parsed.length,
-                                    sistema: currentSystem || "GENERAL",
-                                    usuario: colB,
-                                    contrasena: colC,
-                                    centro_de_atencion: colD,
-                                    actualizada: colE
-                                });
+                            // Filtrar por los registros correspondientes al usuario que hizo login
+                            if (colDeUsuario === currentActiveUser || colDeUsuario === "" || !currentActiveUser) {
+                                if (colF !== "" || colG !== "" || colH !== "" || colI !== "") {
+                                    parsed.push({
+                                        originalIndex: parsed.length,
+                                        de_usuario: colDeUsuario || currentActiveUser,
+                                        sistema: currentSystem || "GENERAL",
+                                        usuario: colF,
+                                        contrasena: colG,
+                                        centro_de_atencion: colH,
+                                        actualizada: colI
+                                    });
+                                }
                             }
                         });
 
@@ -831,324 +860,5 @@
                 }
             });
         }
-
-        function useFallback() {
-            allData = fallbackData.map((row, idx) => ({
-                originalIndex: idx,
-                sistema: row.sistema.toUpperCase(),
-                usuario: row.usuario,
-                contrasena: row.contrasena,
-                centro_de_atencion: row.centro_de_atencion,
-                actualizada: row.actualizada
-            }));
-            updateCount();
-            renderSystems(allData);
-        }
-
-        function updateCount() {
-            document.getElementById('totalCount').innerText = allData.length;
-        }
-
-        function togglePassword(index) {
-            visiblePasswords[index] = !visiblePasswords[index];
-            renderSystems(allData);
-        }
-
-        function copyToClipboard(text, label) {
-            if (!text) return;
-            const el = document.createElement('textarea');
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            showToast(`${label} copiado al portapapeles`);
-        }
-
-        function renderSystems(data) {
-            const container = document.getElementById('systemsContainer');
-
-            if (data.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-semibold animate-fade-in">No se encontraron registros coincidentes. ❄️</div>`;
-                return;
-            }
-
-            const grouped = {};
-            data.forEach((item) => {
-                const sysName = item.sistema || "GENERAL";
-                if (!grouped[sysName]) {
-                    grouped[sysName] = [];
-                }
-                grouped[sysName].push(item);
-            });
-
-            container.innerHTML = Object.keys(grouped).map((sistema, sIdx) => {
-                const items = grouped[sistema];
-                return `
-                    <div class="bg-white rounded-3xl shadow-md overflow-hidden flex flex-col justify-between card-hover-effect animate-slide-up christmas-border" style="animation-delay: ${sIdx * 0.05}s">
-                        <div class="bg-gradient-to-r from-red-900 via-blue-900 to-emerald-900 px-5 py-4 flex items-center justify-between text-white relative">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="text-base">🎁</span>
-                                <h3 class="font-extrabold text-white text-sm tracking-wide uppercase drop-shadow">${sistema}</h3>
-                            </div>
-                            <span class="text-[11px] bg-white/20 text-white font-extrabold px-3 py-1 rounded-full border border-white/30 backdrop-blur-xs">
-                                ${items.length} ${items.length === 1 ? 'registro' : 'registros'}
-                            </span>
-                        </div>
-
-                        <div class="p-5 space-y-3.5 flex-1 bg-gradient-to-b from-white to-slate-50/50">
-                            ${items.map(item => {
-                                const idx = item.originalIndex;
-                                const isVisible = visiblePasswords[idx];
-                                return `
-                                    <div class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs transition-all hover:bg-slate-50 relative">
-                                        <div class="flex justify-between items-start mb-2.5">
-                                            <div>
-                                                <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Usuario (Col. B)</span>
-                                                <div class="flex items-center space-x-1.5 mt-0.5">
-                                                    <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
-                                                        ${item.usuario || '<span class="text-slate-300 italic">No especificado</span>'}
-                                                    </span>
-                                                    ${item.usuario ? `
-                                                        <button onclick="copyToClipboard('${item.usuario}', 'Usuario')" class="text-slate-400 hover:text-blue-600 text-xs px-1 transition-colors" title="Copiar Usuario">
-                                                            <i class="fa-regular fa-copy"></i>
-                                                        </button>
-                                                    ` : ''}
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="flex flex-col items-end space-y-1">
-                                                ${item.centro_de_atencion ? `
-                                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200/60" title="Centro de Atención (Col. D)">
-                                                        <i class="fa-solid fa-hospital text-[9px] mr-1"></i>${item.centro_de_atencion}
-                                                    </span>
-                                                ` : ''}
-                                                ${item.actualizada ? `
-                                                    <span class="text-[9px] bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-200/60" title="Fecha de Actualización (Col. E)">
-                                                        <i class="fa-regular fa-calendar-check text-[8px] mr-1"></i>${item.actualizada}
-                                                    </span>
-                                                ` : ''}
-                                            </div>
-                                        </div>
-
-                                        <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-100">
-                                            <div>
-                                                <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Contraseña (Col. C)</span>
-                                                <div class="flex items-center space-x-2 mt-0.5">
-                                                    <span class="font-mono text-xs text-slate-700 font-bold">
-                                                        ${item.contrasena ? (isVisible ? item.contrasena : '••••••••') : '<span class="text-slate-300 italic font-normal text-xs">Sin clave</span>'}
-                                                    </span>
-                                                    ${item.contrasena ? `
-                                                        <button onclick="togglePassword(${idx})" class="text-slate-400 hover:text-slate-600 text-xs transition-colors">
-                                                            <i class="fa-solid ${isVisible ? 'fa-eye-slash' : 'fa-eye'}"></i>
-                                                        </button>
-                                                        <button onclick="copyToClipboard('${item.contrasena}', 'Contraseña')" class="text-slate-400 hover:text-blue-600 text-xs transition-colors" title="Copiar Clave">
-                                                            <i class="fa-regular fa-copy"></i>
-                                                        </button>
-                                                    ` : ''}
-                                                </div>
-                                            </div>
-                                            <button onclick="openEditModal(${idx})" class="text-xs bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white font-bold px-3 py-1.5 rounded-xl transition-all shadow-2xs flex items-center space-x-1.5 active:scale-95">
-                                                <i class="fa-solid fa-pen-to-square text-[10px]"></i>
-                                                <span>Editar</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openEditModal(index) {
-            const row = allData[index];
-            document.getElementById('editIndex').value = index;
-            document.getElementById('editSistema').value = row.sistema;
-            document.getElementById('editUsuario').value = row.usuario;
-            document.getElementById('editPassword').value = row.contrasena;
-
-            const currentPass = row.contrasena;
-            const linked = allData.filter((r, i) => i !== index && r.contrasena === currentPass && currentPass !== "");
-
-            const linkedSection = document.getElementById('linkedSection');
-            const linkedList = document.getElementById('linkedSystemsList');
-
-            if (linked.length > 0) {
-                linkedSection.classList.remove('hidden');
-                linkedList.innerText = [...new Set(linked.map(r => r.sistema))].join(', ');
-            } else {
-                linkedSection.classList.add('hidden');
-            }
-
-            document.getElementById('editModal').classList.remove('hidden');
-            document.getElementById('editModal').classList.add('flex');
-        }
-
-        function handleEditSubmit(e) {
-            e.preventDefault();
-            const index = parseInt(document.getElementById('editIndex').value);
-            const newPass = document.getElementById('editPassword').value;
-            const oldPass = allData[index].contrasena;
-            const shouldSync = document.getElementById('syncLinked').checked;
-            const item = allData[index];
-
-            showToast("Guardando cambios en Google Sheets...");
-
-            allData[index].contrasena = newPass;
-
-            if (shouldSync && oldPass !== "") {
-                allData.forEach((row) => {
-                    if (row.contrasena === oldPass) {
-                        row.contrasena = newPass;
-                    }
-                });
-            }
-
-            closeModal('editModal');
-            renderSystems(allData);
-
-            const payload = {
-                hoja: currentActiveUser,
-                sistema: item.sistema,
-                usuario: item.usuario,
-                nuevaContrasena: newPass,
-                syncVinculados: shouldSync
-            };
-
-            fetch(currentScriptUrl, {
-                method: "POST",
-                mode: "no-cors",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(() => {
-                showToast("¡Contraseña actualizada en Google Sheets!");
-            })
-            .catch(err => {
-                console.error("Error al sincronizar:", err);
-                showToast("Actualizado en pantalla (error al conectar con Sheets)", false);
-            });
-        }
-
-        function openCreateModal() {
-            document.getElementById('createForm').reset();
-            document.getElementById('createModal').classList.remove('hidden');
-            document.getElementById('createModal').classList.add('flex');
-        }
-
-        function handleCreateSubmit(e) {
-            e.preventDefault();
-            const nuevoSistema = document.getElementById('newSistema').value.trim().toUpperCase();
-            const nuevoUsuario = document.getElementById('newUsuario').value.trim();
-            const nuevaPassword = document.getElementById('newPassword').value.trim();
-            const nuevoCentro = document.getElementById('newCentro').value.trim();
-
-            const hoy = new Date();
-            const dd = String(hoy.getDate()).padStart(2, '0');
-            const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-            const yy = String(hoy.getFullYear()).slice(-2);
-            const fechaHoy = `${dd}/${mm}/${yy}`;
-
-            const newRow = {
-                originalIndex: allData.length,
-                sistema: nuevoSistema,
-                usuario: nuevoUsuario,
-                contrasena: nuevaPassword,
-                centro_de_atencion: nuevoCentro,
-                actualizada: fechaHoy
-            };
-
-            allData.push(newRow);
-            closeModal('createModal');
-            updateCount();
-            renderSystems(allData);
-            showToast("Guardando nuevo registro en Google Sheets...");
-
-            fetch(currentScriptUrl, {
-                method: "POST",
-                mode: "no-cors",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    hoja: currentActiveUser,
-                    action: "createRow",
-                    sistema: nuevoSistema,
-                    usuario: nuevoUsuario,
-                    contrasena: nuevaPassword,
-                    centro: nuevoCentro,
-                    fecha: fechaHoy
-                })
-            })
-            .then(() => {
-                showToast("¡Registro guardado exitosamente en Sheets!");
-            })
-            .catch(err => {
-                console.error("Error al crear registro:", err);
-                showToast("Guardado localmente (error de red con Sheets)", false);
-            });
-        }
-
-        function openChangeAccessPassModal() {
-            if (!currentActiveUser) return;
-            document.getElementById('accessPassUserLabel').value = `${currentActiveUser.toUpperCase()} (${USERS_DATABASE[currentActiveUser].label})`;
-            document.getElementById('newAccessPassInput').value = USERS_DATABASE[currentActiveUser].pass;
-            document.getElementById('changeAccessPassModal').classList.remove('hidden');
-            document.getElementById('changeAccessPassModal').classList.add('flex');
-        }
-
-        function handleChangeAccessPass(e) {
-            e.preventDefault();
-            const newPass = document.getElementById('newAccessPassInput').value.trim();
-            if (!newPass) return;
-
-            USERS_DATABASE[currentActiveUser].pass = newPass;
-            closeModal('changeAccessPassModal');
-
-            showToast("Actualizando clave de acceso G2...");
-
-            fetch(currentScriptUrl, {
-                method: "POST",
-                mode: "no-cors",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    hoja: currentActiveUser,
-                    action: "updateG2",
-                    nuevaClaveG2: newPass
-                })
-            })
-            .then(() => {
-                showToast("¡Clave de acceso G2 actualizada en Sheets!");
-            })
-            .catch(err => {
-                console.error("Error al actualizar G2:", err);
-                showToast("Actualizada localmente", false);
-            });
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
-
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const filtered = allData.filter(row => {
-                return row.sistema.toLowerCase().includes(searchTerm) ||
-                       row.usuario.toLowerCase().includes(searchTerm) ||
-                       row.centro_de_atencion.toLowerCase().includes(searchTerm);
-            });
-            renderSystems(filtered);
-        });
-    </script>
-</body>
-</html>
+<!-- ... existing code -->
+```
