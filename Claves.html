@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
@@ -550,6 +550,7 @@
         }
 
         function loadSheetData() {
+            // Se agrega timestamp dinamico para forzar la lectura sin cache del CSV
             Papa.parse(CSV_PUBLIC_URL + "&t=" + new Date().getTime(), {
                 download: true,
                 header: false,
