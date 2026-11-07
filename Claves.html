@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
@@ -5,21 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claves ISSS</title>
 
-    <!-- Manifest PWA para instalación en teléfono -->
+    <!-- PWA Web App Settings -->
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlNpc3RlbWEgZGUgQ2xhdmVzIElTU1MiLAogICJzaG9ydF9uYW1lIjogIkNsYXZlcyBJU1NTIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGQxYjJhIiwKICAidGhlbWVfY29sb3IiOiAiIzBkMWIyYSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDt1dGY4LDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMjQgMjQnIGZpbGw9JyUyMzI1NjNlYic+PHBhdGggZD0nTTE4IDhoLTFWNmMwLTIuNzYtMi4yNC01LTUtNVN3IDMuMjQgNCA2djJINmMtMS4xIDAtMiAuOS0yIDJ2MTBjMCAxLjEuOSAyIDIgMmgyMWMxLjEgMCAyLS45IDItMlYxMGMwLTEuMS0uOS0yLTItMnptLTYgOWMtMS4xIDAtMi0uOS0yLTJzLjktMiAyLTIgMiAuOSAyIDItLjkgMi0yIDJ6bTMuMS05SDguOVY2YzAtMS43MSAxLjM5LTMuMSAzLjEtMy4xIDEuNzEgMCAzLjEgMS4zOSAzLjEgMy4xdjJ6Jy8+PC9zdmc+IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
     <meta name="theme-color" content="#0d1b2a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z'/></svg>">
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -29,7 +24,6 @@
         .glass-card {
             background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
         }
         .card-hover-effect {
             transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -38,12 +32,6 @@
             transform: translateY(-5px) scale(1.01);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-        .login-input-glow:focus {
-            box-shadow: 0 0 15px rgba(37, 99, 235, 0.35);
-            border-color: #3b82f6;
-        }
-
-        /* Nieve Cayendo */
         .snowflake {
             position: fixed;
             top: -10px;
@@ -57,46 +45,6 @@
             0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
             100% { transform: translateY(105vh) rotate(360deg); opacity: 0.2; }
         }
-
-        /* Santa Flying Header */
-        .santa-flying {
-            position: absolute;
-            top: 2px;
-            right: -150px;
-            font-size: 1.2rem;
-            animation: santaFly 18s linear infinite;
-            z-index: 10;
-            pointer-events: none;
-        }
-        @keyframes santaFly {
-            0% { transform: translateX(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateX(-110vw); opacity: 0; }
-        }
-
-        /* Luces Navideñas */
-        .christmas-lights span {
-            display: inline-block;
-            animation: lightGlow 1.5s ease-in-out infinite alternate;
-        }
-        .christmas-lights span:nth-child(2n) { animation-delay: 0.3s; }
-        .christmas-lights span:nth-child(3n) { animation-delay: 0.6s; }
-
-        @keyframes lightGlow {
-            0% { opacity: 0.3; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1.2); }
-        }
-
-        .login-bg-mesh {
-            background-color: #0d1b2a;
-            background-image: radial-gradient(circle at 50% 50%, rgba(13, 27, 42, 0.4) 0%, rgba(10, 15, 29, 0.85) 100%),
-            url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='260' viewBox='0 0 180 260'><rect width='180' height='260' fill='%230d1b2a'/><g transform='translate(20, 25)'><polygon points='25,0 45,40 5,40' fill='%2310b981'/><polygon points='25,15 48,50 2,50' fill='%23059669'/><polygon points='25,30 52,62 -2,62' fill='%23047857'/><circle cx='18' cy='45' r='1.5' fill='%23f59e0b'/><circle cx='32' cy='40' r='1.5' fill='%23ef4444'/><circle cx='25' cy='52' r='1.5' fill='%233b82f6'/><polygon points='25,-8 28,-1 35,-1 30,3 32,10 25,6 18,10 20,3 15,-1 22,-1' fill='%23fbbf24'/></g><g transform='translate(110, 15)'><rect x='8' y='23' width='54' height='10' rx='5' fill='%23ffffff'/><circle cx='60' cy='26' r='6' fill='%23ffffff'/></g></svg>");
-            background-repeat: repeat;
-            background-size: 240px 347px;
-        }
-
-        /* Firma Watermark */
         .watermark-marcenaro {
             position: fixed;
             bottom: 12px;
@@ -107,35 +55,28 @@
             border: 1px solid rgba(255, 215, 0, 0.4);
             box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
         }
+        .login-bg-mesh {
+            background-color: #0d1b2a;
+            background-image: radial-gradient(circle at 50% 50%, rgba(13, 27, 42, 0.4) 0%, rgba(10, 15, 29, 0.85) 100%),
+            url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='260' viewBox='0 0 180 260'><rect width='180' height='260' fill='%230d1b2a'/><g transform='translate(20, 25)'><polygon points='25,0 45,40 5,40' fill='%2310b981'/><polygon points='25,15 48,50 2,50' fill='%23059669'/><polygon points='25,30 52,62 -2,62' fill='%23047857'/><circle cx='18' cy='45' r='1.5' fill='%23f59e0b'/><circle cx='32' cy='40' r='1.5' fill='%23ef4444'/><circle cx='25' cy='52' r='1.5' fill='%233b82f6'/><polygon points='25,-8 28,-1 35,-1 30,3 32,10 25,6 18,10 20,3 15,-1 22,-1' fill='%23fbbf24'/></g></svg>");
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-800 antialiased min-h-screen relative overflow-x-hidden">
 
-    <!-- Nieve Cayendo -->
+    <!-- EFECTO DE NIEVE CAYENDO -->
     <div id="snowContainer" class="fixed inset-0 pointer-events-none z-50"></div>
 
-    <!-- FIRMA PERMANENTE -->
+    <!-- FIRMA WATERMARK -->
     <div class="watermark-marcenaro px-3 py-1.5 rounded-full text-xs font-bold text-amber-300 tracking-wide flex items-center gap-1.5 shadow-lg">
         <span>By Marcenaro</span>
         <span class="text-amber-400 animate-pulse">⚡</span>
     </div>
 
-    <!-- NOTIFICACIÓN TOAST FLOTANTE -->
+    <!-- NOTIFICACIÓN TOAST -->
     <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <span id="toastMsg" class="text-sm font-medium"></span>
-    </div>
-
-    <!-- BANNER INSTALACIÓN PWA -->
-    <div id="pwaBanner" class="hidden fixed top-0 inset-x-0 z-50 bg-gradient-to-r from-blue-700 to-indigo-800 text-white px-4 py-3 shadow-xl flex items-center justify-between text-xs font-semibold">
-        <div class="flex items-center space-x-2">
-            <span class="text-lg">📲</span>
-            <span id="pwaBannerText">Instala la App de Claves en tu teléfono para acceso rápido.</span>
-        </div>
-        <div class="flex items-center space-x-2">
-            <button id="pwaInstallBtn" onclick="installPWA()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-3 py-1.5 rounded-lg transition-all">Instalar</button>
-            <button onclick="closePWA()" class="text-white/80 hover:text-white px-2 py-1">✕</button>
-        </div>
     </div>
 
     <!-- PANTALLA DE LOGIN -->
@@ -162,8 +103,8 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-user-shield"></i>
                         </span>
-                        <input type="text" id="loginUser" required placeholder="Ej: hmq o carlos" autocomplete="on"
-                            class="login-input-glow w-full pl-10 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all font-medium">
+                        <input type="text" id="loginUser" required placeholder="Ingrese su usuario" 
+                            class="w-full pl-10 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium">
                     </div>
                 </div>
 
@@ -173,9 +114,9 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-key"></i>
                         </span>
-                        <input type="password" id="loginPass" required placeholder="••••••••" autocomplete="off"
-                            class="login-input-glow w-full pl-10 pr-11 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all font-medium">
-                        <button type="button" onclick="toggleLoginPassword()" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-blue-600" title="Ver contraseña">
+                        <input type="password" id="loginPass" required placeholder="••••••••" 
+                            class="w-full pl-10 pr-11 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium">
+                        <button type="button" onclick="toggleLoginPassword()" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-blue-600">
                             <i id="loginPassIcon" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
@@ -186,8 +127,7 @@
                     <span>Usuario o contraseña incorrectos.</span>
                 </div>
 
-                <button type="submit" 
-                    class="w-full bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 hover:from-blue-600 hover:to-indigo-800 text-white font-bold py-3.5 rounded-2xl shadow-xl transition-all text-sm flex items-center justify-center space-x-2">
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white font-bold py-3.5 rounded-2xl shadow-xl text-sm flex items-center justify-center space-x-2">
                     <span>Acceder al Sistema</span>
                     <i class="fa-solid fa-arrow-right text-xs"></i>
                 </button>
@@ -195,30 +135,23 @@
         </div>
     </div>
 
-    <!-- PANEL PRINCIPAL DE APLICACIÓN -->
+    <!-- PANEL PRINCIPAL -->
     <div id="mainApp" style="display: none;" class="min-h-screen bg-slate-100 flex flex-col relative overflow-x-hidden">
-        <!-- HEADER -->
-        <header class="sticky top-0 z-30 bg-gradient-to-r from-red-950 via-blue-900 to-emerald-950 border-b border-amber-500/40 shadow-xl overflow-hidden">
-            <div class="santa-flying">🎅🛷🦌🦌</div>
-            
-            <div class="w-full flex justify-between px-6 py-1 bg-slate-950/40 text-xs christmas-lights">
-                <span>🔴</span><span>🟢</span><span>🟡</span><span>🔵</span><span>🔴</span><span>🟢</span><span>🟡</span><span>🔵</span>
-            </div>
-
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 relative">
+        <header class="sticky top-0 z-30 bg-gradient-to-r from-red-950 via-blue-900 to-emerald-950 border-b border-amber-500/40 shadow-xl">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="flex items-center space-x-3.5">
                     <div class="w-11 h-11 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center text-white text-xl">
                         🎄
                     </div>
                     <div>
-                        <span class="text-[10px] uppercase tracking-widest text-emerald-300 font-extrabold block">Instituto Salvadoreño del Seguro Social</span>
-                        <h1 id="userHeaderTitle" class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Panel de Sistemas 🎅</h1>
+                        <span class="text-[10px] uppercase tracking-widest text-emerald-300 font-extrabold block">ISSS &bull; Panel General</span>
+                        <h1 id="userHeaderTitle" class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Cargando...</h1>
                     </div>
                 </div>
                 
                 <div class="flex items-center space-x-3">
-                    <!-- ENLACES FLOTANTES EN CABECERA -->
-                    <div id="headerQuickLinks" class="flex items-center space-x-2 mr-2">
+                    <!-- BOTONES FLOTANTES EN LA CABECERA -->
+                    <div class="flex items-center space-x-2 mr-2">
                         <a href="https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/Cumple.html" target="_blank" 
                            class="w-9 h-9 bg-amber-400/20 hover:bg-amber-400 text-amber-300 hover:text-slate-900 rounded-xl flex items-center justify-center transition-all border border-amber-400/40 text-sm shadow-md" 
                            title="Cumpleaños">🎂</a>
@@ -227,11 +160,17 @@
                            title="Horarios">📅</a>
                     </div>
 
-                    <button onclick="openCreateModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg transition-all flex items-center space-x-2">
+                    <!-- BOTÓN ADMIN (Sólo para el usuario carlos) -->
+                    <button id="adminBtn" onclick="openAdminModal()" class="hidden bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs sm:text-sm font-extrabold px-3.5 py-2.5 rounded-xl shadow-lg transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Gestionar Usuarios</span>
+                    </button>
+
+                    <button onclick="openCreateModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center space-x-2">
                         <i class="fa-solid fa-plus text-xs"></i>
                         <span>Nuevo Acceso</span>
                     </button>
-                    <button onclick="logout()" class="bg-slate-800/80 hover:bg-rose-900 text-slate-300 hover:text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all border border-slate-700/60 flex items-center space-x-2">
+                    <button onclick="logout()" class="bg-slate-800/80 hover:bg-rose-900 text-slate-300 hover:text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-700/60 flex items-center space-x-2">
                         <i class="fa-solid fa-right-from-bracket text-xs"></i>
                         <span>Salir</span>
                     </button>
@@ -239,84 +178,111 @@
             </div>
         </header>
 
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full relative">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                        Módulos Institucionales ❄️
+                        Módulos Registrados ❄️
                     </h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Gestione y consulte credenciales organizadas por plataforma.</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Gestión de accesos asignados</p>
                 </div>
                 <div class="w-full md:w-96">
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        </span>
-                        <input type="text" id="searchInput" placeholder="Buscar por sistema, usuario o centro..." 
-                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium">
-                    </div>
+                    <input type="text" id="searchInput" placeholder="Buscar por sistema, usuario o centro..." 
+                        class="w-full pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
             </div>
 
-            <!-- CONTENEDOR DE SISTEMAS -->
             <div id="systemsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="col-span-full py-16 text-center text-slate-400 flex flex-col items-center justify-center space-y-3">
-                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-blue-600"></i>
-                    <span class="text-xs font-semibold tracking-wide uppercase">Cargando base de datos...</span>
-                </div>
+                <!-- Se cargan dinámicamente -->
             </div>
         </main>
     </div>
 
-    <!-- MODAL NUEVO REGISTRO -->
+    <!-- MODAL DE ADMINISTRACIÓN DE USUARIOS (SÓLO PARA CARLOS) -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-8 overflow-hidden border border-slate-100">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-user-shield text-amber-500 text-lg"></i>
+                    <h3 class="text-base font-extrabold text-slate-900">Administrador de Accesos (Col A y B)</h3>
+                </div>
+                <button onclick="closeModal('adminModal')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            </div>
+
+            <!-- AGREGAR USUARIO -->
+            <form onsubmit="handleAdminAddUser(event)" class="mb-6 p-4 bg-amber-50 rounded-2xl border border-amber-200">
+                <h4 class="text-xs font-bold uppercase text-amber-900 mb-3">Crear Nuevo Usuario</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                    <input type="text" id="adminNewUser" required placeholder="Usuario (Col A)" class="px-3 py-2 border rounded-xl text-xs font-bold">
+                    <input type="text" id="adminNewPass" required placeholder="Contraseña (Col B)" class="px-3 py-2 border rounded-xl text-xs font-mono">
+                </div>
+                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-xl text-xs shadow-md">
+                    + Registrar Usuario en Google Sheets
+                </button>
+            </form>
+
+            <!-- LISTADO DE USUARIOS -->
+            <div>
+                <h4 class="text-xs font-bold uppercase text-slate-500 mb-2">Usuarios Registrados en Sistema</h4>
+                <div id="adminUsersList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CREACIÓN DE REGISTRO TABLA -->
     <div id="createModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 overflow-hidden border border-slate-100">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 border border-slate-100">
             <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
                 <h3 class="text-base font-extrabold text-slate-900">Registrar Nuevo Acceso</h3>
                 <button onclick="closeModal('createModal')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
             </div>
             
             <form id="createForm" onsubmit="handleCreateSubmit(event)">
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nombre del Sistema (Col E)</label>
-                    <input type="text" id="newSistema" required placeholder="Ej. AGENDA, FARMACIA" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs uppercase font-bold">
+                    <input type="text" id="newSistema" required placeholder="Ej. AGENDA, FARMACIA" class="w-full px-3.5 py-2 border rounded-xl text-xs uppercase font-bold">
                 </div>
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Usuario (Col F)</label>
-                    <input type="text" id="newUsuario" required placeholder="Ej. A004046" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono">
+                    <input type="text" id="newUsuario" required placeholder="Ej. A004046" class="w-full px-3.5 py-2 border rounded-xl text-xs font-mono">
                 </div>
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Contraseña (Col G)</label>
-                    <input type="text" id="newPassword" required placeholder="Contraseña" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold">
+                    <input type="text" id="newPassword" required placeholder="Contraseña" class="w-full px-3.5 py-2 border rounded-xl text-xs font-mono font-bold">
                 </div>
-                <div class="mb-6">
+                <div class="mb-5">
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Centro de Atención (Col H)</label>
-                    <input type="text" id="newCentro" placeholder="Ej. CEIBA, MQ" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs">
+                    <input type="text" id="newCentro" placeholder="Ej. CEIBA, MQ" class="w-full px-3.5 py-2 border rounded-xl text-xs">
                 </div>
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold">Crear Registro</button>
+                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2 border rounded-xl text-xs font-bold">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold">Crear Registro</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPT DE LOGICA GENERAL Y MULTI-USUARIO DINAMICO -->
+    <!-- JAVASCRIPT PRINCIPAL -->
     <script>
         const CSV_PUBLIC_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec";
 
-        let dynamicUsersDB = {
+        let USERS_DATABASE = {
             "hmq": "punto2026",
-            "carlos": "2403"
+            "carlos": "2403",
+            "emergenciahmq": "HmqIsss"
         };
 
-        let currentLoggedUser = "";
+        let currentActiveUser = null;
         let allData = [];
-        let visiblePasswords = {};
 
-        // Efecto Nieve
+        window.addEventListener('DOMContentLoaded', () => {
+            preloadUsersFromCSV();
+            createSnow();
+        });
+
         function createSnow() {
             const container = document.getElementById("snowContainer");
             for (let i = 0; i < 25; i++) {
@@ -331,12 +297,6 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            createSnow();
-            preloadUsersFromCSV();
-        });
-
-        // Precarga Dinámica de Usuarios y Claves (Columnas A y B)
         function preloadUsersFromCSV() {
             Papa.parse(CSV_PUBLIC_URL, {
                 download: true,
@@ -348,7 +308,7 @@
                             const u = row[0] ? String(row[0]).trim().toLowerCase() : "";
                             const p = row[1] ? String(row[1]).trim() : "";
                             if (u && u !== "usuario" && p) {
-                                dynamicUsersDB[u] = p;
+                                USERS_DATABASE[u] = p;
                             }
                         });
                     }
@@ -374,14 +334,20 @@
             const pInput = document.getElementById('loginPass').value.trim();
             const errDiv = document.getElementById('loginError');
 
-            if (dynamicUsersDB[uInput] && dynamicUsersDB[uInput] === pInput) {
-                currentLoggedUser = uInput;
+            if (USERS_DATABASE[uInput] && USERS_DATABASE[uInput] === pInput) {
+                currentActiveUser = uInput;
                 errDiv.classList.add('hidden');
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'flex';
-                document.getElementById('userHeaderTitle').innerText = `Usuario: ${currentLoggedUser.toUpperCase()} 🎅`;
+                document.getElementById('userHeaderTitle').innerText = `Usuario: ${currentActiveUser.toUpperCase()} 🎅`;
 
-                showToast(`Bienvenido ${currentLoggedUser.toUpperCase()}`);
+                if (currentActiveUser === "carlos") {
+                    document.getElementById('adminBtn').classList.remove('hidden');
+                } else {
+                    document.getElementById('adminBtn').classList.add('hidden');
+                }
+
+                showToast(`Bienvenido ${currentActiveUser.toUpperCase()}`);
                 loadSheetData();
             } else {
                 errDiv.classList.remove('hidden');
@@ -389,7 +355,7 @@
         }
 
         function logout() {
-            currentLoggedUser = "";
+            currentActiveUser = null;
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('loginUser').value = '';
@@ -397,7 +363,7 @@
         }
 
         function loadSheetData() {
-            Papa.parse(CSV_PUBLIC_URL, {
+            Papa.parse(CSV_PUBLIC_URL + "&t=" + new Date().getTime(), {
                 download: true,
                 header: false,
                 skipEmptyLines: true,
@@ -414,7 +380,7 @@
 
                             if (sistema.toLowerCase() === "sistema") return;
 
-                            if (deUsuario === currentLoggedUser && (sistema || usuario)) {
+                            if ((deUsuario === currentActiveUser || currentActiveUser === "carlos") && (sistema || usuario)) {
                                 parsed.push({
                                     originalIndex: idx,
                                     sistema: sistema || "GENERAL",
@@ -435,7 +401,7 @@
         function renderSystems(data) {
             const container = document.getElementById('systemsContainer');
             if (data.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-semibold">No se encontraron registros para tu usuario. ❄️</div>`;
+                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-semibold">No hay registros asignados a este usuario. ❄️</div>`;
                 return;
             }
 
@@ -473,6 +439,91 @@
             }).join('');
         }
 
+        // FUNCIONES DE ADMINISTRACIÓN
+        function openAdminModal() {
+            renderAdminUsersList();
+            document.getElementById('adminModal').classList.remove('hidden');
+            document.getElementById('adminModal').classList.add('flex');
+        }
+
+        function renderAdminUsersList() {
+            const container = document.getElementById('adminUsersList');
+            container.innerHTML = Object.keys(USERS_DATABASE).map(u => `
+                <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <div>
+                        <span class="font-bold text-slate-800 uppercase">${u}</span>
+                        <span class="text-slate-400 font-mono ml-2">(${USERS_DATABASE[u]})</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <button onclick="adminEditPassword('${u}')" class="px-2 py-1 bg-blue-100 text-blue-700 font-bold rounded-lg hover:bg-blue-200">Editar Clave</button>
+                        ${u !== 'carlos' ? `<button onclick="adminDeleteUser('${u}')" class="px-2 py-1 bg-rose-100 text-rose-700 font-bold rounded-lg hover:bg-rose-200">Eliminar</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleAdminAddUser(e) {
+            e.preventDefault();
+            const newUser = document.getElementById('adminNewUser').value.trim().toLowerCase();
+            const newPass = document.getElementById('adminNewPass').value.trim();
+
+            showToast("Creando usuario...");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "addUser", newUser: newUser, newPass: newPass })
+                });
+                USERS_DATABASE[newUser] = newPass;
+                document.getElementById('adminNewUser').value = '';
+                document.getElementById('adminNewPass').value = '';
+                renderAdminUsersList();
+                showToast("Usuario creado con éxito");
+            } catch (err) {
+                showToast("Error al guardar usuario", false);
+            }
+        }
+
+        async function adminEditPassword(u) {
+            const newPass = prompt(`Ingrese la nueva clave para el usuario ${u.toUpperCase()}:`, USERS_DATABASE[u]);
+            if (!newPass) return;
+
+            showToast("Actualizando clave...");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "updateG2", user: u, newPass: newPass })
+                });
+                USERS_DATABASE[u] = newPass;
+                renderAdminUsersList();
+                showToast("Clave actualizada correctamente");
+            } catch (err) {
+                showToast("Error al actualizar clave", false);
+            }
+        }
+
+        async function adminDeleteUser(u) {
+            if (!confirm(`¿Seguro que desea eliminar al usuario ${u.toUpperCase()}?`)) return;
+
+            showToast("Eliminando usuario...");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "deleteUser", userToDelete: u })
+                });
+                delete USERS_DATABASE[u];
+                renderAdminUsersList();
+                showToast("Usuario eliminado correctamente");
+            } catch (err) {
+                showToast("Error al eliminar usuario", false);
+            }
+        }
+
         function openCreateModal() { document.getElementById('createModal').classList.remove('hidden'); document.getElementById('createModal').classList.add('flex'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
 
@@ -494,7 +545,7 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         action: "createRow",
-                        user: currentLoggedUser,
+                        user: currentActiveUser,
                         sistema: sys,
                         usuario: usr,
                         pass: pass,
@@ -505,7 +556,7 @@
                 showToast("¡Registro creado exitosamente!");
                 setTimeout(loadSheetData, 1500);
             } catch (err) {
-                showToast("Error de conexión al guardar", false);
+                showToast("Error al guardar", false);
             }
         }
 
@@ -520,24 +571,16 @@
             }, 3000);
         }
 
-        // PWA Prompt Logic
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('pwaBanner').classList.remove('hidden');
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const filtered = allData.filter(row => 
+                row.sistema.toLowerCase().includes(term) ||
+                row.usuario.toLowerCase().includes(term) ||
+                row.centro_de_atencion.toLowerCase().includes(term)
+            );
+            renderSystems(filtered);
         });
-
-        function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => {
-                    deferredPrompt = null;
-                    closePWA();
-                });
-            }
-        }
-        function closePWA() { document.getElementById('pwaBanner').classList.add('hidden'); }
     </script>
 </body>
 </html>
+```
