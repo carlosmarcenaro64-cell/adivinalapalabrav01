@@ -142,6 +142,12 @@
             0% { opacity: 0; transform: scale(0.8) translateY(25px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
+
+        /* Pulse glow button interaction */
+        .btn-glow-pulse:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+            transform: scale(1.03);
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-800 antialiased min-h-screen relative overflow-x-hidden selection:bg-blue-500 selection:text-white">
@@ -361,9 +367,87 @@
         let currentActiveUser = null;
         let allData = [];
 
+        // WEB AUDIO SYNTHESIZER (Efectos de sonido sin archivos externos)
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.setValueAtTime(140, now + 0.1);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'copy') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.exponentialRampToValueAtTime(1760, now + 0.08);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'delete') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                }
+            } catch (e) {
+                // Audio fallback silence
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             preloadUsersFromCSV();
             createSnow();
+
+            // Attaching audio trigger to all standard click buttons
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('button, a, input[type="submit"]')) {
+                    playSound('click');
+                }
+            });
         });
 
         function createSnow() {
@@ -430,14 +514,17 @@
                     document.getElementById('adminBtn').classList.add('hidden');
                 }
 
+                playSound('success');
                 showToast(`Bienvenido ${currentActiveUser.toUpperCase()} ❄️`);
                 loadSheetData();
             } else {
+                playSound('error');
                 errDiv.classList.remove('hidden');
             }
         }
 
         function logout() {
+            playSound('click');
             currentActiveUser = null;
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
@@ -536,6 +623,7 @@
         function copyToClipboard(text) {
             if (!text) return;
             navigator.clipboard.writeText(text);
+            playSound('copy');
             showToast("¡Contraseña copiada al portapapeles! 📋");
         }
 
@@ -555,9 +643,11 @@
                         nuevaContrasena: nuevaClave
                     })
                 });
+                playSound('success');
                 showToast("¡Contraseña actualizada!");
                 setTimeout(loadSheetData, 1200);
             } catch (e) {
+                playSound('error');
                 showToast("Error de comunicación", false);
             }
         }
@@ -565,6 +655,7 @@
         async function deleteCardRow(rowIndex) {
             if (!confirm("¿Desea eliminar este registro de la lista?")) return;
 
+            playSound('delete');
             showToast("Eliminando registro...");
             try {
                 await fetch(SCRIPT_URL, {
@@ -576,9 +667,11 @@
                         rowIndex: rowIndex
                     })
                 });
+                playSound('success');
                 showToast("Registro eliminado");
                 setTimeout(loadSheetData, 1200);
             } catch (e) {
+                playSound('error');
                 showToast("Error al eliminar", false);
             }
         }
@@ -622,8 +715,10 @@
                 document.getElementById('adminNewUser').value = '';
                 document.getElementById('adminNewPass').value = '';
                 renderAdminUsersList();
+                playSound('success');
                 showToast("Usuario creado con éxito");
             } catch (err) {
+                playSound('error');
                 showToast("Error al guardar usuario", false);
             }
         }
@@ -642,8 +737,10 @@
                 });
                 USERS_DATABASE[u] = newPass;
                 renderAdminUsersList();
+                playSound('success');
                 showToast("Clave actualizada correctamente");
             } catch (err) {
+                playSound('error');
                 showToast("Error al actualizar clave", false);
             }
         }
@@ -651,6 +748,7 @@
         async function adminDeleteUser(u) {
             if (!confirm(`¿Seguro que desea eliminar al usuario ${u.toUpperCase()} (Columna A/B)?`)) return;
 
+            playSound('delete');
             showToast("Eliminando usuario...");
             try {
                 await fetch(SCRIPT_URL, {
@@ -661,8 +759,10 @@
                 });
                 delete USERS_DATABASE[u];
                 renderAdminUsersList();
+                playSound('success');
                 showToast("Usuario eliminado correctamente");
             } catch (err) {
+                playSound('error');
                 showToast("Error al eliminar usuario", false);
             }
         }
@@ -696,9 +796,11 @@
                         fecha: hoy
                     })
                 });
+                playSound('success');
                 showToast("¡Registro creado exitosamente!");
                 setTimeout(loadSheetData, 1500);
             } catch (err) {
+                playSound('error');
                 showToast("Error al guardar", false);
             }
         }
