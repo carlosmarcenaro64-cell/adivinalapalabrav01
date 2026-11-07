@@ -551,7 +551,7 @@
         }
 
         function loadSheetData() {
-            // Se fuerza la lectura sin cache del CSV directamente desde Google Sheets
+            // Fuerza sincronización limpia directo desde Google Sheets desactivando caché
             Papa.parse(CSV_PUBLIC_URL + "&t=" + Date.now(), {
                 download: true,
                 header: false,
@@ -593,119 +593,19 @@
             });
         }
 
-        function populateAdminUserSelector() {
-            const select = document.getElementById('adminUserFilter');
-            select.classList.remove('hidden');
-            const uniqueUsers = Array.from(new Set(allData.map(d => d.deUsuario)));
-            
-            select.innerHTML = `<option value="ALL">🔍 Todos los usuarios (${allData.length} claves)</option>` +
-                uniqueUsers.map(u => `<option value="${u}">👤 Usuario: ${u.toUpperCase()} (${allData.filter(d => d.deUsuario === u).length})</option>`).join('');
-        }
-
-        function filterByUserOwner() {
-            const selected = document.getElementById('adminUserFilter').value;
-            if (selected === 'ALL') {
-                renderSystems(allData);
-            } else {
-                renderSystems(allData.filter(d => d.deUsuario === selected));
-            }
-        }
-
-        function renderSystems(data) {
-            const container = document.getElementById('systemsContainer');
-            if (data.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 font-bold">No hay registros asignados a este filtro. ❄️</div>`;
-                return;
-            }
-
-            const grouped = {};
-            data.forEach((item) => {
-                const sys = item.sistema;
-                if (!grouped[sys]) grouped[sys] = [];
-                grouped[sys].push(item);
-            });
-
-            container.innerHTML = Object.keys(grouped).map(sistema => {
-                const items = grouped[sistema];
-                return `
-                    <div class="glass-card-dark rounded-3xl shadow-2xl overflow-hidden card-hover-effect">
-                        <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-amber-900 px-5 py-4 flex items-center justify-between text-white border-b border-white/10 shadow-lg">
-                            <h3 class="font-black text-sm uppercase tracking-wider">${sistema}</h3>
-                            <span class="text-xs bg-white/20 font-black px-3 py-1 rounded-full shadow-inner">${items.length}</span>
-                        </div>
-                        <div class="p-5 space-y-3.5">
-                            ${items.map(item => `
-                                <div class="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl hover:border-slate-700 transition-all">
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <span class="font-mono text-xs font-bold text-white block">${item.usuario || 'Sin usuario'}</span>
-                                            ${currentActiveUser === 'carlos' ? `<span class="text-[10px] font-black text-amber-400 uppercase">Propietario (Col D): ${item.deUsuario}</span>` : ''}
-                                        </div>
-                                        ${item.centro_de_atencion ? `<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold px-2.5 py-0.5 rounded-full">${item.centro_de_atencion}</span>` : ''}
-                                    </div>
-                                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-800">
-                                        <span class="font-mono text-xs text-amber-400 font-black tracking-wide">${item.contrasena || '••••••••'}</span>
-                                        <div class="flex items-center space-x-1.5">
-                                            <button onclick="copyToClipboard('${item.contrasena}')" title="Copiar contraseña" class="px-2 py-1 bg-blue-500/20 hover:bg-blue-500 text-blue-300 hover:text-white text-xs rounded-xl font-bold transition-all">
-                                                <i class="fa-solid fa-copy"></i>
-                                            </button>
-                                            ${currentActiveUser === 'carlos' ? `
-                                            <button onclick="reassignRowUser(${item.originalIndex}, '${item.deUsuario}')" title="Reasignar Usuario (Col D)" class="px-2 py-1 bg-purple-500/20 hover:bg-purple-500 text-purple-300 hover:text-white text-xs rounded-xl font-bold transition-all">
-                                                <i class="fa-solid fa-user-gear"></i>
-                                            </button>` : ''}
-                                            <button onclick="editCardPassword('${sistema}', '${item.usuario}')" title="Editar Contraseña" class="px-2 py-1 bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-xs rounded-xl font-bold transition-all">
-                                                <i class="fa-solid fa-pen"></i>
-                                            </button>
-                                            <button onclick="deleteCardRow(${item.originalIndex})" title="Eliminar Registro" class="px-2 py-1 bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white text-xs rounded-xl font-bold transition-all">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="text-[9px] text-slate-500 mt-1.5 text-right font-medium">${item.actualizada}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function copyToClipboard(text) {
-            if (!text) return;
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => {
-                    playSound('copy');
-                    showToast("¡Contraseña copiada al portapapeles! 📋");
-                }).catch(() => fallbackCopyTextToClipboard(text));
-            } else {
-                fallbackCopyTextToClipboard(text);
-            }
-        }
-
-        function fallbackCopyTextToClipboard(text) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.position = "fixed";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                playSound('copy');
-                showToast("¡Contraseña copiada al portapapeles! 📋");
-            } catch (err) {
-                showToast("No se pudo copiar automáticamente", false);
-            }
-            document.body.removeChild(textArea);
-        }
-
         async function editCardPassword(sistema, usuario) {
             const nuevaClave = prompt(`Ingrese la nueva contraseña para ${usuario} en ${sistema}:`);
             if (!nuevaClave) return;
 
-            showToast("Guardando en Google Sheets...");
+            // Actualización instantánea en pantalla
+            allData.forEach(item => {
+                if (item.sistema === sistema && item.usuario === usuario) {
+                    item.contrasena = nuevaClave;
+                }
+            });
+            renderSystems(allData);
+
+            showToast("Sincronizando con Google Sheets...");
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
@@ -721,8 +621,7 @@
 
                 playSound('success');
                 showToast("¡Actualizado en Google Sheets!");
-                // Direct fresh load from Google Sheets without keeping state
-                setTimeout(loadSheetData, 1200);
+                setTimeout(loadSheetData, 800);
             } catch (e) {
                 playSound('error');
                 showToast("Error de comunicación", false);
@@ -731,6 +630,10 @@
 
         async function deleteCardRow(rowIndex) {
             if (!confirm("¿Desea eliminar este registro de la hoja de cálculo?")) return;
+
+            // Remoción instantánea en pantalla
+            allData = allData.filter(item => item.originalIndex !== rowIndex);
+            renderSystems(allData);
 
             playSound('delete');
             showToast("Eliminando de Google Sheets...");
@@ -747,87 +650,20 @@
 
                 playSound('success');
                 showToast("Registro eliminado de Google Sheets");
-                // Direct fresh load from Google Sheets
-                setTimeout(loadSheetData, 1200);
+                setTimeout(loadSheetData, 800);
             } catch (e) {
                 playSound('error');
                 showToast("Error al eliminar", false);
             }
         }
 
-        function openAdminModal() {
-            renderAdminUsersList();
-            document.getElementById('statTotalUsers').innerText = Object.keys(USERS_DATABASE).length;
-            document.getElementById('statTotalKeys').innerText = allData.length;
-            document.getElementById('adminModal').classList.remove('hidden');
-            document.getElementById('adminModal').classList.add('flex');
-        }
-
-        function renderAdminUsersList() {
-            const container = document.getElementById('adminUsersList');
-            container.innerHTML = Object.keys(USERS_DATABASE).map(u => `
-                <div class="flex items-center justify-between p-3.5 bg-slate-950 rounded-xl border border-slate-800 text-xs shadow-md">
-                    <div>
-                        <span class="font-black text-white uppercase tracking-wider">${u}</span>
-                        <span class="text-slate-400 font-mono ml-2">(${USERS_DATABASE[u]})</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="adminEditPassword('${u}')" class="px-3 py-1.5 bg-blue-500/20 text-blue-300 font-bold rounded-lg hover:bg-blue-500 hover:text-white transition-all shadow">Editar Clave</button>
-                        ${u !== 'carlos' ? `<button onclick="adminDeleteUser('${u}')" class="px-3 py-1.5 bg-rose-500/20 text-rose-300 font-bold rounded-lg hover:bg-rose-500 hover:text-white transition-all shadow">Eliminar</button>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function handleAdminAddUser(e) {
-            e.preventDefault();
-            const newUser = document.getElementById('adminNewUser').value.trim().toLowerCase();
-            const newPass = document.getElementById('adminNewPass').value.trim();
-
-            showToast("Creando usuario...");
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "addUser", newUser: newUser, newPass: newPass })
-                });
-                USERS_DATABASE[newUser] = newPass;
-                document.getElementById('adminNewUser').value = '';
-                document.getElementById('adminNewPass').value = '';
-                renderAdminUsersList();
-                playSound('success');
-                showToast("Usuario creado con éxito");
-            } catch (err) {
-                playSound('error');
-                showToast("Error al guardar usuario", false);
-            }
-        }
-
-        async function adminEditPassword(u) {
-            const newPass = prompt(`Ingrese la nueva clave de acceso para el usuario ${u.toUpperCase()} (Col B):`, USERS_DATABASE[u]);
-            if (!newPass) return;
-
-            showToast("Actualizando clave de usuario...");
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "updateG2", user: u, newPass: newPass })
-                });
-                USERS_DATABASE[u] = newPass;
-                renderAdminUsersList();
-                playSound('success');
-                showToast("Clave actualizada correctamente");
-            } catch (err) {
-                playSound('error');
-                showToast("Error al actualizar clave", false);
-            }
-        }
-
         async function adminDeleteUser(u) {
             if (!confirm(`¿Seguro que desea eliminar al usuario ${u.toUpperCase()} (Columna A/B)?`)) return;
+
+            delete USERS_DATABASE[u];
+            if (typeof renderAdminUsersList === 'function') {
+                renderAdminUsersList();
+            }
 
             playSound('delete');
             showToast("Eliminando usuario de Google Sheets...");
@@ -837,17 +673,133 @@
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({ action: "deleteUser", userToDelete: u })
                 });
-                delete USERS_DATABASE[u];
-                renderAdminUsersList();
+
                 playSound('success');
-                showToast("Usuario eliminado correctamente");
-                
-                // Recargar base de datos local y refrescar vista
-                setTimeout(preloadUsersFromCSV, 1000);
+                showToast("Usuario eliminado de Google Sheets");
+                setTimeout(loadSheetData, 1000);
             } catch (err) {
                 playSound('error');
                 showToast("Error al eliminar usuario", false);
             }
+        }
+
+        // DIBUJAR Y MOSTRAR TARJETAS DE MÓDULOS EN LA PANTALLA
+        function renderSystems(data) {
+            const container = document.getElementById('systemsContainer');
+            if (!container) return;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 font-bold bg-slate-900/60 rounded-3xl border border-slate-800 shadow-xl">No hay registros asignados para mostrar. ❄️</div>`;
+                return;
+            }
+
+            const grouped = {};
+            data.forEach((item) => {
+                const sys = item.sistema || "GENERAL";
+                if (!grouped[sys]) grouped[sys] = [];
+                grouped[sys].push(item);
+            });
+
+            container.innerHTML = Object.keys(grouped).map(sistema => {
+                const items = grouped[sistema];
+                return `
+                    <div class="glass-card-dark rounded-3xl shadow-xl overflow-hidden card-hover-effect flex flex-col justify-between">
+                        <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 px-5 py-4 flex items-center justify-between border-b border-white/10">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-amber-400 text-xs">⚡</span>
+                                <h3 class="font-black text-sm uppercase text-white tracking-wider">${sistema}</h3>
+                            </div>
+                            <span class="text-[10px] bg-white/20 text-white font-extrabold px-2.5 py-0.5 rounded-full border border-white/20">${items.length}</span>
+                        </div>
+                        <div class="p-4 space-y-3 flex-1">
+                            ${items.map(item => `
+                                <div class="p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800 shadow-inner">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div class="flex flex-col">
+                                            <span class="font-mono text-xs font-black text-slate-200">${item.usuario || 'Sin usuario'}</span>
+                                            ${currentActiveUser === 'carlos' ? `<span class="text-[9px] text-amber-400/90 font-bold mt-0.5">👤 Propietario: ${item.deUsuario.toUpperCase()}</span>` : ''}
+                                        </div>
+                                        ${item.centro_de_atencion ? `<span class="text-[9px] bg-emerald-950 text-emerald-400 font-extrabold px-2 py-0.5 rounded-full border border-emerald-800">${item.centro_de_atencion}</span>` : ''}
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-800">
+                                        <span class="font-mono text-xs text-amber-300 font-bold tracking-wide">${item.contrasena || '••••••••'}</span>
+                                        <div class="flex items-center space-x-1.5">
+                                            <button onclick="copyToClipboard('${item.contrasena}')" title="Copiar contraseña" class="px-2.5 py-1.5 bg-blue-950 hover:bg-blue-800 text-blue-300 text-xs rounded-xl font-bold border border-blue-800 transition-colors">
+                                                <i class="fa-solid fa-copy"></i>
+                                            </button>
+                                            <button onclick="editCardPassword('${sistema}', '${item.usuario}')" title="Editar Contraseña" class="px-2.5 py-1.5 bg-amber-950 hover:bg-amber-800 text-amber-300 text-xs rounded-xl font-bold border border-amber-800 transition-colors">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <button onclick="deleteCardRow(${item.originalIndex})" title="Eliminar Registro" class="px-2.5 py-1.5 bg-rose-950 hover:bg-rose-800 text-rose-300 text-xs rounded-xl font-bold border border-rose-800 transition-colors">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="text-[9px] text-slate-500 mt-1.5 text-right font-medium">${item.actualizada}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function copyToClipboard(text) {
+            if (!text) return;
+            navigator.clipboard.writeText(text);
+            playSound('copy');
+            showToast("¡Contraseña copiada al portapapeles! 📋");
+        }
+
+        // FUNCIONES DE CONTROL Y FILTRADO DEL ADMINISTRADOR
+        function populateAdminUserSelector() {
+            const selector = document.getElementById('adminUserFilter');
+            if (!selector) return;
+
+            selector.classList.remove('hidden');
+            const uniqueUsers = Array.from(new Set(allData.map(item => item.deUsuario))).filter(Boolean);
+
+            selector.innerHTML = `<option value="ALL">🔍 Todos los usuarios (Vista Admin)</option>` +
+                uniqueUsers.map(u => `<option value="${u}">👤 Usuario: ${u.toUpperCase()}</option>`).join('');
+        }
+
+        function filterByUserOwner() {
+            const selected = document.getElementById('adminUserFilter').value;
+            if (selected === 'ALL') {
+                renderSystems(allData);
+            } else {
+                const filtered = allData.filter(item => item.deUsuario === selected);
+                renderSystems(filtered);
+            }
+        }
+
+        function renderAdminUsersList() {
+            const container = document.getElementById('adminUsersList');
+            const statUsers = document.getElementById('statTotalUsers');
+            const statKeys = document.getElementById('statTotalKeys');
+
+            if (statUsers) statUsers.innerText = Object.keys(USERS_DATABASE).length;
+            if (statKeys) statKeys.innerText = allData.length;
+
+            if (!container) return;
+
+            container.innerHTML = Object.keys(USERS_DATABASE).map(u => `
+                <div class="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+                    <div>
+                        <span class="font-bold text-amber-300 uppercase">${u}</span>
+                        <span class="text-slate-500 font-mono ml-2">(${USERS_DATABASE[u]})</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${u !== 'carlos' ? `<button onclick="adminDeleteUser('${u}')" class="px-2.5 py-1 bg-rose-900/60 hover:bg-rose-700 text-rose-200 font-bold rounded-lg transition-colors">Eliminar</button>` : '<span class="text-[10px] text-emerald-400 font-extrabold px-2 py-0.5 bg-emerald-950 rounded-full border border-emerald-800">Admin Principal</span>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openAdminModal() {
+            renderAdminUsersList();
+            document.getElementById('adminModal').classList.remove('hidden');
+            document.getElementById('adminModal').classList.add('flex');
         }
 
         function openCreateModal() { document.getElementById('createModal').classList.remove('hidden'); document.getElementById('createModal').classList.add('flex'); }
