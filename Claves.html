@@ -781,7 +781,7 @@
                 playSound('success');
                 showToast("Usuario eliminado correctamente");
                 
-                // Recargar base de datos local
+                // Recargar base de datos local y refrescar vista
                 setTimeout(preloadUsersFromCSV, 1000);
             } catch (err) {
                 playSound('error');
