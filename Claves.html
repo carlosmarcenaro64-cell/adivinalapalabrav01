@@ -683,6 +683,63 @@
             }
         }
 
+        async function handleAdminAddUser(e) {
+            e.preventDefault();
+            const newUser = document.getElementById('adminNewUser').value.trim().toLowerCase();
+            const newPass = document.getElementById('adminNewPass').value.trim();
+
+            if (!newUser || !newPass) return;
+
+            playSound('click');
+            showToast("Creando usuario en Google Sheets...");
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "addUser", newUser: newUser, newPass: newPass })
+                });
+
+                USERS_DATABASE[newUser] = newPass;
+                document.getElementById('adminNewUser').value = '';
+                document.getElementById('adminNewPass').value = '';
+
+                renderAdminUsersList();
+                playSound('success');
+                showToast("¡Usuario creado exitosamente!");
+                setTimeout(loadSheetData, 1000);
+            } catch (err) {
+                playSound('error');
+                showToast("Error al guardar usuario", false);
+            }
+        }
+
+        async function adminEditPassword(u) {
+            const currentPass = USERS_DATABASE[u] || "";
+            const newPass = prompt(`Ingrese la nueva contraseña para el usuario ${u.toUpperCase()}:`, currentPass);
+            if (!newPass || newPass === currentPass) return;
+
+            playSound('click');
+            showToast("Actualizando clave de usuario...");
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "updateG2", user: u, newPass: newPass })
+                });
+
+                USERS_DATABASE[u] = newPass;
+                renderAdminUsersList();
+                playSound('success');
+                showToast("¡Contraseña actualizada en Google Sheets!");
+                setTimeout(loadSheetData, 1000);
+            } catch (err) {
+                playSound('error');
+                showToast("Error al actualizar la contraseña", false);
+            }
+        }
+
         // DIBUJAR Y MOSTRAR TARJETAS DE MÓDULOS EN LA PANTALLA
         function renderSystems(data) {
             const container = document.getElementById('systemsContainer');
@@ -716,7 +773,15 @@
                                 <div class="p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800 shadow-inner">
                                     <div class="flex justify-between items-start mb-2">
                                         <div class="flex flex-col">
-                                            <span class="font-mono text-xs font-black text-slate-200">${item.usuario || 'Sin usuario'}</span>
+                                            <div class="flex items-center space-x-1.5">
+                                                <span class="font-mono text-xs font-black text-slate-200">${item.usuario || 'Sin usuario'}</span>
+                                                ${item.usuario ? `
+                                                    <button onclick="copyToClipboard('${item.usuario}', 'usuario')" title="Copiar usuario" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded-lg font-bold border border-slate-700 transition-colors flex items-center gap-1">
+                                                        <i class="fa-solid fa-copy"></i>
+                                                        <span>Copiar Usuario</span>
+                                                    </button>
+                                                ` : ''}
+                                            </div>
                                             ${currentActiveUser === 'carlos' ? `<span class="text-[9px] text-amber-400/90 font-bold mt-0.5">👤 Propietario: ${item.deUsuario.toUpperCase()}</span>` : ''}
                                         </div>
                                         ${item.centro_de_atencion ? `<span class="text-[9px] bg-emerald-950 text-emerald-400 font-extrabold px-2 py-0.5 rounded-full border border-emerald-800">${item.centro_de_atencion}</span>` : ''}
@@ -724,8 +789,9 @@
                                     <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-800">
                                         <span class="font-mono text-xs text-amber-300 font-bold tracking-wide">${item.contrasena || '••••••••'}</span>
                                         <div class="flex items-center space-x-1.5">
-                                            <button onclick="copyToClipboard('${item.contrasena}')" title="Copiar contraseña" class="px-2.5 py-1.5 bg-blue-950 hover:bg-blue-800 text-blue-300 text-xs rounded-xl font-bold border border-blue-800 transition-colors">
-                                                <i class="fa-solid fa-copy"></i>
+                                            <button onclick="copyToClipboard('${item.contrasena}', 'contraseña')" title="Copiar contraseña" class="px-2.5 py-1.5 bg-blue-950 hover:bg-blue-800 text-blue-300 text-xs rounded-xl font-bold border border-blue-800 transition-colors flex items-center gap-1">
+                                                <i class="fa-solid fa-key"></i>
+                                                <span>Contraseña</span>
                                             </button>
                                             <button onclick="editCardPassword('${sistema}', '${item.usuario}')" title="Editar Contraseña" class="px-2.5 py-1.5 bg-amber-950 hover:bg-amber-800 text-amber-300 text-xs rounded-xl font-bold border border-amber-800 transition-colors">
                                                 <i class="fa-solid fa-pen"></i>
@@ -744,11 +810,20 @@
             }).join('');
         }
 
-        function copyToClipboard(text) {
+        function copyToClipboard(text, tipo = "contraseña") {
             if (!text) return;
-            navigator.clipboard.writeText(text);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textArea);
+            }
             playSound('copy');
-            showToast("¡Contraseña copiada al portapapeles! 📋");
+            showToast(`¡${tipo.charAt(0).toUpperCase() + tipo.slice(1)} copiado al portapapeles! 📋`);
         }
 
         // FUNCIONES DE CONTROL Y FILTRADO DEL ADMINISTRADOR
@@ -790,6 +865,7 @@
                         <span class="text-slate-500 font-mono ml-2">(${USERS_DATABASE[u]})</span>
                     </div>
                     <div class="flex items-center space-x-2">
+                        <button onclick="adminEditPassword('${u}')" class="px-2.5 py-1 bg-blue-900/60 hover:bg-blue-700 text-blue-200 font-bold rounded-lg transition-colors">Editar Clave</button>
                         ${u !== 'carlos' ? `<button onclick="adminDeleteUser('${u}')" class="px-2.5 py-1 bg-rose-900/60 hover:bg-rose-700 text-rose-200 font-bold rounded-lg transition-colors">Eliminar</button>` : '<span class="text-[10px] text-emerald-400 font-extrabold px-2 py-0.5 bg-emerald-950 rounded-full border border-emerald-800">Admin Principal</span>'}
                     </div>
                 </div>
