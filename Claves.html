@@ -148,6 +148,15 @@
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
             transform: scale(1.03);
         }
+        :root { color-scheme: dark; }
+        html { scroll-behavior: smooth; }
+        button, input, select { transition: background-color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+        button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid rgba(96,165,250,.8); outline-offset: 3px; }
+        .glass-card-dark { border-color: rgba(148,163,184,.2); }
+        .card-hover-effect:hover { transform: translateY(-4px); }
+        .snowflake { opacity: .45; }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+        @media (max-width: 640px) { .watermark-marcenaro { bottom: 8px; right: 8px; opacity: .8; } }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-800 antialiased min-h-screen relative overflow-x-hidden selection:bg-blue-500 selection:text-white">
@@ -271,6 +280,7 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+            <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><div class="text-xs text-slate-400"><i class="fa-solid fa-shield-halved text-emerald-400 mr-2"></i>Sesión activa · <span id="recordCountLabel">Datos sincronizados desde la hoja</span></div><span class="text-[10px] uppercase tracking-widest text-slate-500">Portal de accesos</span></div>
             <div class="glass-card-dark rounded-3xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 border border-white/10 shadow-2xl">
                 <div>
                     <h2 class="text-lg font-black text-white flex items-center gap-2">
@@ -285,8 +295,9 @@
                         <option value="ALL">🔍 Todos los usuarios (Vista Admin)</option>
                     </select>
 
-                    <input type="text" id="searchInput" placeholder="Buscar por sistema, usuario o centro..." 
+                    <input type="search" id="searchInput" autocomplete="off" placeholder="Buscar sistema, usuario o centro..." 
                         class="w-full md:w-80 pl-4 pr-4 py-3 bg-slate-900/90 border border-slate-700 text-white rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium shadow-inner">
+                    <button type="button" onclick="loadSheetData()" title="Actualizar datos" aria-label="Actualizar datos" class="shrink-0 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black shadow-lg"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
 
@@ -375,11 +386,10 @@
         const CSV_PUBLIC_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec";
 
-        let USERS_DATABASE = {
-            "hmq": "punto2026",
-            "carlos": "2403",
-            "emergenciahmq": "HmqIsss"
-        };
+        // No guardar usuarios ni contraseñas reales en el HTML público.
+        // La autenticación actual sigue dependiendo del CSV publicado: debe migrarse
+        // a un backend privado antes de usar este portal con credenciales reales.
+        let USERS_DATABASE = {};
 
         let currentActiveUser = null;
         let allData = [];
@@ -455,8 +465,9 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            preloadUsersFromCSV();
+        let usersLoaded = false;
+        window.addEventListener('DOMContentLoaded', async () => {
+            usersLoaded = await preloadUsersFromCSV();
             createSnow();
 
             // Attaching audio trigger to all standard click buttons
@@ -482,21 +493,32 @@
         }
 
         function preloadUsersFromCSV() {
-            Papa.parse(CSV_PUBLIC_URL, {
-                download: true,
-                header: false,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    if (results.data && results.data.length > 0) {
-                        results.data.forEach((row) => {
-                            const u = row[0] ? String(row[0]).trim().toLowerCase() : "";
-                            const p = row[1] ? String(row[1]).trim() : "";
-                            if (u && u !== "usuario" && p) {
-                                USERS_DATABASE[u] = p;
-                            }
-                        });
-                    }
+            return new Promise((resolve) => {
+                if (!window.Papa) {
+                    showToast("No se pudo cargar el lector CSV", false);
+                    resolve(false);
+                    return;
                 }
+                Papa.parse(CSV_PUBLIC_URL + "&t=" + Date.now(), {
+                    download: true, header: false, skipEmptyLines: true,
+                    complete: function(results) {
+                        if (results.data && results.data.length) {
+                            results.data.forEach((row) => {
+                                const u = row[0] ? String(row[0]).trim().toLowerCase() : "";
+                                const p = row[1] ? String(row[1]).trim() : "";
+                                if (u && u !== "usuario" && p) USERS_DATABASE[u] = p;
+                            });
+                            resolve(true);
+                        } else {
+                            showToast("No se encontraron usuarios en la fuente de acceso", false);
+                            resolve(false);
+                        }
+                    },
+                    error: function() {
+                        showToast("No se pudo conectar con la fuente de usuarios", false);
+                        resolve(false);
+                    }
+                });
             });
         }
 
@@ -512,13 +534,23 @@
             }
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
+            if (!usersLoaded) {
+                await preloadUsersFromCSV();
+                usersLoaded = Object.keys(USERS_DATABASE).length > 0;
+            }
             const uInput = document.getElementById('loginUser').value.trim().toLowerCase();
             const pInput = document.getElementById('loginPass').value.trim();
             const errDiv = document.getElementById('loginError');
 
+            if (!Object.keys(USERS_DATABASE).length) {
+                errDiv.querySelector('span').textContent = 'No fue posible cargar usuarios. Intente nuevamente más tarde.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
             if (USERS_DATABASE[uInput] && USERS_DATABASE[uInput] === pInput) {
+                errDiv.querySelector('span').textContent = 'Usuario o contraseña incorrectos.';
                 currentActiveUser = uInput;
                 errDiv.classList.add('hidden');
                 document.getElementById('loginScreen').style.display = 'none';
@@ -583,12 +615,19 @@
                         });
                     }
                     allData = parsed;
+                    const countLabel = document.getElementById('recordCountLabel');
+                    if (countLabel) countLabel.textContent = `${allData.length} registros disponibles`;
 
                     if (currentActiveUser === "carlos") {
                         populateAdminUserSelector();
                     }
 
                     renderSystems(allData);
+                    if (currentActiveUser === 'carlos') renderAdminUsersList();
+                },
+                error: function() {
+                    showToast("No se pudieron cargar los registros. Revisa la conexión.", false);
+                    document.getElementById('systemsContainer').innerHTML = '<div class="col-span-full p-8 text-center rounded-3xl border border-rose-900 bg-rose-950/40 text-rose-200">Error al consultar Google Sheets. Intenta actualizar nuevamente.</div>';
                 }
             });
         }
@@ -620,7 +659,7 @@
                 });
 
                 playSound('success');
-                showToast("¡Actualizado en Google Sheets!");
+                showToast("Solicitud enviada. Actualizando vista; no se puede confirmar desde no-cors.", false);
                 setTimeout(loadSheetData, 800);
             } catch (e) {
                 playSound('error');
@@ -649,7 +688,7 @@
                 });
 
                 playSound('success');
-                showToast("Registro eliminado de Google Sheets");
+                showToast("Solicitud de eliminación enviada; verifica el resultado al actualizar.", false);
                 setTimeout(loadSheetData, 800);
             } catch (e) {
                 playSound('error');
@@ -670,12 +709,13 @@
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
+                    mode: "no-cors",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({ action: "deleteUser", userToDelete: u })
                 });
 
                 playSound('success');
-                showToast("Usuario eliminado de Google Sheets");
+                showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
                 setTimeout(loadSheetData, 1000);
             } catch (err) {
                 playSound('error');
@@ -696,6 +736,7 @@
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
+                    mode: "no-cors",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({ action: "addUser", newUser: newUser, newPass: newPass })
                 });
@@ -706,7 +747,7 @@
 
                 renderAdminUsersList();
                 playSound('success');
-                showToast("¡Usuario creado exitosamente!");
+                showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
                 setTimeout(loadSheetData, 1000);
             } catch (err) {
                 playSound('error');
@@ -725,6 +766,7 @@
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
+                    mode: "no-cors",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({ action: "updateG2", user: u, newPass: newPass })
                 });
@@ -732,7 +774,7 @@
                 USERS_DATABASE[u] = newPass;
                 renderAdminUsersList();
                 playSound('success');
-                showToast("¡Contraseña actualizada en Google Sheets!");
+                showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
                 setTimeout(loadSheetData, 1000);
             } catch (err) {
                 playSound('error');
@@ -740,90 +782,121 @@
             }
         }
 
+        // Escapado para evitar que valores de la hoja se interpreten como HTML.
+        function escapeHTML(value) {
+            return String(value ?? "").replace(/[&<>"']/g, ch => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+            })[ch]);
+        }
+
+        function toggleCardPassword(button) {
+            const target = document.getElementById(button.dataset.target);
+            if (!target) return;
+            const hidden = target.dataset.hidden === "true";
+            target.textContent = hidden ? target.dataset.secret : "••••••••";
+            target.dataset.hidden = hidden ? "false" : "true";
+            button.innerHTML = hidden ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+            button.title = hidden ? "Ocultar contraseña" : "Mostrar contraseña";
+        }
+
+        function refreshView() {
+            const term = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+            const owner = document.getElementById('adminUserFilter')?.value || 'ALL';
+            const filtered = allData.filter(row => {
+                const matchesText = [row.sistema, row.usuario, row.centro_de_atencion, row.deUsuario]
+                    .some(value => String(value || '').toLowerCase().includes(term));
+                return matchesText && (currentActiveUser !== 'carlos' || owner === 'ALL' || row.deUsuario === owner);
+            });
+            renderSystems(filtered);
+        }
+
         // DIBUJAR Y MOSTRAR TARJETAS DE MÓDULOS EN LA PANTALLA
         function renderSystems(data) {
             const container = document.getElementById('systemsContainer');
             if (!container) return;
-
-            if (!data || data.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 font-bold bg-slate-900/60 rounded-3xl border border-slate-800 shadow-xl">No hay registros asignados para mostrar. ❄️</div>`;
+            const total = Array.isArray(data) ? data.length : 0;
+            if (!total) {
+                container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-400 font-bold bg-slate-900/60 rounded-3xl border border-slate-800 shadow-xl"><i class="fa-solid fa-folder-open text-3xl mb-3 block text-slate-500"></i>No hay registros que coincidan con la búsqueda.</div>`;
                 return;
             }
-
             const grouped = {};
-            data.forEach((item) => {
+            data.forEach(item => {
                 const sys = item.sistema || "GENERAL";
-                if (!grouped[sys]) grouped[sys] = [];
-                grouped[sys].push(item);
+                (grouped[sys] ||= []).push(item);
             });
-
-            container.innerHTML = Object.keys(grouped).map(sistema => {
+            container.innerHTML = Object.keys(grouped).sort((a,b) => a.localeCompare(b, 'es')).map((sistema, groupIndex) => {
                 const items = grouped[sistema];
                 return `
-                    <div class="glass-card-dark rounded-3xl shadow-xl overflow-hidden card-hover-effect flex flex-col justify-between">
-                        <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 px-5 py-4 flex items-center justify-between border-b border-white/10">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-amber-400 text-xs">⚡</span>
-                                <h3 class="font-black text-sm uppercase text-white tracking-wider">${sistema}</h3>
-                            </div>
-                            <span class="text-[10px] bg-white/20 text-white font-extrabold px-2.5 py-0.5 rounded-full border border-white/20">${items.length}</span>
+                    <section class="glass-card-dark rounded-3xl shadow-xl overflow-hidden card-hover-effect flex flex-col">
+                        <div class="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-900 px-5 py-4 flex items-center justify-between border-b border-white/10">
+                            <div class="flex items-center gap-2 min-w-0"><span class="text-amber-400">✦</span><h3 class="font-black text-sm uppercase text-white tracking-wider truncate">${escapeHTML(sistema)}</h3></div>
+                            <span class="text-[10px] bg-white/10 text-white font-extrabold px-2.5 py-1 rounded-full border border-white/15">${items.length} ${items.length === 1 ? 'acceso' : 'accesos'}</span>
                         </div>
                         <div class="p-4 space-y-3 flex-1">
-                            ${items.map(item => `
-                                <div class="p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800 shadow-inner">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <div class="flex flex-col">
-                                            <div class="flex items-center space-x-1.5">
-                                                <span class="font-mono text-xs font-black text-slate-200">${item.usuario || 'Sin usuario'}</span>
-                                                ${item.usuario ? `
-                                                    <button onclick="copyToClipboard('${item.usuario}', 'usuario')" title="Copiar usuario" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded-lg font-bold border border-slate-700 transition-colors flex items-center gap-1">
-                                                        <i class="fa-solid fa-copy"></i>
-                                                        <span>Copiar Usuario</span>
-                                                    </button>
-                                                ` : ''}
-                                            </div>
-                                            ${currentActiveUser === 'carlos' ? `<span class="text-[9px] text-amber-400/90 font-bold mt-0.5">👤 Propietario: ${item.deUsuario.toUpperCase()}</span>` : ''}
+                            ${items.map((item, index) => {
+                                const secretId = `secret-${groupIndex}-${index}`;
+                                return `
+                                <article class="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 shadow-inner hover:border-slate-600 transition-colors">
+                                    <div class="flex justify-between items-start gap-2 mb-3">
+                                        <div class="min-w-0">
+                                            <div class="font-mono text-sm font-black text-slate-100 break-all">${escapeHTML(item.usuario || 'Sin usuario')}</div>
+                                            ${currentActiveUser === 'carlos' ? `<span class="text-[10px] text-amber-400/90 font-bold mt-1 block">Propietario: ${escapeHTML(String(item.deUsuario || '').toUpperCase())}</span>` : ''}
                                         </div>
-                                        ${item.centro_de_atencion ? `<span class="text-[9px] bg-emerald-950 text-emerald-400 font-extrabold px-2 py-0.5 rounded-full border border-emerald-800">${item.centro_de_atencion}</span>` : ''}
+                                        ${item.centro_de_atencion ? `<span class="shrink-0 text-[9px] bg-emerald-950 text-emerald-300 font-extrabold px-2.5 py-1 rounded-full border border-emerald-800">${escapeHTML(item.centro_de_atencion)}</span>` : ''}
                                     </div>
-                                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-800">
-                                        <span class="font-mono text-xs text-amber-300 font-bold tracking-wide">${item.contrasena || '••••••••'}</span>
-                                        <div class="flex items-center space-x-1.5">
-                                            <button onclick="copyToClipboard('${item.contrasena}', 'contraseña')" title="Copiar contraseña" class="px-2.5 py-1.5 bg-blue-950 hover:bg-blue-800 text-blue-300 text-xs rounded-xl font-bold border border-blue-800 transition-colors flex items-center gap-1">
-                                                <i class="fa-solid fa-key"></i>
-                                                <span>Contraseña</span>
-                                            </button>
-                                            <button onclick="editCardPassword('${sistema}', '${item.usuario}')" title="Editar Contraseña" class="px-2.5 py-1.5 bg-amber-950 hover:bg-amber-800 text-amber-300 text-xs rounded-xl font-bold border border-amber-800 transition-colors">
-                                                <i class="fa-solid fa-pen"></i>
-                                            </button>
-                                            <button onclick="deleteCardRow(${item.originalIndex})" title="Eliminar Registro" class="px-2.5 py-1.5 bg-rose-950 hover:bg-rose-800 text-rose-300 text-xs rounded-xl font-bold border border-rose-800 transition-colors">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
+                                    <div class="flex flex-wrap justify-between items-center gap-2 pt-3 border-t border-slate-800">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span id="${secretId}" class="font-mono text-sm text-amber-300 font-bold tracking-wide" data-secret="${escapeHTML(item.contrasena || '')}" data-hidden="true">••••••••</span>
+                                            <button type="button" data-action="toggle-secret" data-target="${secretId}" title="Mostrar contraseña" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs"><i class="fa-solid fa-eye"></i></button>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <button type="button" data-action="copy-user" data-value="${escapeHTML(item.usuario || '')}" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] rounded-xl font-bold border border-slate-700"><i class="fa-solid fa-copy mr-1"></i>Usuario</button>
+                                            <button type="button" data-action="copy-pass" data-value="${escapeHTML(item.contrasena || '')}" class="px-2.5 py-2 bg-blue-950 hover:bg-blue-900 text-blue-200 text-[11px] rounded-xl font-bold border border-blue-800"><i class="fa-solid fa-key mr-1"></i>Clave</button>
+                                            <button type="button" data-action="edit-row" data-system="${escapeHTML(sistema)}" data-user="${escapeHTML(item.usuario || '')}" title="Editar contraseña" class="px-3 py-2 bg-amber-950 hover:bg-amber-900 text-amber-200 text-xs rounded-xl border border-amber-800"><i class="fa-solid fa-pen"></i></button>
+                                            <button type="button" data-action="delete-row" data-row="${Number(item.originalIndex) || 0}" title="Eliminar registro" class="px-3 py-2 bg-rose-950 hover:bg-rose-900 text-rose-200 text-xs rounded-xl border border-rose-800"><i class="fa-solid fa-trash"></i></button>
                                         </div>
                                     </div>
-                                    <div class="text-[9px] text-slate-500 mt-1.5 text-right font-medium">${item.actualizada}</div>
-                                </div>
-                            `).join('')}
+                                    <div class="text-[10px] text-slate-500 mt-3 text-right">${escapeHTML(item.actualizada || 'Sin fecha')}</div>
+                                </article>`;
+                            }).join('')}
                         </div>
-                    </div>
-                `;
+                    </section>`;
             }).join('');
         }
 
-        function copyToClipboard(text, tipo = "contraseña") {
-            if (!text) return;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text);
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand("copy");
-                document.body.removeChild(textArea);
+        // Acciones delegadas: evita insertar datos de la hoja dentro de código JavaScript inline.
+        document.getElementById('systemsContainer').addEventListener('click', (event) => {
+            const button = event.target.closest('button[data-action]');
+            if (!button) return;
+            const action = button.dataset.action;
+            if (action === 'toggle-secret') toggleCardPassword(button);
+            if (action === 'copy-user') copyToClipboard(button.dataset.value, 'usuario');
+            if (action === 'copy-pass') copyToClipboard(button.dataset.value, 'contraseña');
+            if (action === 'edit-row') editCardPassword(button.dataset.system, button.dataset.user);
+            if (action === 'delete-row') deleteCardRow(Number(button.dataset.row));
+        });
+
+        async function copyToClipboard(text, tipo = "contraseña") {
+            if (!text) { showToast("No hay datos para copiar", false); return; }
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(String(text));
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = String(text);
+                    textArea.style.position = "fixed";
+                    textArea.style.opacity = "0";
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    const copied = document.execCommand("copy");
+                    textArea.remove();
+                    if (!copied) throw new Error("Clipboard no disponible");
+                }
+                playSound('copy');
+                showToast(`¡${tipo.charAt(0).toUpperCase() + tipo.slice(1)} copiado!`);
+            } catch (error) {
+                showToast("El navegador bloqueó el portapapeles", false);
             }
-            playSound('copy');
-            showToast(`¡${tipo.charAt(0).toUpperCase() + tipo.slice(1)} copiado al portapapeles! 📋`);
         }
 
         // FUNCIONES DE CONTROL Y FILTRADO DEL ADMINISTRADOR
@@ -838,39 +911,32 @@
                 uniqueUsers.map(u => `<option value="${u}">👤 Usuario: ${u.toUpperCase()}</option>`).join('');
         }
 
-        function filterByUserOwner() {
-            const selected = document.getElementById('adminUserFilter').value;
-            if (selected === 'ALL') {
-                renderSystems(allData);
-            } else {
-                const filtered = allData.filter(item => item.deUsuario === selected);
-                renderSystems(filtered);
-            }
-        }
+        function filterByUserOwner() { refreshView(); }
 
         function renderAdminUsersList() {
             const container = document.getElementById('adminUsersList');
             const statUsers = document.getElementById('statTotalUsers');
             const statKeys = document.getElementById('statTotalKeys');
-
             if (statUsers) statUsers.innerText = Object.keys(USERS_DATABASE).length;
             if (statKeys) statKeys.innerText = allData.length;
-
             if (!container) return;
-
-            container.innerHTML = Object.keys(USERS_DATABASE).map(u => `
-                <div class="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs">
-                    <div>
-                        <span class="font-bold text-amber-300 uppercase">${u}</span>
-                        <span class="text-slate-500 font-mono ml-2">(${USERS_DATABASE[u]})</span>
+            container.innerHTML = Object.keys(USERS_DATABASE).sort((a,b) => a.localeCompare(b, 'es')).map(u => `
+                <div class="flex items-center justify-between gap-3 p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+                    <div class="min-w-0"><span class="font-bold text-amber-300 uppercase">${escapeHTML(u)}</span><span class="text-slate-500 font-mono ml-2">(contraseña protegida)</span></div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" data-admin-action="edit" data-user="${escapeHTML(u)}" class="px-2.5 py-1.5 bg-blue-900/60 hover:bg-blue-700 text-blue-200 font-bold rounded-lg">Editar clave</button>
+                        ${u !== 'carlos' ? `<button type="button" data-admin-action="delete" data-user="${escapeHTML(u)}" class="px-2.5 py-1.5 bg-rose-900/60 hover:bg-rose-700 text-rose-200 font-bold rounded-lg">Eliminar</button>` : '<span class="text-[10px] text-emerald-400 font-extrabold px-2 py-1 bg-emerald-950 rounded-full border border-emerald-800">Admin</span>'}
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="adminEditPassword('${u}')" class="px-2.5 py-1 bg-blue-900/60 hover:bg-blue-700 text-blue-200 font-bold rounded-lg transition-colors">Editar Clave</button>
-                        ${u !== 'carlos' ? `<button onclick="adminDeleteUser('${u}')" class="px-2.5 py-1 bg-rose-900/60 hover:bg-rose-700 text-rose-200 font-bold rounded-lg transition-colors">Eliminar</button>` : '<span class="text-[10px] text-emerald-400 font-extrabold px-2 py-0.5 bg-emerald-950 rounded-full border border-emerald-800">Admin Principal</span>'}
-                    </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
+
+        document.getElementById('adminUsersList').addEventListener('click', event => {
+            const button = event.target.closest('button[data-admin-action]');
+            if (!button) return;
+            const user = button.dataset.user;
+            if (button.dataset.adminAction === 'edit') adminEditPassword(user);
+            if (button.dataset.adminAction === 'delete') adminDeleteUser(user);
+        });
 
         function openAdminModal() {
             renderAdminUsersList();
@@ -896,7 +962,7 @@
                 await fetch(SCRIPT_URL, {
                     method: "POST",
                     mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({
                         action: "createRow",
                         user: currentActiveUser,
@@ -908,7 +974,7 @@
                     })
                 });
                 playSound('success');
-                showToast("¡Registro creado exitosamente!");
+                showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
                 setTimeout(loadSheetData, 1500);
             } catch (err) {
                 playSound('error');
@@ -919,6 +985,8 @@
         function showToast(msg, isSuccess = true) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
+            const icon = document.getElementById('toastIcon');
+            icon.className = isSuccess ? 'fa-solid fa-circle-check text-emerald-400 text-xl' : 'fa-solid fa-circle-exclamation text-rose-400 text-xl';
             toast.classList.remove('translate-y-[-140px]', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
             setTimeout(() => {
@@ -927,15 +995,18 @@
             }, 3000);
         }
 
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
-            const filtered = allData.filter(row => 
-                row.sistema.toLowerCase().includes(term) ||
-                row.usuario.toLowerCase().includes(term) ||
-                row.centro_de_atencion.toLowerCase().includes(term)
-            );
-            renderSystems(filtered);
+        document.getElementById('searchInput').addEventListener('input', refreshView);
+        document.getElementById('adminUserFilter').addEventListener('change', refreshView);
+
+        // Cerrar ventanas con Escape y al pulsar el fondo del modal.
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') ['adminModal', 'createModal'].forEach(closeModal);
         });
+        ['adminModal', 'createModal'].forEach(id => {
+            const modal = document.getElementById(id);
+            modal.addEventListener('click', event => { if (event.target === modal) closeModal(id); });
+        });
+
     </script>
 </body>
 </html>
