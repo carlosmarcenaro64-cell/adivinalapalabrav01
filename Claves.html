@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
@@ -670,28 +670,99 @@
             }).join('');
         }
 
-        async function reassignRowUser(rowIndex, currentOwner) {
-            const newUserOwner = prompt(`Reasignar este registro de ${currentOwner.toUpperCase()} a otro usuario (Col D):`);
-            if (!newUserOwner) return;
+        function copyToClipboard(text) {
+            if (!text) return;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    playSound('copy');
+                    showToast("¡Contraseña copiada al portapapeles! 📋");
+                }).catch(() => fallbackCopyTextToClipboard(text));
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        }
 
-            showToast("Reasignando propietario...");
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                playSound('copy');
+                showToast("¡Contraseña copiada al portapapeles! 📋");
+            } catch (err) {
+                showToast("No se pudo copiar automáticamente", false);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        async function editCardPassword(sistema, usuario) {
+            const nuevaClave = prompt(`Ingrese la nueva contraseña para ${usuario} en ${sistema}:`);
+            if (!nuevaClave) return;
+
+            showToast("Guardando cambio...");
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
                     mode: "no-cors",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({
-                        action: "reassignUser",
-                        rowIndex: rowIndex,
-                        newUserOwner: newUserOwner.trim().toLowerCase()
+                        sistema: sistema,
+                        usuario: usuario,
+                        nuevaContrasena: nuevaClave,
+                        syncVinculados: true
                     })
                 });
+
+                // Actualizar inmediatamente en memoria local para respuesta instantánea
+                allData.forEach(item => {
+                    if (item.sistema.toUpperCase() === sistema.toUpperCase() && item.usuario.toLowerCase() === usuario.toLowerCase()) {
+                        item.contrasena = nuevaClave;
+                        item.actualizada = new Date().toLocaleDateString('es-SV');
+                    }
+                });
+
                 playSound('success');
-                showToast("Registro reasignado con éxito");
-                setTimeout(loadSheetData, 1200);
+                showToast("¡Contraseña actualizada!");
+                renderSystems(allData);
+                setTimeout(loadSheetData, 1500);
             } catch (e) {
                 playSound('error');
-                showToast("Error al reasignar", false);
+                showToast("Error de comunicación", false);
+            }
+        }
+
+        async function deleteCardRow(rowIndex) {
+            if (!confirm("¿Desea eliminar este registro de la lista?")) return;
+
+            playSound('delete');
+            showToast("Eliminando registro...");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({
+                        action: "deleteRow",
+                        rowIndex: rowIndex
+                    })
+                });
+
+                // Eliminar inmediatamente de la lista local en pantalla
+                allData = allData.filter(item => item.originalIndex !== rowIndex);
+
+                playSound('success');
+                showToast("Registro eliminado");
+                renderSystems(allData);
+                setTimeout(loadSheetData, 1500);
+            } catch (e) {
+                playSound('error');
+                showToast("Error al eliminar", false);
             }
         }
 
