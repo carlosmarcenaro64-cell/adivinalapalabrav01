@@ -543,6 +543,7 @@
         function logout() {
             playSound('click');
             currentActiveUser = null;
+            allData = []; // Clear in-memory array on logout
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('loginUser').value = '';
@@ -550,8 +551,8 @@
         }
 
         function loadSheetData() {
-            // Se agrega timestamp dinamico para forzar la lectura sin cache del CSV
-            Papa.parse(CSV_PUBLIC_URL + "&t=" + new Date().getTime(), {
+            // Se fuerza la lectura sin cache del CSV directamente desde Google Sheets
+            Papa.parse(CSV_PUBLIC_URL + "&t=" + Date.now(), {
                 download: true,
                 header: false,
                 skipEmptyLines: true,
@@ -583,7 +584,6 @@
                     }
                     allData = parsed;
 
-                    // Si es carlos, poblar selector de filtro por usuario
                     if (currentActiveUser === "carlos") {
                         populateAdminUserSelector();
                     }
@@ -705,7 +705,7 @@
             const nuevaClave = prompt(`Ingrese la nueva contraseña para ${usuario} en ${sistema}:`);
             if (!nuevaClave) return;
 
-            showToast("Guardando cambio...");
+            showToast("Guardando en Google Sheets...");
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
@@ -719,18 +719,10 @@
                     })
                 });
 
-                // Actualizar inmediatamente en memoria local para respuesta instantánea
-                allData.forEach(item => {
-                    if (item.sistema.toUpperCase() === sistema.toUpperCase() && item.usuario.toLowerCase() === usuario.toLowerCase()) {
-                        item.contrasena = nuevaClave;
-                        item.actualizada = new Date().toLocaleDateString('es-SV');
-                    }
-                });
-
                 playSound('success');
-                showToast("¡Contraseña actualizada!");
-                renderSystems(allData);
-                setTimeout(loadSheetData, 1500);
+                showToast("¡Actualizado en Google Sheets!");
+                // Direct fresh load from Google Sheets without keeping state
+                setTimeout(loadSheetData, 1200);
             } catch (e) {
                 playSound('error');
                 showToast("Error de comunicación", false);
@@ -738,10 +730,10 @@
         }
 
         async function deleteCardRow(rowIndex) {
-            if (!confirm("¿Desea eliminar este registro de la lista?")) return;
+            if (!confirm("¿Desea eliminar este registro de la hoja de cálculo?")) return;
 
             playSound('delete');
-            showToast("Eliminando registro...");
+            showToast("Eliminando de Google Sheets...");
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
@@ -753,13 +745,10 @@
                     })
                 });
 
-                // Eliminar inmediatamente de la lista local en pantalla
-                allData = allData.filter(item => item.originalIndex !== rowIndex);
-
                 playSound('success');
-                showToast("Registro eliminado");
-                renderSystems(allData);
-                setTimeout(loadSheetData, 1500);
+                showToast("Registro eliminado de Google Sheets");
+                // Direct fresh load from Google Sheets
+                setTimeout(loadSheetData, 1200);
             } catch (e) {
                 playSound('error');
                 showToast("Error al eliminar", false);
