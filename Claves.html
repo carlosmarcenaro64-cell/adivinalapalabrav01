@@ -4,198 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claves ISSS</title>
-    <!-- Favicon de Candado -->
+
+    <!-- Manifest PWA para instalación en teléfono -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlNpc3RlbWEgZGUgQ2xhdmVzIElTU1MiLAogICJzaG9ydF9uYW1lIjogIkNsYXZlcyBJU1NTIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGQxYjJhIiwKICAidGhlbWVfY29sb3IiOiAiIzBkMWIyYSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDt1dGY4LDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMjQgMjQnIGZpbGw9JyUyMzI1NjNlYic+PHBhdGggZD0nTTE4IDhoLTFWNmMwLTIuNzYtMi4yNC01LTUtNVN3IDMuMjQgNCA2djJINmMtMS4xIDAtMiAuOS0yIDJ2MTBjMCAxLjEuOSAyIDIgMmgyMWMxLjEgMCAyLS45IDItMlYxMGMwLTEuMS0uOS0yLTItMnptLTYgOWMtMS4xIDAtMi0uOS0yLTJzLjktMiAyLTIgMiAuOSAyIDItLjkgMi0yIDJ6bTMuMS05SDguOVY2YzAtMS43MSAxLjM5LTMuMSAzLjEtMy4xIDEuNzEgMCAzLjEgMS4zOSAzLjEgMy4xdjJ6Jy8+PC9zdmc+IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    <meta name="theme-color" content="#0d1b2a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z'/></svg>">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome para iconos animados -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Configuración PWA (Instalable en Teléfonos Android / iOS) -->
-    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Claves%20ISSS%22%2C%22short_name%22%3A%22Claves%20ISSS%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230d1b2a%22%2C%22theme_color%22%3A%22%230d1b2a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D'http%253A%22%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%253D'0%25200%2520512%2520512'%2520fill%253D'%25232563eb'%253E%253Crect%2520width%253D'512'%2520height%253D'512'%2520rx%253D'100'%2520fill%253D'%25230d1b2a'%2F%253E%253Cpath%2520d%253D'M384%2520192h-32v-48c0-53-43-96-96-96s-96%252043-96%252096v48h-32c-17.7%25200-32%252014.3-32%252032v224c0%252017.7%252014.3%252032%252032%252032h256c17.7%25200%252032-14.3%252032-32V224c0-17.7-14.3-32-32-32zm-128%2520160c-17.7%25200-32-14.3-32-32s14.3-32%252032-32%252032%252014.3%252032%252032-14.3%252032-32%252032zm48-160H208v-48c0-26.5%252021.5-48%252048-48s48%252021.5%252048%252048v48z'%2520fill%253D'%25233b82f6'%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Claves ISSS">
-    <meta name="theme-color" content="#0d1b2a">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                    },
-                    animation: {
-                        'gradient-x': 'gradient-x 15s ease infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'pop': 'pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                    },
-                    keyframes: {
-                        'gradient-x': {
-                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
-                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
-                        },
-                        'float': {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        'slideUp': {
-                            '0%': { opacity: 0, transform: 'translateY(20px)' },
-                            '100%': { opacity: 1, transform: 'translateY(0)' },
-                        },
-                        'fadeIn': {
-                            '0%': { opacity: 0 },
-                            '100%': { opacity: 1 },
-                        },
-                        'pop': {
-                            '0%': { transform: 'scale(0.95)', opacity: 0 },
-                            '100%': { transform: 'scale(1)', opacity: 1 },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        /* Cursor Navideño Mejorado con Puntero de Precisión */
         body, button, input, a, select { 
             cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><polygon points='0,0 4,14 8,9 15,15 17,13 10,7 15,4' fill='%23ef4444' stroke='%23ffffff' stroke-width='1.5'/><circle cx='21' cy='21' r='7' fill='%23ffffff' stroke='%23000000' stroke-width='1'/><circle cx='19' cy='19' r='1' fill='%23000000'/><circle cx='23' cy='19' r='1' fill='%23000000'/><polygon points='21,20 25,21.5 21,22.5' fill='%23f97316'/><path d='M19,24 Q21,26 23,24' stroke='%23000000' stroke-width='0.8' fill='none'/><path d='M14,16 L28,16 L26,14 L16,14 Z' fill='%23dc2626'/></svg>") 0 0, auto !important; 
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-        }
-        .glass-dark {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
         }
         .card-hover-effect {
             transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .card-hover-effect:hover {
-            transform: translateY(-7px) scale(1.015);
-            box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.12), 0 10px 12px -5px rgba(0, 0, 0, 0.05);
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-
-        /* Animación de entrada de texto en los inputs del Login */
         .login-input-glow:focus {
-            animation: inputPulse 1.5s infinite alternate;
             box-shadow: 0 0 15px rgba(37, 99, 235, 0.35);
+            border-color: #3b82f6;
         }
 
-        @keyframes inputPulse {
-            0% { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
-            100% { border-color: #60a5fa; box-shadow: 0 0 16px rgba(96, 165, 250, 0.6); }
-        }
-
-        /* Santa volando en trineo animado */
-        .santa-flying {
-            position: absolute;
-            top: 2px;
-            right: -150px;
-            font-size: 1.2rem;
-            animation: santaFly 18s linear infinite;
-            z-index: 10;
-            pointer-events: none;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
-        }
-
-        @keyframes santaFly {
-            0% { transform: translateX(0) translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            50% { transform: translateX(-60vw) translateY(-4px) rotate(-2deg); }
-            90% { opacity: 1; }
-            100% { transform: translateX(-110vw) translateY(2px) rotate(1deg); opacity: 0; }
-        }
-
-        /* Luces Navideñas Resplandecientes */
-        .christmas-lights span {
-            display: inline-block;
-            animation: lightGlow 1.5s ease-in-out infinite alternate;
-        }
-        .christmas-lights span:nth-child(2n) { animation-delay: 0.3s; }
-        .christmas-lights span:nth-child(3n) { animation-delay: 0.6s; }
-        .christmas-lights span:nth-child(4n) { animation-delay: 0.9s; }
-
-        @keyframes lightGlow {
-            0% { opacity: 0.3; transform: scale(0.8); filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
-            100% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 8px rgba(255,255,255,0.9)); }
-        }
-
-        /* Estilos del Fondo Navideño Ilustrado para el Login */
-        .login-bg-mesh {
-            background-color: #0d1b2a;
-            background-image: radial-gradient(circle at 50% 50%, rgba(13, 27, 42, 0.4) 0%, rgba(10, 15, 29, 0.85) 100%),
-            url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='260' viewBox='0 0 180 260'><rect width='180' height='260' fill='%230d1b2a'/><g transform='translate(20, 25)'><polygon points='25,0 45,40 5,40' fill='%2310b981'/><polygon points='25,15 48,50 2,50' fill='%23059669'/><polygon points='25,30 52,62 -2,62' fill='%23047857'/><circle cx='18' cy='45' r='1.5' fill='%23f59e0b'/><circle cx='32' cy='40' r='1.5' fill='%23ef4444'/><circle cx='25' cy='52' r='1.5' fill='%233b82f6'/><polygon points='25,-8 28,-1 35,-1 30,3 32,10 25,6 18,10 20,3 15,-1 22,-1' fill='%23fbbf24'/><circle cx='21' cy='32' r='1' fill='%23000000'/><circle cx='29' cy='32' r='1' fill='%23000000'/><path d='M22,36 Q25,39 28,36' stroke='%23000000' stroke-width='0.8' fill='none'/></g><g transform='translate(110, 15)'><path d='M10,25 Q15,5 35,5 Q55,5 60,25 Q50,28 35,28 Q20,28 10,25 Z' fill='%23ef4444'/><path d='M8,24 Q35,15 62,24 Q65,15 45,3 Q35,0 25,3 Q5,15 8,24 Z' fill='%23dc2626'/><rect x='8' y='23' width='54' height='10' rx='5' fill='%23ffffff'/><circle cx='60' cy='26' r='6' fill='%23ffffff'/><circle cx='28' cy='17' r='1.2' fill='%23000000'/><circle cx='42' cy='17' r='1.2' fill='%23000000'/><path d='M31,21 Q35,24 39,21' stroke='%23000000' stroke-width='0.8' fill='none'/></g><g transform='translate(125, 90)'><rect x='0' y='0' width='30' height='32' rx='4' fill='%23ef4444'/><rect x='12' y='0' width='6' height='32' fill='%23f59e0b'/><rect x='0' y='13' width='30' height='6' fill='%23f59e0b'/><path d='M8,-4 Q15,-10 15,0 Q15,-10 22,-4 Q15,-2 15,0 Q15,-2 8,-4 Z' fill='%23f59e0b'/></g><g transform='translate(30, 115)'><circle cx='18' cy='18' r='16' fill='%23ef4444'/><rect x='14' y='0' width='8' height='6' rx='2' fill='%23ffffff'/><circle cx='18' cy='3' r='2' fill='%23f59e0b'/><path d='M 6 14 Q 18 8 30 14 Q 30 17 18 20 Q 6 17 6 14 Z' fill='%23ffffff' opacity='0.3'/><circle cx='13' cy='15' r='1.2' fill='%23000000'/><circle cx='23' cy='15' r='1.2' fill='%23000000'/><path d='M15,21 Q18,24 21,21' stroke='%23000000' stroke-width='0.8' fill='none'/></g><g transform='translate(90, 150)'><polygon points='25,0 45,40 5,40' fill='%2310b981'/><polygon points='25,15 48,50 2,50' fill='%23059669'/><polygon points='25,30 52,62 -2,62' fill='%23047857'/><circle cx='18' cy='45' r='1.5' fill='%23f59e0b'/><circle cx='32' cy='40' r='1.5' fill='%23ef4444'/><circle cx='25' cy='52' r='1.5' fill='%233b82f6'/><polygon points='25,-8 28,-1 35,-1 30,3 32,10 25,6 18,10 20,3 15,-1 22,-1' fill='%23fbbf24'/><circle cx='21' cy='32' r='1' fill='%23000000'/><circle cx='29' cy='32' r='1' fill='%23000000'/><path d='M22,36 Q25,39 28,36' stroke='%23000000' stroke-width='0.8' fill='none'/></g><g transform='translate(15, 195)'><path d='M10,25 Q15,5 35,5 Q55,5 60,25 Q50,28 35,28 Q20,28 10,25 Z' fill='%23ef4444'/><path d='M8,24 Q35,15 62,24 Q65,15 45,3 Q35,0 25,3 Q5,15 8,24 Z' fill='%23dc2626'/><rect x='8' y='23' width='54' height='10' rx='5' fill='%23ffffff'/><circle cx='60' cy='26' r='6' fill='%23ffffff'/><circle cx='28' cy='17' r='1.2' fill='%23000000'/><circle cx='42' cy='17' r='1.2' fill='%23000000'/><path d='M31,21 Q35,24 39,21' stroke='%23000000' stroke-width='0.8' fill='none'/></g><g transform='translate(140, 205)'><circle cx='15' cy='15' r='13' fill='%23ef4444'/><rect x='12' y='0' width='6' height='5' rx='1.5' fill='%23ffffff'/><circle cx='11' cy='13' r='1' fill='%23000000'/><circle cx='19' cy='13' r='1' fill='%23000000'/><path d='M12,17 Q15,19 18,17' stroke='%23000000' stroke-width='0.8' fill='none'/></g><circle cx='85' cy='25' r='1.5' fill='%2338bdf8'/><circle cx='165' cy='70' r='1' fill='%23ffffff'/><circle cx='15' cy='95' r='1.5' fill='%23fbbf24'/><circle cx='80' cy='130' r='1.2' fill='%23ffffff'/><circle cx='170' cy='170' r='1.5' fill='%2338bdf8'/><circle cx='70' cy='225' r='1' fill='%23fbbf24'/><polygon points='85,75 87,79 92,79 88,82 89,86 85,84 81,86 82,82 78,79 83,79' fill='%23fbbf24' opacity='0.8'/><polygon points='160,135 161,138 165,138 162,140 163,143 160,141 157,143 158,140 155,138 159,138' fill='%23fbbf24' opacity='0.8'/><polygon points='20,165 21,168 25,168 22,170 23,173 20,171 17,173 18,170 15,168 19,168' fill='%23fbbf24' opacity='0.8'/></svg>");
-            background-repeat: repeat;
-            background-size: 240px 347px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .orb-1, .orb-2, .orb-3 {
-            display: none;
-        }
-
-        .bg-grid-pattern {
-            background-size: 50px 50px;
-            background-image: 
-                radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
-            animation: gridMove 30s linear infinite;
-        }
-
-        /* Luces y marco navideño para las tarjetas */
-        .christmas-border {
-            border: 2px solid transparent;
-            background-image: linear-gradient(white, white), linear-gradient(90deg, #ef4444, #22c55e, #eab308, #ef4444);
-            background-origin: border-box;
-            background-clip: padding-box, border-box;
-            animation: borderRotate 4s linear infinite;
-        }
-
-        @keyframes borderRotate {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
-
-        @keyframes moveOrb1 {
-            0% { transform: translate(0px, 0px) scale(1); }
-            50% { transform: translate(120px, 80px) scale(1.15); }
-            100% { transform: translate(-50px, 140px) scale(0.9); }
-        }
-
-        @keyframes moveOrb2 {
-            0% { transform: translate(0px, 0px) scale(1); }
-            50% { transform: translate(-140px, -90px) scale(1.2); }
-            100% { transform: translate(60px, -150px) scale(0.95); }
-        }
-
-        @keyframes moveOrb3 {
-            0% { transform: translate(0px, 0px) scale(0.9); }
-            50% { transform: translate(-90px, 110px) scale(1.25); }
-            100% { transform: translate(100px, -80px) scale(1); }
-        }
-
-        @keyframes gridMove {
-            0% { background-position: 0 0; }
-            100% { background-position: 40px 40px; }
-        }
-
-        /* Copos de Nieve Animados */
-        @keyframes snowFall {
-            0% { transform: translateY(-10vh); }
-            100% { transform: translateY(100vh); }
-        }
+        /* Nieve Cayendo */
         .snowflake {
             position: fixed;
             top: -10px;
@@ -205,33 +53,72 @@
             z-index: 9999;
             animation: snowFall linear infinite;
         }
+        @keyframes snowFall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0.2; }
+        }
+
+        /* Santa Flying Header */
+        .santa-flying {
+            position: absolute;
+            top: 2px;
+            right: -150px;
+            font-size: 1.2rem;
+            animation: santaFly 18s linear infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+        @keyframes santaFly {
+            0% { transform: translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateX(-110vw); opacity: 0; }
+        }
+
+        /* Luces Navideñas */
+        .christmas-lights span {
+            display: inline-block;
+            animation: lightGlow 1.5s ease-in-out infinite alternate;
+        }
+        .christmas-lights span:nth-child(2n) { animation-delay: 0.3s; }
+        .christmas-lights span:nth-child(3n) { animation-delay: 0.6s; }
+
+        @keyframes lightGlow {
+            0% { opacity: 0.3; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .login-bg-mesh {
+            background-color: #0d1b2a;
+            background-image: radial-gradient(circle at 50% 50%, rgba(13, 27, 42, 0.4) 0%, rgba(10, 15, 29, 0.85) 100%),
+            url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='260' viewBox='0 0 180 260'><rect width='180' height='260' fill='%230d1b2a'/><g transform='translate(20, 25)'><polygon points='25,0 45,40 5,40' fill='%2310b981'/><polygon points='25,15 48,50 2,50' fill='%23059669'/><polygon points='25,30 52,62 -2,62' fill='%23047857'/><circle cx='18' cy='45' r='1.5' fill='%23f59e0b'/><circle cx='32' cy='40' r='1.5' fill='%23ef4444'/><circle cx='25' cy='52' r='1.5' fill='%233b82f6'/><polygon points='25,-8 28,-1 35,-1 30,3 32,10 25,6 18,10 20,3 15,-1 22,-1' fill='%23fbbf24'/></g><g transform='translate(110, 15)'><rect x='8' y='23' width='54' height='10' rx='5' fill='%23ffffff'/><circle cx='60' cy='26' r='6' fill='%23ffffff'/></g></svg>");
+            background-repeat: repeat;
+            background-size: 240px 347px;
+        }
+
+        /* Firma Watermark */
+        .watermark-marcenaro {
+            position: fixed;
+            bottom: 12px;
+            right: 16px;
+            z-index: 9999;
+            background: rgba(13, 27, 42, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-800 antialiased min-h-screen selection:bg-blue-500 selection:text-white">
+<body class="bg-slate-900 text-slate-800 antialiased min-h-screen relative overflow-x-hidden">
 
-    <!-- BANNER PWA PARA INSTALAR EN MÓVIL -->
-    <div id="pwaInstallBanner" class="hidden fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50 bg-slate-900/95 backdrop-blur-md text-white p-4 rounded-2xl border border-blue-500/50 shadow-2xl animate-pop flex items-center justify-between gap-3">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-lg shadow-md shrink-0">
-                📱
-            </div>
-            <div>
-                <h4 class="text-xs font-bold text-white">Instalar Claves ISSS</h4>
-                <p id="pwaDesc" class="text-[11px] text-slate-300">Añade esta app a tu pantalla de inicio.</p>
-            </div>
-        </div>
-        <div class="flex items-center space-x-2 shrink-0">
-            <button id="pwaInstallBtn" onclick="installPWA()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md transition-all active:scale-95">
-                Instalar
-            </button>
-            <button onclick="dismissPWABanner()" class="text-slate-400 hover:text-white p-1 text-sm">
-                ✕
-            </button>
-        </div>
-    </div>
-
-    <!-- CONTENEDOR DE NIEVE DE FONDO -->
+    <!-- Nieve Cayendo -->
     <div id="snowContainer" class="fixed inset-0 pointer-events-none z-50"></div>
+
+    <!-- FIRMA PERMANENTE -->
+    <div class="watermark-marcenaro px-3 py-1.5 rounded-full text-xs font-bold text-amber-300 tracking-wide flex items-center gap-1.5 shadow-lg">
+        <span>By Marcenaro</span>
+        <span class="text-amber-400 animate-pulse">⚡</span>
+    </div>
 
     <!-- NOTIFICACIÓN TOAST FLOTANTE -->
     <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700">
@@ -239,40 +126,23 @@
         <span id="toastMsg" class="text-sm font-medium"></span>
     </div>
 
-    <!-- MODAL DE ADVERTENCIA DE BLOQUEO POR INACTIVIDAD (15 SEG) -->
-    <div id="timeoutModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center p-4 z-50 animate-fade-in">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center border border-amber-200 animate-pop">
-            <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
-                <i class="fa-solid fa-clock"></i>
-            </div>
-            <h3 class="text-lg font-extrabold text-slate-900 mb-1">¿Sigues ahí?</h3>
-            <p class="text-xs text-slate-500 mb-4">El sistema se bloqueará por seguridad en:</p>
-            <div class="text-3xl font-black text-amber-600 font-mono mb-6 bg-amber-50 py-2 rounded-2xl border border-amber-200" id="countdownSeconds">
-                15s
-            </div>
-            <div class="flex space-x-3">
-                <button onclick="logout()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all">
-                    Cerrar Sesión
-                </button>
-                <button onclick="extendSession()" class="w-1/2 py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-700/30 transition-all active:scale-95">
-                    Sí, continuar
-                </button>
-            </div>
+    <!-- BANNER INSTALACIÓN PWA -->
+    <div id="pwaBanner" class="hidden fixed top-0 inset-x-0 z-50 bg-gradient-to-r from-blue-700 to-indigo-800 text-white px-4 py-3 shadow-xl flex items-center justify-between text-xs font-semibold">
+        <div class="flex items-center space-x-2">
+            <span class="text-lg">📲</span>
+            <span id="pwaBannerText">Instala la App de Claves en tu teléfono para acceso rápido.</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="pwaInstallBtn" onclick="installPWA()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-3 py-1.5 rounded-lg transition-all">Instalar</button>
+            <button onclick="closePWA()" class="text-white/80 hover:text-white px-2 py-1">✕</button>
         </div>
     </div>
 
-    <!-- PANTALLA DE LOGIN ANIMADA (VERSIÓN ORIGINAL INSTITUCIONAL) -->
-    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 login-bg-mesh">
-        <!-- Elementos Decorativos Animados en el Fondo del Login -->
-        <div class="orb-1"></div>
-        <div class="orb-2"></div>
-        <div class="orb-3"></div>
-        <div class="absolute inset-0 bg-grid-pattern pointer-events-none"></div>
-
-        <div class="glass-card relative z-10 max-w-md w-full p-8 sm:p-10 rounded-3xl border border-white/40 shadow-2xl animate-pop">
-            <!-- Icono Encabezado Institucional -->
+    <!-- PANTALLA DE LOGIN -->
+    <div id="loginScreen" class="fixed inset-0 z-40 flex items-center justify-center p-4 login-bg-mesh">
+        <div class="glass-card relative z-10 max-w-md w-full p-8 sm:p-10 rounded-3xl border border-white/40 shadow-2xl">
             <div class="flex justify-center mb-6">
-                <div class="w-16 h-16 bg-gradient-to-tr from-blue-900 via-blue-700 to-indigo-800 rounded-2xl shadow-lg shadow-blue-900/40 flex items-center justify-center text-white text-2xl animate-float">
+                <div class="w-16 h-16 bg-gradient-to-tr from-blue-900 via-blue-700 to-indigo-800 rounded-2xl shadow-lg flex items-center justify-center text-white text-2xl">
                     <i class="fa-solid fa-hospital-user"></i>
                 </div>
             </div>
@@ -292,8 +162,8 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-user-shield"></i>
                         </span>
-                        <input type="text" id="loginUser" required placeholder="Ingrese el usuario" autocomplete="on"
-                            class="login-input-glow w-full pl-10 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all font-medium">
+                        <input type="text" id="loginUser" required placeholder="Ej: hmq o carlos" autocomplete="on"
+                            class="login-input-glow w-full pl-10 pr-4 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all font-medium">
                     </div>
                 </div>
 
@@ -304,22 +174,22 @@
                             <i class="fa-solid fa-key"></i>
                         </span>
                         <input type="password" id="loginPass" required placeholder="••••••••" autocomplete="off"
-                            class="login-input-glow w-full pl-10 pr-11 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all font-medium">
-                        <button type="button" onclick="toggleLoginPassword()" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-blue-600 transition-colors focus:outline-none" title="Ver contraseña">
+                            class="login-input-glow w-full pl-10 pr-11 py-3.5 bg-slate-50/80 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all font-medium">
+                        <button type="button" onclick="toggleLoginPassword()" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-blue-600" title="Ver contraseña">
                             <i id="loginPassIcon" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
 
-                <div id="loginError" class="p-3.5 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-2xl hidden text-center font-semibold animate-slide-up flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
+                <div id="loginError" class="p-3.5 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-2xl hidden text-center font-semibold">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
                     <span>Usuario o contraseña incorrectos.</span>
                 </div>
 
                 <button type="submit" 
-                    class="w-full bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 hover:from-blue-600 hover:to-indigo-800 text-white font-bold py-3.5 rounded-2xl shadow-xl shadow-blue-900/30 active:scale-[0.98] transition-all text-sm flex items-center justify-center space-x-2 group">
+                    class="w-full bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 hover:from-blue-600 hover:to-indigo-800 text-white font-bold py-3.5 rounded-2xl shadow-xl transition-all text-sm flex items-center justify-center space-x-2">
                     <span>Acceder al Sistema</span>
-                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
                 </button>
             </form>
         </div>
@@ -327,18 +197,17 @@
 
     <!-- PANEL PRINCIPAL DE APLICACIÓN -->
     <div id="mainApp" style="display: none;" class="min-h-screen bg-slate-100 flex flex-col relative overflow-x-hidden">
-        <!-- NAV HEADER CON GLASSMORPHISM -->
-        <header class="sticky top-0 z-40 bg-gradient-to-r from-red-950 via-blue-900 to-emerald-950 backdrop-blur-md border-b border-amber-500/40 shadow-xl overflow-hidden">
-            <!-- Santa volando animación en encabezado -->
+        <!-- HEADER -->
+        <header class="sticky top-0 z-30 bg-gradient-to-r from-red-950 via-blue-900 to-emerald-950 border-b border-amber-500/40 shadow-xl overflow-hidden">
             <div class="santa-flying">🎅🛷🦌🦌</div>
             
-            <!-- Guirnalda de luces Navideñas decorativa con animación -->
             <div class="w-full flex justify-between px-6 py-1 bg-slate-950/40 text-xs christmas-lights">
-                <span>🔴</span><span>🟢</span><span>🟡</span><span>🔵</span><span>🔴</span><span>🟢</span><span>🟡</span><span>🔵</span><span>🔴</span><span>🟢</span><span>🟡</span><span>🔵</span>
+                <span>🔴</span><span>🟢</span><span>🟡</span><span>🔵</span><span>🔴</span><span>🟢</span><span>🟡</span><span>🔵</span>
             </div>
+
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 relative">
                 <div class="flex items-center space-x-3.5">
-                    <div class="w-11 h-11 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center text-white text-xl shadow-inner animate-bounce">
+                    <div class="w-11 h-11 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center text-white text-xl">
                         🎄
                     </div>
                     <div>
@@ -348,33 +217,23 @@
                 </div>
                 
                 <div class="flex items-center space-x-3">
-                    <!-- ACCESOS RÁPIDOS INLINE (PASTELITO Y CALENDARIO) -->
-                    <div id="floatingQuickLinks" class="hidden flex items-center space-x-2 mr-1">
-                        <a href="https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/Cumple.html" 
-                           target="_blank" 
-                           title="Celebración de Cumpleaños"
-                           class="w-8 h-8 bg-pink-500/80 hover:bg-pink-500 text-white rounded-xl flex items-center justify-center text-sm shadow-md border border-pink-400/40 transform hover:scale-110 active:scale-95 transition-all">
-                            🎂
-                        </a>
-                        <a href="https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/horarios.html" 
-                           target="_blank" 
-                           title="Horarios y Calendario"
-                           class="w-8 h-8 bg-blue-600/80 hover:bg-blue-600 text-white rounded-xl flex items-center justify-center text-sm shadow-md border border-blue-400/40 transform hover:scale-110 active:scale-95 transition-all">
-                            📅
-                        </a>
+                    <!-- ENLACES FLOTANTES EN CABECERA -->
+                    <div id="headerQuickLinks" class="flex items-center space-x-2 mr-2">
+                        <a href="https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/Cumple.html" target="_blank" 
+                           class="w-9 h-9 bg-amber-400/20 hover:bg-amber-400 text-amber-300 hover:text-slate-900 rounded-xl flex items-center justify-center transition-all border border-amber-400/40 text-sm shadow-md" 
+                           title="Cumpleaños">🎂</a>
+                        <a href="https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/horarios.html" target="_blank" 
+                           class="w-9 h-9 bg-blue-400/20 hover:bg-blue-400 text-blue-200 hover:text-slate-900 rounded-xl flex items-center justify-center transition-all border border-blue-400/40 text-sm shadow-md" 
+                           title="Horarios">📅</a>
                     </div>
 
-                    <button onclick="openCreateModal()" class="bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all flex items-center space-x-2">
+                    <button onclick="openCreateModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg transition-all flex items-center space-x-2">
                         <i class="fa-solid fa-plus text-xs"></i>
                         <span>Nuevo Acceso</span>
                     </button>
-                    <button onclick="logout()" class="bg-slate-800/80 hover:bg-rose-900 text-slate-300 hover:text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all border border-slate-700/60 active:scale-95 flex items-center space-x-2">
+                    <button onclick="logout()" class="bg-slate-800/80 hover:bg-rose-900 text-slate-300 hover:text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition-all border border-slate-700/60 flex items-center space-x-2">
                         <i class="fa-solid fa-right-from-bracket text-xs"></i>
                         <span>Salir</span>
-                    </button>
-                    <!-- Botón discreto y pequeño para cambiar clave G2 -->
-                    <button onclick="openChangeAccessPassModal()" class="p-2 text-slate-400 hover:text-amber-300 hover:bg-slate-800/60 rounded-lg transition-all text-[11px] opacity-60 hover:opacity-100 flex items-center justify-center" title="Ajustes de clave G2">
-                        <i class="fa-solid fa-key"></i>
                     </button>
                 </div>
             </div>
@@ -382,52 +241,12 @@
 
         <!-- CONTENIDO PRINCIPAL -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full relative">
-            
-            <!-- TARJETAS METRICAS -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex items-center space-x-4 card-hover-effect">
-                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl animate-pulse">
-                        <i class="fa-solid fa-cubes"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total de Registros</p>
-                        <p id="totalCount" class="text-2xl font-extrabold text-slate-900 mt-0.5">-</p>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex items-center space-x-4 card-hover-effect">
-                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Estado Conexión</p>
-                        <p id="statusText" class="text-sm font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                            Sincronizado
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex items-center space-x-4 card-hover-effect">
-                    <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-link"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Sistemas Vinculados</p>
-                        <p class="text-sm font-bold text-slate-800 mt-1">Detección Automática</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BARRA DE BÚSQUEDA FLOTANTE -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
-                <div class="flex items-center space-x-3">
-                    <div>
-                        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                            Módulos Institucionales ❄️
-                        </h2>
-                        <p class="text-xs text-slate-500 mt-0.5">Gestione y consulte credenciales organizadas por plataforma.</p>
-                    </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        Módulos Institucionales ❄️
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Gestione y consulte credenciales organizadas por plataforma.</p>
                 </div>
                 <div class="w-full md:w-96">
                     <div class="relative">
@@ -435,430 +254,290 @@
                             <i class="fa-solid fa-magnifying-glass text-xs"></i>
                         </span>
                         <input type="text" id="searchInput" placeholder="Buscar por sistema, usuario o centro..." 
-                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all font-medium">
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium">
                     </div>
                 </div>
             </div>
 
-            <!-- CONTENEDOR GRID DE SISTEMAS -->
+            <!-- CONTENEDOR DE SISTEMAS -->
             <div id="systemsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Skeleton Loader por Defecto -->
                 <div class="col-span-full py-16 text-center text-slate-400 flex flex-col items-center justify-center space-y-3">
                     <i class="fa-solid fa-circle-notch fa-spin text-3xl text-blue-600"></i>
-                    <span class="text-xs font-semibold tracking-wide uppercase">Cargando base de datos institucionales...</span>
+                    <span class="text-xs font-semibold tracking-wide uppercase">Cargando base de datos...</span>
                 </div>
             </div>
         </main>
-        
-        <footer class="bg-white border-t border-slate-200 py-4 px-6 text-xs text-slate-500 font-medium flex justify-between items-center relative z-10">
-            <span>Instituto Salvadoreño del Seguro Social 2026</span>
-            <span class="font-extrabold bg-gradient-to-r from-red-600 via-amber-500 to-emerald-600 bg-clip-text text-transparent animate-pulse text-[11px] tracking-wide">
-                By Marcenaro ⚡
-            </span>
-        </footer>
     </div>
 
-    <!-- MODAL DE EDICIÓN ANIMADO -->
-    <div id="editModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 animate-fade-in">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 overflow-hidden animate-pop border border-slate-100">
+    <!-- MODAL NUEVO REGISTRO -->
+    <div id="createModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 overflow-hidden border border-slate-100">
             <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-extrabold text-slate-900">Actualizar Contraseña</h3>
-                        <p class="text-xs text-slate-400">Modificación de credenciales</p>
-                    </div>
-                </div>
-                <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-600 text-lg transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            
-            <form id="editForm" onsubmit="handleEditSubmit(event)">
-                <input type="hidden" id="editIndex">
-                <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Sistema</label>
-                    <input type="text" id="editSistema" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Usuario</label>
-                    <input type="text" id="editUsuario" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono font-semibold text-slate-700">
-                </div>
-                <div class="mb-5">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Nueva Contraseña</label>
-                    <input type="text" id="editPassword" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none">
-                </div>
-
-                <div id="linkedSection" class="mb-6 p-4 bg-amber-50/80 border border-amber-200 rounded-2xl hidden animate-slide-up">
-                    <div class="flex items-start space-x-2.5 mb-2">
-                        <i class="fa-solid fa-link text-amber-600 mt-0.5 text-xs"></i>
-                        <p class="text-xs font-bold text-amber-900">Sistemas vinculados detectados:</p>
-                    </div>
-                    <p id="linkedSystemsList" class="text-xs text-amber-800 font-medium mb-3 pl-6"></p>
-                    <label class="flex items-center space-x-2.5 cursor-pointer pl-6">
-                        <input type="checkbox" id="syncLinked" checked class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
-                        <span class="text-xs font-semibold text-amber-950">Sincronizar contraseña en estos sistemas</span>
-                    </label>
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('editModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 bg-blue-700 hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-700/20 active:scale-95 transition-all">Guardar Cambios</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL DE CREACIÓN ANIMADO -->
-    <div id="createModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 animate-fade-in">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 overflow-hidden animate-pop border border-slate-100">
-            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-folder-plus"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-extrabold text-slate-900">Registrar Nuevo Acceso</h3>
-                        <p class="text-xs text-slate-400">Creación de cuenta de sistema</p>
-                    </div>
-                </div>
-                <button onclick="closeModal('createModal')" class="text-slate-400 hover:text-slate-600 text-lg transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <h3 class="text-base font-extrabold text-slate-900">Registrar Nuevo Acceso</h3>
+                <button onclick="closeModal('createModal')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
             </div>
             
             <form id="createForm" onsubmit="handleCreateSubmit(event)">
                 <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Nombre del Sistema</label>
-                    <input type="text" id="newSistema" required placeholder="Ej. AGENDA, FARMACIA, VOCEO" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none uppercase font-bold">
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nombre del Sistema (Col E)</label>
+                    <input type="text" id="newSistema" required placeholder="Ej. AGENDA, FARMACIA" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs uppercase font-bold">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Usuario</label>
-                    <input type="text" id="newUsuario" required placeholder="Ej. A004046" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-semibold focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Usuario (Col F)</label>
+                    <input type="text" id="newUsuario" required placeholder="Ej. A004046" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Contraseña</label>
-                    <input type="text" id="newPassword" required placeholder="Contraseña de acceso" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Contraseña (Col G)</label>
+                    <input type="text" id="newPassword" required placeholder="Contraseña" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold">
                 </div>
                 <div class="mb-6">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Centro de Atención</label>
-                    <input type="text" id="newCentro" placeholder="Ej. MQ, CEIBA, ZACAMIL" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Centro de Atención (Col H)</label>
+                    <input type="text" id="newCentro" placeholder="Ej. CEIBA, MQ" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs">
                 </div>
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-700/20 active:scale-95 transition-all">Crear Registro</button>
+                    <button type="button" onclick="closeModal('createModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold">Crear Registro</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE CAMBIO DE CLAVE DE ACCESO AL PANEL (CELDA G2) -->
-    <div id="changeAccessPassModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50 animate-fade-in">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 overflow-hidden animate-pop border border-slate-100">
-            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-shield-keyhole text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-base font-extrabold text-slate-900">Cambiar Clave de Ingreso</h3>
-                        <p class="text-xs text-slate-400">Actualiza la celda G2 en Google Sheets</p>
-                    </div>
-                </div>
-                <button onclick="closeModal('changeAccessPassModal')" class="text-slate-400 hover:text-slate-600 text-lg transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            
-            <form onsubmit="handleChangeAccessPass(event)">
-                <div class="mb-4">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Usuario Activo</label>
-                    <input type="text" id="accessPassUserLabel" readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700">
-                </div>
-                <div class="mb-5">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Nueva Clave de Ingreso (Celda G2)</label>
-                    <input type="text" id="newAccessPassInput" required placeholder="Ej. punto2026" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                </div>
-
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('changeAccessPassModal')" class="px-4 py-2.5 border rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 active:scale-95 transition-all">Cancelar</button>
-                    <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-amber-600/20 active:scale-95 transition-all">Guardar en Celda G2</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- SCRIPT PRINCIPAL -->
+    <!-- SCRIPT DE LOGICA GENERAL Y MULTI-USUARIO DINAMICO -->
     <script>
-        // CONFIGURACIÓN MULTI-USUARIO Y DE HOJAS/SCRIPTS INDEPENDIENTES
-        const USERS_DATABASE = {
-            "hmq": {
-                pass: "punto2026", 
-                label: "Hospital Médico Quirúrgico",
-                csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv",
-                scriptUrl: "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec"
-            },
-            "especialidades": {
-                pass: "especialidades2026", 
-                label: "Hospital de Especialidades",
-                csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSk60OZ9X-XnXu_nM4lrhzOtKUPLuAlz4g-ffR-cYKWOpQiAVETLczh0qqsmGYkuEIjc8DmuakPImDs/pub?output=csv",
-                scriptUrl: "https://script.google.com/macros/s/AKfycbxDdXD-QXB869e6oNWPUOeT81yNzEPc0U8uIkZCOJSlcod399nNmyqLGHIiEmJ-3aAX/exec"
-            }
+        const CSV_PUBLIC_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQRuE7yRKuNEWhJiWdycaQfeAG4WC_vAbaS-SmHBxiuUtHrtLTIsKd_9mfED9UT1NKcVj9wOjFFWzqP/pub?output=csv";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxf31dymzMeqoBY6f2M2jP7PzCXDQPlb88Xp6WEuLtkaMMIn5sJx7qntYwk2LBHYF4t/exec";
+
+        let dynamicUsersDB = {
+            "hmq": "punto2026",
+            "carlos": "2403"
         };
 
-        let currentActiveUser = null;
-        let currentCsvUrl = "";
-        let currentScriptUrl = "";
+        let currentLoggedUser = "";
+        let allData = [];
+        let visiblePasswords = {};
 
-        function toggleLoginPassword() {
-            const passInput = document.getElementById('loginPass');
-            const passIcon = document.getElementById('loginPassIcon');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                passIcon.className = 'fa-solid fa-eye-slash';
-            } else {
-                passInput.type = 'password';
-                passIcon.className = 'fa-solid fa-eye';
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            preloadAccessPasswords();
-            createSnow();
-        });
-
+        // Efecto Nieve
         function createSnow() {
             const container = document.getElementById("snowContainer");
-            if (!container) return;
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 25; i++) {
                 const flake = document.createElement("div");
                 flake.className = "snowflake";
                 flake.textContent = "❄";
                 flake.style.left = Math.random() * 100 + "vw";
                 flake.style.animationDuration = (Math.random() * 5 + 5) + "s";
-                flake.style.opacity = Math.random() * 0.8 + 0.2;
+                flake.style.opacity = Math.random();
                 flake.style.fontSize = (Math.random() * 10 + 10) + "px";
                 container.appendChild(flake);
             }
         }
 
-        // Prelectura de usuarios y claves desde Columnas A y B
-        function preloadAccessPasswords() {
-            Object.keys(USERS_DATABASE).forEach(u => {
-                const url = USERS_DATABASE[u].csvUrl;
-                if (!url) return;
-                Papa.parse(url, {
-                    download: true,
-                    header: false,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        if (results.data && results.data.length >= 4) {
-                            // Buscar en las filas de la Columna A y B la clave del usuario
-                            for (let i = 3; i < results.data.length; i++) {
-                                const userCol = results.data[i][0] ? String(results.data[i][0]).trim().toLowerCase() : "";
-                                const passCol = results.data[i][1] ? String(results.data[i][1]).trim() : "";
-                                if (userCol === u && passCol !== "") {
-                                    USERS_DATABASE[u].pass = passCol;
-                                    break;
-                                }
+        window.addEventListener('DOMContentLoaded', () => {
+            createSnow();
+            preloadUsersFromCSV();
+        });
+
+        // Precarga Dinámica de Usuarios y Claves (Columnas A y B)
+        function preloadUsersFromCSV() {
+            Papa.parse(CSV_PUBLIC_URL, {
+                download: true,
+                header: false,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.data && results.data.length > 0) {
+                        results.data.forEach((row) => {
+                            const u = row[0] ? String(row[0]).trim().toLowerCase() : "";
+                            const p = row[1] ? String(row[1]).trim() : "";
+                            if (u && u !== "usuario" && p) {
+                                dynamicUsersDB[u] = p;
                             }
-                        }
+                        });
                     }
-                });
+                }
             });
         }
 
-        let sessionTimer = null;
-        let countdownTimer = null;
-        let secondsLeft = 15;
-
-        function startSessionTimer() {
-            clearTimers();
-            sessionTimer = setTimeout(() => {
-                showTimeoutModal();
-            }, 60000);
+        function toggleLoginPassword() {
+            const p = document.getElementById('loginPass');
+            const icon = document.getElementById('loginPassIcon');
+            if (p.type === 'password') {
+                p.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                p.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
         }
 
-        function showTimeoutModal() {
-            secondsLeft = 15;
-            document.getElementById('countdownSeconds').innerText = `${secondsLeft}s`;
-            const modal = document.getElementById('timeoutModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+        function handleLogin(e) {
+            e.preventDefault();
+            const uInput = document.getElementById('loginUser').value.trim().toLowerCase();
+            const pInput = document.getElementById('loginPass').value.trim();
+            const errDiv = document.getElementById('loginError');
 
-            countdownTimer = setInterval(() => {
-                secondsLeft--;
-                document.getElementById('countdownSeconds').innerText = `${secondsLeft}s`;
-                if (secondsLeft <= 0) {
-                    clearTimers();
-                    closeModal('timeoutModal');
-                    logout();
-                    showToast("Sesión expirada por inactividad", false);
+            if (dynamicUsersDB[uInput] && dynamicUsersDB[uInput] === pInput) {
+                currentLoggedUser = uInput;
+                errDiv.classList.add('hidden');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
+                document.getElementById('userHeaderTitle').innerText = `Usuario: ${currentLoggedUser.toUpperCase()} 🎅`;
+
+                showToast(`Bienvenido ${currentLoggedUser.toUpperCase()}`);
+                loadSheetData();
+            } else {
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            currentLoggedUser = "";
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+        }
+
+        function loadSheetData() {
+            Papa.parse(CSV_PUBLIC_URL, {
+                download: true,
+                header: false,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    let parsed = [];
+                    if (results.data && results.data.length > 0) {
+                        results.data.forEach((row, idx) => {
+                            const deUsuario = row[3] ? String(row[3]).trim().toLowerCase() : "";
+                            const sistema = row[4] ? String(row[4]).trim().toUpperCase() : "";
+                            const usuario = row[5] ? String(row[5]).trim() : "";
+                            const pass = row[6] ? String(row[6]).trim() : "";
+                            const centro = row[7] ? String(row[7]).trim() : "";
+                            const fecha = row[8] ? String(row[8]).trim() : "";
+
+                            if (sistema.toLowerCase() === "sistema") return;
+
+                            if (deUsuario === currentLoggedUser && (sistema || usuario)) {
+                                parsed.push({
+                                    originalIndex: idx,
+                                    sistema: sistema || "GENERAL",
+                                    usuario: usuario,
+                                    contrasena: pass,
+                                    centro_de_atencion: centro,
+                                    actualizada: fecha
+                                });
+                            }
+                        });
+                    }
+                    allData = parsed;
+                    renderSystems(allData);
                 }
-            }, 1000);
+            });
         }
 
-        function extendSession() {
-            clearTimers();
-            closeModal('timeoutModal');
-            showToast("Sesión renovada por 1 minuto");
-            startSessionTimer();
+        function renderSystems(data) {
+            const container = document.getElementById('systemsContainer');
+            if (data.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-semibold">No se encontraron registros para tu usuario. ❄️</div>`;
+                return;
+            }
+
+            const grouped = {};
+            data.forEach((item) => {
+                const sys = item.sistema;
+                if (!grouped[sys]) grouped[sys] = [];
+                grouped[sys].push(item);
+            });
+
+            container.innerHTML = Object.keys(grouped).map(sistema => {
+                const items = grouped[sistema];
+                return `
+                    <div class="bg-white rounded-3xl shadow-md overflow-hidden card-hover-effect">
+                        <div class="bg-gradient-to-r from-red-900 via-blue-900 to-emerald-900 px-5 py-3.5 flex items-center justify-between text-white">
+                            <h3 class="font-bold text-sm uppercase">${sistema}</h3>
+                            <span class="text-[10px] bg-white/20 px-2.5 py-0.5 rounded-full">${items.length}</span>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            ${items.map(item => `
+                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                                    <div class="flex justify-between items-start">
+                                        <span class="font-mono text-xs font-bold text-slate-800">${item.usuario || 'Sin usuario'}</span>
+                                        ${item.centro_de_atencion ? `<span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full">${item.centro_de_atencion}</span>` : ''}
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-200">
+                                        <span class="font-mono text-xs text-amber-600 font-bold">${item.contrasena || '••••••••'}</span>
+                                        <span class="text-[9px] text-slate-400">${item.actualizada}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function clearTimers() {
-            if (sessionTimer) clearTimeout(sessionTimer);
-            if (countdownTimer) clearInterval(countdownTimer);
+        function openCreateModal() { document.getElementById('createModal').classList.remove('hidden'); document.getElementById('createModal').classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+        async function handleCreateSubmit(e) {
+            e.preventDefault();
+            const sys = document.getElementById('newSistema').value.trim().toUpperCase();
+            const usr = document.getElementById('newUsuario').value.trim();
+            const pass = document.getElementById('newPassword').value.trim();
+            const cnt = document.getElementById('newCentro').value.trim();
+            const hoy = new Date().toLocaleDateString('es-SV');
+
+            closeModal('createModal');
+            showToast("Guardando en Google Sheets...");
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "createRow",
+                        user: currentLoggedUser,
+                        sistema: sys,
+                        usuario: usr,
+                        pass: pass,
+                        centro: cnt,
+                        fecha: hoy
+                    })
+                });
+                showToast("¡Registro creado exitosamente!");
+                setTimeout(loadSheetData, 1500);
+            } catch (err) {
+                showToast("Error de conexión al guardar", false);
+            }
         }
-
-        const fallbackData = [
-            { de_usuario: "hmq", sistema: "AGENDA", usuario: "A004046", contrasena: "Agosto2026.", centro_de_atencion: "CEIBA", actualizada: "06/11/26" },
-            { de_usuario: "hmq", sistema: "AGENDA", usuario: "P002529", contrasena: "Carlos2026..", centro_de_atencion: "ZACAMIL", actualizada: "10/10/26" },
-            { de_usuario: "hmq", sistema: "AGENDA", usuario: "C004199", contrasena: "Sept2026.", centro_de_atencion: "ONCOLOGIA", actualizada: "10/11/26" },
-            { de_usuario: "hmq", sistema: "AGENDA", usuario: "A003641", contrasena: "Arias1212", centro_de_atencion: "MQ", actualizada: "04/11/26" },
-            { de_usuario: "hmq", sistema: "WED IMPACTO", usuario: "A003641", contrasena: "Arias1212", centro_de_atencion: "", actualizada: "04/11/26" },
-            { de_usuario: "hmq", sistema: "CORREO ELECTRONICO", usuario: "hospitalhmqisss@gmail.com", contrasena: "Atencion.usuario.2026", centro_de_atencion: "MQ", actualizada: "" }
-        ];
-
-        let allData = [];
-        let visiblePasswords = {};
 
         function showToast(msg, isSuccess = true) {
             const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMsg');
-            const toastIcon = document.getElementById('toastIcon');
-
-            toastMsg.innerText = msg;
-            toastIcon.className = isSuccess ? "fa-solid fa-circle-check text-emerald-400 text-lg" : "fa-solid fa-triangle-exclamation text-rose-400 text-lg";
-
+            document.getElementById('toastMsg').innerText = msg;
             toast.classList.remove('translate-y-[-100px]', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
-
             setTimeout(() => {
                 toast.classList.remove('translate-y-0', 'opacity-100');
                 toast.classList.add('translate-y-[-100px]', 'opacity-0');
             }, 3000);
         }
 
-        function handleLogin(e) {
+        // PWA Prompt Logic
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            const u = document.getElementById('loginUser').value.trim().toLowerCase();
-            const p = document.getElementById('loginPass').value.trim();
-            const errorDiv = document.getElementById('loginError');
+            deferredPrompt = e;
+            document.getElementById('pwaBanner').classList.remove('hidden');
+        });
 
-            if (USERS_DATABASE[u] && USERS_DATABASE[u].pass === p) {
-                currentActiveUser = u;
-                currentCsvUrl = USERS_DATABASE[u].csvUrl;
-                currentScriptUrl = USERS_DATABASE[u].scriptUrl;
-
-                errorDiv.classList.add('hidden');
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'flex';
-                
-                const quickLinks = document.getElementById('floatingQuickLinks');
-                if (quickLinks) {
-                    quickLinks.classList.remove('hidden');
-                }
-
-                document.getElementById('userHeaderTitle').innerHTML = `${USERS_DATABASE[u].label} &bull; Panel de Sistemas 🎅`;
-
-                showToast(`Bienvenido (${USERS_DATABASE[u].label})`);
-                loadSheetData();
-                startSessionTimer();
-            } else {
-                errorDiv.classList.remove('hidden');
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                    closePWA();
+                });
             }
         }
-
-        function logout() {
-            clearTimers();
-            closeModal('timeoutModal');
-            currentActiveUser = null;
-            currentCsvUrl = "";
-            currentScriptUrl = "";
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            
-            const quickLinks = document.getElementById('floatingQuickLinks');
-            if (quickLinks) {
-                quickLinks.classList.add('hidden');
-            }
-
-            document.getElementById('loginUser').value = '';
-            document.getElementById('loginPass').value = '';
-            document.getElementById('loginError').classList.add('hidden');
-            showToast("Sesión cerrada correctamente", false);
-        }
-
-        // Carga y parseo según la nueva estructura de columnas (D=de usuario, E=Sistema, F=Usuario, G=Contraseña, H=Centro, I=Actualizada)
-        function loadSheetData() {
-            if (!currentCsvUrl) {
-                useFallback();
-                return;
-            }
-
-            Papa.parse(currentCsvUrl, {
-                download: true,
-                header: false,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    if (results.data && results.data.length > 0) {
-                        let parsed = [];
-                        let currentSystem = "";
-                        
-                        results.data.forEach((row) => {
-                            // Mapeo según la captura enviada:
-                            // Col D (3) = de usuario
-                            // Col E (4) = Sistema
-                            // Col F (5) = Usuario
-                            // Col G (6) = Contraseña
-                            // Col H (7) = Centro
-                            // Col I (8) = Actualizada
-                            const colDeUsuario = row[3] ? String(row[3]).trim().toLowerCase() : "";
-                            const colE = row[4] ? String(row[4]).trim() : "";
-                            const colF = row[5] ? String(row[5]).trim() : "";
-                            const colG = row[6] ? String(row[6]).trim() : "";
-                            const colH = row[7] ? String(row[7]).trim() : "";
-                            const colI = row[8] ? String(row[8]).trim() : "";
-
-                            if (colE.toLowerCase() === "sistema" && colF.toLowerCase() === "usuario") {
-                                return;
-                            }
-
-                            if (colE !== "") {
-                                currentSystem = colE.toUpperCase();
-                            }
-
-                            // Filtrar por los registros correspondientes al usuario que hizo login
-                            if (colDeUsuario === currentActiveUser || colDeUsuario === "" || !currentActiveUser) {
-                                if (colF !== "" || colG !== "" || colH !== "" || colI !== "") {
-                                    parsed.push({
-                                        originalIndex: parsed.length,
-                                        de_usuario: colDeUsuario || currentActiveUser,
-                                        sistema: currentSystem || "GENERAL",
-                                        usuario: colF,
-                                        contrasena: colG,
-                                        centro_de_atencion: colH,
-                                        actualizada: colI
-                                    });
-                                }
-                            }
-                        });
-
-                        if (parsed.length > 0) {
-                            allData = parsed;
-                            updateCount();
-                            renderSystems(allData);
-                            return;
-                        }
-                    }
-                    useFallback();
-                },
-                error: function() {
-                    useFallback();
-                }
-            });
-        }
-<!-- ... existing code -->
-```
+        function closePWA() { document.getElementById('pwaBanner').classList.add('hidden'); }
+    </script>
+</body>
+</html>
