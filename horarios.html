@@ -157,6 +157,70 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.6); }
 
         .shift-cell { font-size: 0.68rem; line-height: 1.15; font-weight: 800; }
+    
+        /* ===== MICROINTERACCIONES Y ANIMACIONES ISSS ===== */
+        @keyframes isssFadeUp {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes isssPop {
+            0% { opacity: 0; transform: scale(.96) translateY(10px); }
+            70% { transform: scale(1.012) translateY(-2px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes isssRowIn {
+            from { opacity: 0; transform: translateX(-8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes isssGlow {
+            0%, 100% { box-shadow: 0 0 0 rgba(14,165,233,0); }
+            50% { box-shadow: 0 0 22px rgba(14,165,233,.16); }
+        }
+        @keyframes isssShimmer {
+            0% { background-position: 180% 0; }
+            100% { background-position: -180% 0; }
+        }
+
+        #login-overlay > div { animation: isssPop .65s cubic-bezier(.2,.8,.2,1) both; }
+        .glass-card { animation: isssFadeUp .55s ease both; }
+        .glass-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 38px rgba(15,23,42,.10);
+        }
+        .dark .glass-card:hover {
+            box-shadow: 0 18px 42px rgba(0,0,0,.38), 0 0 24px rgba(14,165,233,.08);
+        }
+        button, select, input { transition: transform .18s ease, box-shadow .22s ease, border-color .22s ease, filter .22s ease; }
+        button:not(:disabled):active { transform: translateY(1px) scale(.975); }
+        button:not(:disabled):hover { filter: brightness(1.045); }
+        .btn-neon-primary:hover { animation: isssGlow 1.8s ease-in-out infinite; }
+        #schedule-table tbody tr { animation: isssRowIn .32s ease both; }
+        #schedule-table tbody tr:nth-child(2n) { animation-delay: .025s; }
+        #schedule-table tbody tr:nth-child(3n) { animation-delay: .05s; }
+        .shift-cell {
+            transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+            transform-origin: center;
+        }
+        .shift-cell:hover {
+            transform: scale(1.025);
+            filter: saturate(1.12);
+            box-shadow: 0 3px 10px rgba(15,23,42,.12);
+            position: relative;
+            z-index: 2;
+        }
+        .cyber-orb { will-change: transform, opacity; }
+        .input-neo:focus { transform: translateY(-1px); }
+        #login-overlay .login-card-neo { animation: isssPop .7s .08s cubic-bezier(.2,.8,.2,1) both; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: .01ms !important;
+            }
+        }
+
     </style>
 </head>
 <body id="app-body" class="min-h-screen text-slate-800 flex flex-col bg-slate-100 relative overflow-x-hidden transition-colors duration-300">
@@ -1880,27 +1944,226 @@
             lucide.createIcons();
         }
 
-        function exportImage() {
-            const tableElement = document.getElementById('schedule-table');
-            const scrollContainer = tableElement.parentElement;
-            const originalMaxHeight = scrollContainer.style.maxHeight;
-            scrollContainer.style.maxHeight = 'none';
 
-            html2canvas(tableElement, { 
-                scale: 2, 
-                useCORS: true, 
-                backgroundColor: isDarkMode ? "#030712" : "#ffffff" 
-            }).then(canvas => {
-                scrollContainer.style.maxHeight = originalMaxHeight;
-                const link = document.createElement("a");
-                link.download = `Horario_ISSS_${currentUsername || 'Nomenclatura'}.png`;
-                link.href = canvas.toDataURL("image/png", 1.0);
+        async function exportImage() {
+            const sourceTable = document.getElementById('schedule-table');
+            if (!sourceTable) {
+                alert('No se encontró la tabla de horarios.');
+                return;
+            }
+            if (typeof html2canvas !== 'function') {
+                alert('No se pudo cargar el módulo de exportación. Comprueba tu conexión a Internet.');
+                return;
+            }
+
+            const button = [...document.querySelectorAll('button')].find(b =>
+                (b.innerText || '').toLowerCase().includes('exportar hd')
+            );
+            const oldButtonHTML = button ? button.innerHTML : '';
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<span class="animate-pulse">Preparando imagen HD…</span>';
+            }
+
+            let exportHost;
+            try {
+                // Capturamos una copia independiente: no alteramos el scroll ni el diseño visible.
+                const clone = sourceTable.cloneNode(true);
+                const monthValue = document.getElementById('month-picker')?.value || currentPeriod();
+                const [yy, mm] = monthValue.split('-').map(Number);
+                const monthLabel = new Date(yy, (mm || 1) - 1, 1)
+                    .toLocaleDateString('es-SV', { month: 'long', year: 'numeric' });
+                const userLabel = (currentUsername || 'Usuario').toUpperCase();
+
+                clone.removeAttribute('id');
+                clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                clone.querySelectorAll('button').forEach(el => el.remove());
+                clone.querySelectorAll('*').forEach(el => {
+                    el.style.animation = 'none';
+                    el.style.transition = 'none';
+                    el.style.position = 'static';
+                    el.style.transform = 'none';
+                    el.style.filter = 'none';
+                    el.style.maxHeight = 'none';
+                    el.style.maxWidth = 'none';
+                });
+
+                const sourceWidth = Math.max(
+                    sourceTable.scrollWidth,
+                    sourceTable.getBoundingClientRect().width,
+                    1600
+                );
+                const exportWidth = Math.max(sourceWidth, 1800);
+
+                exportHost = document.createElement('div');
+                exportHost.style.cssText = [
+                    'position:fixed',
+                    'left:-30000px',
+                    'top:0',
+                    `width:${exportWidth}px`,
+                    'padding:34px',
+                    'box-sizing:border-box',
+                    'background:#f1f5f9',
+                    'z-index:-1',
+                    'overflow:visible',
+                    'font-family:Arial,Helvetica,sans-serif',
+                    'color:#0f172a'
+                ].join(';');
+
+                const heading = document.createElement('div');
+                heading.style.cssText = 'padding:0 0 22px 0;text-align:center;color:#0f172a;';
+                heading.innerHTML = `
+                    <div style="font-size:27px;font-weight:800;letter-spacing:.5px;">CONTROL DE HORARIOS ISSS</div>
+                    <div style="font-size:19px;font-weight:700;text-transform:capitalize;margin-top:7px;">${monthLabel}</div>
+                    <div style="font-size:12px;color:#475569;margin-top:7px;">Usuario: ${userLabel} &nbsp; • &nbsp; Exportado: ${new Date().toLocaleString('es-SV')}</div>
+                `;
+
+                const tableFrame = document.createElement('div');
+                tableFrame.style.cssText = 'background:#fff;border:1px solid #cbd5e1;border-radius:10px;overflow:visible;padding:8px;';
+                clone.style.cssText = [
+                    `width:${exportWidth - 84}px`,
+                    `min-width:${exportWidth - 84}px`,
+                    'table-layout:fixed',
+                    'border-collapse:collapse',
+                    'border-spacing:0',
+                    'background:#fff',
+                    'color:#0f172a',
+                    'font-family:Arial,Helvetica,sans-serif',
+                    'font-size:12px'
+                ].join(';');
+
+                // Los encabezados, roles y celdas se vuelven multilínea y con altura suficiente.
+                clone.querySelectorAll('th,td').forEach((cell, index) => {
+                    cell.style.position = 'static';
+                    cell.style.left = 'auto';
+                    cell.style.top = 'auto';
+                    cell.style.bottom = 'auto';
+                    cell.style.zIndex = 'auto';
+                    cell.style.overflow = 'visible';
+                    cell.style.textOverflow = 'clip';
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.wordBreak = 'normal';
+                    cell.style.overflowWrap = 'anywhere';
+                    cell.style.verticalAlign = 'middle';
+                    cell.style.textAlign = 'center';
+                    cell.style.padding = '8px 5px';
+                    cell.style.border = '1px solid #cbd5e1';
+                    cell.style.minWidth = index === 0 ? '76px' : '128px';
+                    cell.style.height = 'auto';
+                    cell.style.lineHeight = '1.25';
+                    cell.style.fontSize = '11px';
+                });
+
+                clone.querySelectorAll('thead tr:first-child th').forEach(cell => {
+                    cell.style.background = '#dbeafe';
+                    cell.style.color = '#1e3a8a';
+                    cell.style.fontSize = '12px';
+                    cell.style.fontWeight = '800';
+                    cell.style.minHeight = '58px';
+                    cell.style.padding = '12px 6px';
+                });
+                clone.querySelectorAll('thead tr:nth-child(2) th').forEach(cell => {
+                    cell.style.background = '#eff6ff';
+                    cell.style.color = '#334155';
+                    cell.style.fontSize = '10px';
+                    cell.style.fontWeight = '700';
+                });
+
+                clone.querySelectorAll('tbody tr').forEach((row, rowIndex) => {
+                    row.style.height = '39px';
+                    row.querySelectorAll('td').forEach((cell, cellIndex) => {
+                        cell.style.background = cellIndex === 0
+                            ? (rowIndex % 2 ? '#e2e8f0' : '#f1f5f9')
+                            : (rowIndex % 2 ? '#f8fafc' : '#ffffff');
+                        if (cellIndex === 0) {
+                            cell.style.fontWeight = '800';
+                            cell.style.color = '#334155';
+                        }
+                    });
+                });
+
+                clone.querySelectorAll('.shift-cell').forEach(cell => {
+                    cell.style.display = 'flex';
+                    cell.style.alignItems = 'center';
+                    cell.style.justifyContent = 'space-between';
+                    cell.style.gap = '5px';
+                    cell.style.minHeight = '25px';
+                    cell.style.height = 'auto';
+                    cell.style.padding = '5px 6px';
+                    cell.style.borderRadius = '5px';
+                    cell.style.fontSize = '11px';
+                    cell.style.lineHeight = '1.3';
+                    cell.style.whiteSpace = 'normal';
+                    cell.style.overflow = 'visible';
+                    cell.style.boxShadow = 'none';
+                });
+                clone.querySelectorAll('.shift-cell span').forEach(span => {
+                    span.style.display = 'inline-block';
+                    span.style.width = 'auto';
+                    span.style.minWidth = '0';
+                    span.style.maxWidth = 'none';
+                    span.style.flex = '1 1 auto';
+                    span.style.whiteSpace = 'normal';
+                    span.style.overflow = 'visible';
+                    span.style.textOverflow = 'clip';
+                    span.style.fontSize = '10px';
+                    span.style.lineHeight = '1.25';
+                });
+
+                clone.querySelectorAll('tfoot th,tfoot td').forEach(cell => {
+                    cell.style.background = '#dbeafe';
+                    cell.style.color = '#0f172a';
+                    cell.style.fontWeight = '800';
+                    cell.style.fontSize = '12px';
+                    cell.style.padding = '12px 5px';
+                });
+
+                tableFrame.appendChild(clone);
+                exportHost.appendChild(heading);
+                exportHost.appendChild(tableFrame);
+                document.body.appendChild(exportHost);
+
+                // Espera a que el navegador calcule el ancho/alto final del clon.
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+                const canvas = await html2canvas(exportHost, {
+                    backgroundColor: '#f1f5f9',
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    logging: false,
+                    width: exportHost.scrollWidth,
+                    height: exportHost.scrollHeight,
+                    windowWidth: Math.max(window.innerWidth, exportHost.scrollWidth),
+                    windowHeight: Math.max(window.innerHeight, exportHost.scrollHeight),
+                    scrollX: 0,
+                    scrollY: 0
+                });
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                if (!blob) throw new Error('No se pudo generar el archivo PNG.');
+
+                const fileUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `Horario_ISSS_${(currentUsername || 'usuario').replace(/[^a-z0-9_-]/gi, '_')}_${monthValue}.png`;
+                link.href = fileUrl;
+                document.body.appendChild(link);
                 link.click();
-            }).catch(err => {
-                scrollContainer.style.maxHeight = originalMaxHeight;
-                console.error("Error al exportar la imagen:", err);
-            });
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(fileUrl), 30000);
+            } catch (err) {
+                console.error('Error al exportar la imagen HD:', err);
+                alert('No se pudo exportar el horario. Revisa la consola para ver el detalle.');
+            } finally {
+                if (exportHost?.parentNode) exportHost.parentNode.removeChild(exportHost);
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = oldButtonHTML;
+                    if (window.lucide) lucide.createIcons();
+                }
+            }
         }
+
     </script>
 </body>
 </html>
