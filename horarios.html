@@ -1048,7 +1048,7 @@
             const cleanUser = String(username || "").trim().toLocaleLowerCase("es");
             const cleanPeriod = String(period || "").trim();
             if (!cleanUser) throw new Error("No hay un usuario activo para consultar el historial.");
-            if (!/^\\d{4}-(0[1-9]|1[0-2])$/.test(cleanPeriod)) {
+            if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(cleanPeriod)) {
                 throw new Error("El período debe tener el formato AAAA-MM (por ejemplo, 2026-11).");
             }
             const url = new URL(HISTORY_APPS_SCRIPT_URL);
@@ -1107,7 +1107,9 @@
             } catch (error) {
                 console.error("No se pudo cargar el historial:", error);
                 historyReady = false;
-                setHistoryStatus("sin conexión; cambios locales no guardados", "error");
+                setHistoryStatus("sin conexión: " + String(error.message || error).slice(0, 90), "error");
+                const statusEl = document.getElementById("history-sync-status");
+                if (statusEl) statusEl.title = String(error.stack || error.message || error);
                 return false;
             } finally {
                 historyLoading = false;
@@ -1232,7 +1234,7 @@
                     if (record) records.push(record);
                 });
             });
-            enqueueHistorySave(records, scheduleSnapshot());
+            return enqueueHistorySave(records, scheduleSnapshot());
         }
 
         function retrySaveSchedule() {
