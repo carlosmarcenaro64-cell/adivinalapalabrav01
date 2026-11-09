@@ -698,25 +698,17 @@
 
         async function syncFromGoogleSheet() {
             try {
-                const url = new URL(HISTORY_APPS_SCRIPT_URL);
+                // La hoja principal tiene su propio Apps Script. El historial NO se consulta aquí.
+                const url = new URL(GOOGLE_APPS_SCRIPT_URL);
                 url.searchParams.set("action", "catalog");
                 const result = await jsonpRequest(url.toString(), 20000);
 
-                if (result && typeof result === "object" && result.success === false) {
-                    throw new Error(result.message || "No se pudo leer el catálogo principal.");
+                if (!result || result.status !== "success" || !Array.isArray(result.data)) {
+                    throw new Error((result && result.message) || "La hoja principal no devolvió el catálogo.");
                 }
 
-                const csvText = typeof result === "string"
-                    ? result
-                    : (result && (result.csv || result.data || result.content)) || "";
-
-                if (!csvText || typeof csvText !== "string") {
-                    throw new Error("Google no devolvió el CSV de la hoja principal.");
-                }
-
-                parseCSVData(csvText);
-                if (!Object.keys(DB_USERS).length) {
-                    throw new Error("No se encontraron cuentas en las columnas A y B.");
+                if (!parseCSVData(result.data)) {
+                    throw new Error("No se encontraron cuentas válidas en las columnas A y B.");
                 }
 
                 console.info("Catálogo principal cargado. Cuentas:", Object.keys(DB_USERS).length);
@@ -727,13 +719,18 @@
             }
         }
 
-        function parseCSVData(csv) {
-            const lines = String(csv || "")
-                .replace(/^\uFEFF/, "")
-                .split(/\r?\n/)
-                .filter(line => line.trim().length > 0);
-
-            if (lines.length < 2) return false;
+        function parseCSVData(source) {
+            let rows;
+            if (Array.isArray(source)) {
+                rows = source.map(row => Array.isArray(row) ? row : []);
+            } else {
+                const lines = String(source || "")
+                    .replace(/^\uFEFF/, "")
+                    .split(/\r?\n/)
+                    .filter(line => line.trim().length > 0);
+                rows = lines.map(line => parseCSVLine(line));
+            }
+            if (rows.length < 2) return false;
 
             const parsedUsers = {};
             const parsedEmployeesByUser = {};
@@ -742,9 +739,8 @@
             const clean = value => String(value == null ? "" : value).trim();
             const key = value => clean(value).toLocaleLowerCase("es");
 
-            for (let i = 1; i < lines.length; i++) {
-                const cols = parseCSVLine(lines[i]);
-
+            for (let i = 1; i < rows.length; i++) {
+                const cols = rows[i].map(clean);
                 // Hoja principal: A-B usuarios; D-G personal; I-K roles; M-P turnos.
                 const user = key(cols[0]);
                 const password = clean(cols[1]);
@@ -754,18 +750,16 @@
                 const employeeId = Number.parseInt(clean(cols[4]), 10);
                 const employeeName = clean(cols[5]);
                 const employeeRole = clean(cols[6]) || "-";
-
                 if (employeeUser && employeeName) {
                     if (!parsedEmployeesByUser[employeeUser]) parsedEmployeesByUser[employeeUser] = [];
                     const list = parsedEmployeesByUser[employeeUser];
                     const id = Number.isFinite(employeeId) && employeeId > 0 ? employeeId : list.length + 1;
-                    if (!list.some(emp => Number(emp.id) === id)) {
-                        list.push({
-                            id,
-                            name: employeeName,
-                            role: employeeRole,
-                            defaultShift: "0018"
-                        });
+                    const existing = list.find(emp => Number(emp.id) === id);
+                    if (existing) {
+                        existing.name = employeeName;
+                        existing.role = employeeRole;
+                    } else {
+                        list.push({ id, name: employeeName, role: employeeRole, defaultShift: "0018" });
                     }
                 }
 
@@ -774,14 +768,14 @@
                 const roleSchedule = clean(cols[10]);
                 if (roleUser && roleName) {
                     if (!parsedRolesByUser[roleUser]) parsedRolesByUser[roleUser] = [{ name: "-", schedule: "" }];
-                    if (!parsedRolesByUser[roleUser].some(role => key(role.name) === key(roleName))) {
-                        parsedRolesByUser[roleUser].push({ name: roleName, schedule: roleSchedule });
-                    }
+                    const existingRole = parsedRolesByUser[roleUser].find(role => key(role.name) === key(roleName));
+                    if (existingRole) existingRole.schedule = roleSchedule;
+                    else parsedRolesByUser[roleUser].push({ name: roleName, schedule: roleSchedule });
                 }
 
                 const shiftUser = key(cols[12]);
                 const shiftCode = clean(cols[13]).toUpperCase();
-                const shiftHours = Number.parseInt(clean(cols[14]), 10);
+                const shiftHours = Number.parseFloat(clean(cols[14]));
                 const shiftLabel = clean(cols[15]);
                 if (shiftUser && shiftCode) {
                     if (!parsedShiftsByUser[shiftUser]) parsedShiftsByUser[shiftUser] = {};
@@ -794,11 +788,12 @@
                 }
             }
 
-            if (Object.keys(parsedUsers).length) DB_USERS = parsedUsers;
-            if (Object.keys(parsedEmployeesByUser).length) DB_EMPLOYEES_BY_USER = parsedEmployeesByUser;
+            if (!Object.keys(parsedUsers).length) return false;
+            DB_USERS = parsedUsers;
+            DB_EMPLOYEES_BY_USER = parsedEmployeesByUser;
             window.DB_ROLES_BY_USER = parsedRolesByUser;
             window.DB_SHIFTS_BY_USER = parsedShiftsByUser;
-            return Object.keys(parsedUsers).length > 0;
+            return true;
         }
 
         function setupLoginLogic() {
@@ -817,7 +812,10 @@
                 if (submitButton) submitButton.disabled = true;
 
                 try {
-                    if (catalogLoadPromise) await catalogLoadPromise;
+                    const catalogOk = catalogLoadPromise ? await catalogLoadPromise : false;
+                    if (!catalogOk) {
+                        throw new Error("No se pudo conectar con la hoja principal de usuarios.");
+                    }
                     loginNotice.innerText = "";
 
                     if (DB_USERS[usernameInput] && String(DB_USERS[usernameInput].password) === String(passwordInput)) {
@@ -855,7 +853,9 @@
                     }
                 } catch (error) {
                     console.error("Error durante el inicio de sesión:", error);
-                    loginNotice.innerText = "No se pudo validar la cuenta. Intente nuevamente.";
+                    loginNotice.innerText = error && error.message
+                        ? "No se pudo cargar el catálogo principal: " + error.message
+                        : "No se pudo validar la cuenta. Intente nuevamente.";
                 } finally {
                     if (submitButton) submitButton.disabled = false;
                 }
@@ -1085,7 +1085,7 @@
 
                         // POST no-cors no permite leer la respuesta. Verificamos el estado
                         // consultando el historial y comparando los valores enviados.
-                        await new Promise(resolve => setTimeout(resolve, 700 + attempt * 350));
+                        await new Promise(resolve => setTimeout(resolve, 1200 + attempt * 1200));
                         const check = await requestHistoryLoad(saveUser, savePeriod);
                         if (check && check.success === false) throw new Error(check.message || "No se pudo verificar el guardado");
                         const savedRows = historyRowsFromResponse(check).map(normalizeHistoryRow);
