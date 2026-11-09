@@ -640,10 +640,12 @@
         let editingEmployeeId = null;
         const DAY_NAMES = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
+        let catalogLoadPromise = null;
+
         window.onload = function() {
             lucide.createIcons();
+            catalogLoadPromise = syncFromGoogleSheet();
             setupLoginLogic();
-            syncFromGoogleSheet();
         };
 
         // CARGA ASÍNCRONA DE DATOS DESDE GOOGLE SHEETS EN SEGUNDO PLANO
@@ -670,84 +672,133 @@
             });
         }
 
+        function parseCSVLine(line) {
+            const result = [];
+            let value = "";
+            let quoted = false;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (ch === '"') {
+                    if (quoted && line[i + 1] === '"') {
+                        value += '"';
+                        i++;
+                    } else {
+                        quoted = !quoted;
+                    }
+                } else if (ch === "," && !quoted) {
+                    result.push(value.trim());
+                    value = "";
+                } else {
+                    value += ch;
+                }
+            }
+            result.push(value.trim());
+            return result;
+        }
+
         async function syncFromGoogleSheet() {
             try {
                 const url = new URL(HISTORY_APPS_SCRIPT_URL);
                 url.searchParams.set("action", "catalog");
-                const result = await jsonpRequest(url.toString());
-                const csvText = typeof result === "string" ? result : (result.csv || "");
-                if (csvText) parseCSVData(csvText);
-                else console.warn("Google no devolvió el catálogo; se utilizarán los datos locales.");
+                const result = await jsonpRequest(url.toString(), 20000);
+
+                if (result && typeof result === "object" && result.success === false) {
+                    throw new Error(result.message || "No se pudo leer el catálogo principal.");
+                }
+
+                const csvText = typeof result === "string"
+                    ? result
+                    : (result && (result.csv || result.data || result.content)) || "";
+
+                if (!csvText || typeof csvText !== "string") {
+                    throw new Error("Google no devolvió el CSV de la hoja principal.");
+                }
+
+                parseCSVData(csvText);
+                if (!Object.keys(DB_USERS).length) {
+                    throw new Error("No se encontraron cuentas en las columnas A y B.");
+                }
+
+                console.info("Catálogo principal cargado. Cuentas:", Object.keys(DB_USERS).length);
+                return true;
             } catch (err) {
-                console.warn("No se pudo cargar el catálogo remoto; se utilizarán los datos locales:", err);
+                console.error("Error cargando usuarios y catálogo principal:", err);
+                return false;
             }
         }
 
         function parseCSVData(csv) {
-            const lines = csv.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-            if (lines.length < 2) return;
+            const lines = String(csv || "")
+                .replace(/^\uFEFF/, "")
+                .split(/\r?\n/)
+                .filter(line => line.trim().length > 0);
 
-            let parsedUsers = {};
-            let parsedEmployeesByUser = {};
-            let parsedRolesByUser = {};
-            let parsedShiftsByUser = {};
+            if (lines.length < 2) return false;
+
+            const parsedUsers = {};
+            const parsedEmployeesByUser = {};
+            const parsedRolesByUser = {};
+            const parsedShiftsByUser = {};
+            const clean = value => String(value == null ? "" : value).trim();
+            const key = value => clean(value).toLocaleLowerCase("es");
 
             for (let i = 1; i < lines.length; i++) {
-                const cols = lines[i].split(",").map(c => c.replace(/^"|"$/g, '').trim());
-                
-                // Usuarios
-                const userA = cols[0] ? cols[0].toLowerCase() : "";
-                const passB = cols[1] ? cols[1] : "";
-                if (userA && passB) {
-                    parsedUsers[userA] = { password: passB };
-                }
+                const cols = parseCSVLine(lines[i]);
 
-                // Empleados
-                const deUsuarioD = cols[3] ? cols[3].toLowerCase() : "";
-                const idE = cols[4] ? parseInt(cols[4]) : null;
-                const personalF = cols[5] ? cols[5] : "";
-                const tipoTurnoG = cols[6] ? cols[6] : "-";
-                if (deUsuarioD && personalF) {
-                    if (!parsedEmployeesByUser[deUsuarioD]) parsedEmployeesByUser[deUsuarioD] = [];
-                    parsedEmployeesByUser[deUsuarioD].push({
-                        id: idE || (parsedEmployeesByUser[deUsuarioD].length + 1),
-                        name: personalF,
-                        role: tipoTurnoG,
-                        defaultShift: "0018"
-                    });
-                }
+                // Hoja principal: A-B usuarios; D-G personal; I-K roles; M-P turnos.
+                const user = key(cols[0]);
+                const password = clean(cols[1]);
+                if (user && password) parsedUsers[user] = { password };
 
-                // Roles (Cols I, J, K -> idx 8, 9, 10)
-                const roleUser = cols[8] ? cols[8].toLowerCase() : "";
-                const roleName = cols[9] ? cols[9] : "";
-                const roleSched = cols[10] ? cols[10] : "";
-                if (roleUser && roleName) {
-                    if (!parsedRolesByUser[roleUser]) parsedRolesByUser[roleUser] = [{ name: "-", schedule: "" }];
-                    if (!parsedRolesByUser[roleUser].some(r => r.name === roleName)) {
-                        parsedRolesByUser[roleUser].push({ name: roleName, schedule: roleSched });
+                const employeeUser = key(cols[3]);
+                const employeeId = Number.parseInt(clean(cols[4]), 10);
+                const employeeName = clean(cols[5]);
+                const employeeRole = clean(cols[6]) || "-";
+
+                if (employeeUser && employeeName) {
+                    if (!parsedEmployeesByUser[employeeUser]) parsedEmployeesByUser[employeeUser] = [];
+                    const list = parsedEmployeesByUser[employeeUser];
+                    const id = Number.isFinite(employeeId) && employeeId > 0 ? employeeId : list.length + 1;
+                    if (!list.some(emp => Number(emp.id) === id)) {
+                        list.push({
+                            id,
+                            name: employeeName,
+                            role: employeeRole,
+                            defaultShift: "0018"
+                        });
                     }
                 }
 
-                // Turnos (Cols M, N, O, P -> idx 12, 13, 14, 15)
-                const shiftUser = cols[12] ? cols[12].toLowerCase() : "";
-                const shiftCode = cols[13] ? cols[13].toUpperCase() : "";
-                const shiftHours = cols[14] ? parseInt(cols[14]) : 8;
-                const shiftLabel = cols[15] ? cols[15] : "";
+                const roleUser = key(cols[8]);
+                const roleName = clean(cols[9]);
+                const roleSchedule = clean(cols[10]);
+                if (roleUser && roleName) {
+                    if (!parsedRolesByUser[roleUser]) parsedRolesByUser[roleUser] = [{ name: "-", schedule: "" }];
+                    if (!parsedRolesByUser[roleUser].some(role => key(role.name) === key(roleName))) {
+                        parsedRolesByUser[roleUser].push({ name: roleName, schedule: roleSchedule });
+                    }
+                }
+
+                const shiftUser = key(cols[12]);
+                const shiftCode = clean(cols[13]).toUpperCase();
+                const shiftHours = Number.parseInt(clean(cols[14]), 10);
+                const shiftLabel = clean(cols[15]);
                 if (shiftUser && shiftCode) {
                     if (!parsedShiftsByUser[shiftUser]) parsedShiftsByUser[shiftUser] = {};
                     parsedShiftsByUser[shiftUser][shiftCode] = {
                         code: shiftCode,
-                        label: shiftLabel,
-                        hours: isNaN(shiftHours) ? 8 : shiftHours,
-                        cssClass: `shift-${shiftCode.replace(/[^A-Z0-9]/gi, '')}`
+                        label: shiftLabel || shiftCode,
+                        hours: Number.isFinite(shiftHours) ? shiftHours : 8,
+                        cssClass: `shift-${shiftCode.replace(/[^A-Z0-9]/gi, "")}`
                     };
                 }
             }
 
-            if (Object.keys(parsedUsers).length > 0) DB_USERS = parsedUsers;
-            if (Object.keys(parsedEmployeesByUser).length > 0) DB_EMPLOYEES_BY_USER = parsedEmployeesByUser;
-            if (window.DB_ROLES_BY_USER && Object.keys(parsedRolesByUser).length > 0) window.DB_ROLES_BY_USER = parsedRolesByUser;
-            if (window.DB_SHIFTS_BY_USER && Object.keys(parsedShiftsByUser).length > 0) window.DB_SHIFTS_BY_USER = parsedShiftsByUser;
+            if (Object.keys(parsedUsers).length) DB_USERS = parsedUsers;
+            if (Object.keys(parsedEmployeesByUser).length) DB_EMPLOYEES_BY_USER = parsedEmployeesByUser;
+            window.DB_ROLES_BY_USER = parsedRolesByUser;
+            window.DB_SHIFTS_BY_USER = parsedShiftsByUser;
+            return Object.keys(parsedUsers).length > 0;
         }
 
         function setupLoginLogic() {
@@ -756,14 +807,20 @@
             const appContainer = document.querySelector('#app-container');
             const loginNotice = document.querySelector('#loginNotice');
 
-            loginForm.addEventListener('submit', e => {
+            loginForm.addEventListener('submit', async e => {
                 e.preventDefault();
-                const usernameInput = document.querySelector('#loginUser').value.trim().toLowerCase();
-                const passwordInput = document.querySelector('#loginPassword').value.trim();
+                const usernameInput = document.querySelector('#loginUser').value.trim().toLocaleLowerCase("es");
+                const passwordInput = document.querySelector('#loginPassword').value;
 
-                loginNotice.innerText = "";
+                loginNotice.innerText = "Conectando con la hoja principal...";
+                const submitButton = loginForm.querySelector('button[type="submit"]');
+                if (submitButton) submitButton.disabled = true;
 
-                if (DB_USERS[usernameInput] && String(DB_USERS[usernameInput].password) === String(passwordInput)) {
+                try {
+                    if (catalogLoadPromise) await catalogLoadPromise;
+                    loginNotice.innerText = "";
+
+                    if (DB_USERS[usernameInput] && String(DB_USERS[usernameInput].password) === String(passwordInput)) {
                     currentUsername = usernameInput;
                     EMPLOYEES = DB_EMPLOYEES_BY_USER[currentUsername] || [];
 
@@ -791,8 +848,16 @@
                         initTable();
                         lucide.createIcons();
                     }, 400);
-                } else {
-                    loginNotice.innerText = "Usuario o contraseña incorrectos.";
+                    } else {
+                        loginNotice.innerText = Object.keys(DB_USERS).length <= 1
+                            ? "No se pudo cargar la lista de usuarios. Verifique la conexión con la hoja principal y vuelva a intentar."
+                            : "Usuario o contraseña incorrectos.";
+                    }
+                } catch (error) {
+                    console.error("Error durante el inicio de sesión:", error);
+                    loginNotice.innerText = "No se pudo validar la cuenta. Intente nuevamente.";
+                } finally {
+                    if (submitButton) submitButton.disabled = false;
                 }
             });
         }
@@ -1407,7 +1472,7 @@
                     <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                         <div class="flex items-center gap-2">
                             <span class="font-extrabold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">${user}</span>
-                            <span class="text-slate-600 dark:text-slate-400 text-[11px]">Clave: <strong class="text-slate-800 dark:text-slate-200">${DB_USERS[user].password}</strong></span>
+                            <span class="text-slate-600 dark:text-slate-400 text-[11px]">Cuenta registrada</span>
                         </div>
                         <span class="text-[10px] bg-slate-200 dark:bg-slate-800 text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded-full font-semibold">${empCount} empleados</span>
                     </div>
