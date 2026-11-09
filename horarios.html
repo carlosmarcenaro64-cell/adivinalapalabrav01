@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="description" content="Sistema de control y planificación de horarios del personal ISSS.">
     <title>Sistema de Control de Horarios ISSS - Acceso Seguro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -238,7 +240,8 @@
                     </div>
                     <div>
                         <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">Control de Horarios ISSS</h1>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Usuario activo: <span id="user-display" class="text-sky-600 dark:text-sky-400 font-bold uppercase"></span> <span id="history-sync-status" class="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">● Historial: pendiente</span></p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Usuario activo: <span id="user-display" class="text-sky-600 dark:text-sky-400 font-bold uppercase"></span> <span id="history-sync-status" class="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">● Historial: pendiente</span>
+                        <button type="button" onclick="retrySaveSchedule()" class="ml-1 text-[10px] text-sky-600 dark:text-sky-400 hover:underline" title="Volver a guardar y verificar">Reintentar guardado</button></p>
                     </div>
                 </div>
 
@@ -795,6 +798,10 @@
         }
 
         function logout() {
+            historyReady = false;
+            historyLoading = false;
+            currentUsername = null;
+            historyLastSnapshot = "";
             const loginOverlay = document.querySelector('#login-overlay');
             const appContainer = document.querySelector('#app-container');
             
@@ -866,99 +873,206 @@
             };
         }
 
+        // Historial: guardado por lotes, cola serializada y verificación de lectura.
+        let historyRevision = 0;
+        let historyLastSnapshot = "";
+        let historyRetryCount = 3;
+
+        function normalizeDateForHistory(value, fallbackDay, period) {
+            const raw = String(value || "");
+            const match = raw.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+            if (match) return `${match[1]}-${String(Number(match[2])).padStart(2,"0")}-${String(Number(match[3])).padStart(2,"0")}`;
+            const [y, m] = String(period || currentPeriod()).split("-").map(Number);
+            return `${y}-${String(m).padStart(2,"0")}-${String(Number(fallbackDay)).padStart(2,"0")}`;
+        }
+
+        function buildHistoryRecord(day, empId, shiftCode) {
+            const emp = EMPLOYEES.find(e => Number(e.id) === Number(empId));
+            if (!emp) return null;
+            const [year, month] = currentPeriod().split("-").map(Number);
+            const date = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+            const shift = SHIFTS[shiftCode] || SHIFTS.LIBRE;
+            return {
+                dia: DAY_NAMES[new Date(year, month - 1, day).getDay()],
+                fechaTurno: date,
+                idEmpleado: Number(emp.id),
+                empleado: String(emp.name || ""),
+                rol: String(emp.role || "-"),
+                codigoTurno: String(shift.code),
+                descripcion: String(shift.label || ""),
+                horas: Number(shift.hours) || 0
+            };
+        }
+
+        function historyRowsFromResponse(json) {
+            if (Array.isArray(json)) return json;
+            if (!json || typeof json !== "object") return [];
+            return json.data || json.records || json.rows || json.historial || [];
+        }
+
+        function normalizeHistoryRow(row) {
+            if (Array.isArray(row)) {
+                return { dia: row[3], fechaTurno: row[4], idEmpleado: row[5], empleado: row[6], rol: row[7], codigoTurno: row[8], descripcion: row[9], horas: row[10], version: row[11] };
+            }
+            return {
+                dia: row.dia ?? row.DIA,
+                fechaTurno: row.fechaTurno ?? row.FECHA_TURNO,
+                idEmpleado: row.idEmpleado ?? row.ID_EMPLEADO,
+                empleado: row.empleado ?? row.EMPLEADO,
+                rol: row.rol ?? row.ROL,
+                codigoTurno: row.codigoTurno ?? row.CODIGO_TURNO,
+                descripcion: row.descripcion ?? row.DESCRIPCION,
+                horas: row.horas ?? row.HORAS,
+                version: row.version ?? row.VERSION
+            };
+        }
+
+        async function requestHistoryLoad(username = currentUsername, period = currentPeriod()) {
+            const url = new URL(HISTORY_APPS_SCRIPT_URL);
+            url.searchParams.set("action", "load");
+            url.searchParams.set("usuario", username);
+            url.searchParams.set("periodo", period);
+            return jsonpRequest(url.toString());
+        }
+
         async function loadScheduleHistory() {
             if (!currentUsername || !currentPeriod()) return false;
             historyLoading = true;
             historyReady = false;
+            historyLastSnapshot = "";
             setHistoryStatus("cargando…", "loading");
             try {
-                const url = new URL(HISTORY_APPS_SCRIPT_URL);
-                url.searchParams.set("action", "load");
-                url.searchParams.set("usuario", currentUsername);
-                url.searchParams.set("periodo", currentPeriod());
-                const json = await jsonpRequest(url.toString());
+                const json = await requestHistoryLoad();
                 if (json && json.success === false) throw new Error(json.message || "El servidor rechazó la consulta");
                 const rows = historyRowsFromResponse(json).map(normalizeHistoryRow);
+                const validEmployees = new Set(EMPLOYEES.map(e => Number(e.id)));
+                const latest = new Map();
+
                 rows.forEach(item => {
-                    const rawDate = String(item.fechaTurno || "");
-                    const match = rawDate.match(/(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})/);
-                    const dayValue = match ? Number(match[3]) : Number(item.dia);
+                    const date = normalizeDateForHistory(item.fechaTurno, item.dia, currentPeriod());
+                    const day = Number(date.slice(-2));
                     const empId = Number(item.idEmpleado);
-                    const code = String(item.codigoTurno || "LIBRE").trim().toUpperCase();
-                    if (dayValue && scheduleData[dayValue] && EMPLOYEES.some(e => Number(e.id) === empId)) {
-                        scheduleData[dayValue][empId] = SHIFTS[code] ? code : "LIBRE";
-                    }
+                    if (!Number.isInteger(day) || !validEmployees.has(empId) || !scheduleData[day]) return;
+                    const key = `${day}|${empId}`;
+                    const previous = latest.get(key);
+                    if (!previous || Number(item.version || 0) >= Number(previous.version || 0)) latest.set(key, item);
                 });
-                if (rows.length === 0) {
-                    populateSampleData();
-                    historyReady = true;
-                    saveWholeSchedule();
-                } else {
-                    Object.keys(scheduleData).forEach(day => {
-                        EMPLOYEES.forEach(emp => {
-                            const cell = document.getElementById(`cell-${day}-${emp.id}`);
-                            const code = scheduleData[day][emp.id] || "LIBRE";
-                            if (cell) cell.innerHTML = renderCellContent(SHIFTS[code] || SHIFTS.LIBRE);
-                        });
+
+                latest.forEach((item, key) => {
+                    const [day, empId] = key.split("|").map(Number);
+                    const code = String(item.codigoTurno || "LIBRE").trim().toUpperCase();
+                    scheduleData[day][empId] = SHIFTS[code] ? code : "LIBRE";
+                });
+
+                Object.keys(scheduleData).forEach(day => {
+                    EMPLOYEES.forEach(emp => {
+                        const cell = document.getElementById(`cell-${day}-${emp.id}`);
+                        if (cell) cell.innerHTML = renderCellContent(SHIFTS[scheduleData[day][emp.id]] || SHIFTS.LIBRE);
                     });
-                    calculateTotals();
-                    validateCoverage();
-                    historyReady = true;
-                }
-                setHistoryStatus(rows.length ? "sincronizado" : "nuevo período guardado", "success");
+                });
+                calculateTotals();
+                validateCoverage();
+                historyReady = true;
+                historyLastSnapshot = JSON.stringify(scheduleData);
+                setHistoryStatus(rows.length ? "sincronizado" : "período nuevo (sin guardar)", "success");
                 return true;
             } catch (error) {
                 console.error("No se pudo cargar el historial:", error);
-                setHistoryStatus("sin conexión", "error");
+                historyReady = false;
+                setHistoryStatus("sin conexión; cambios locales no guardados", "error");
                 return false;
             } finally {
                 historyLoading = false;
             }
         }
 
-        function saveScheduleCell(day, empId, shiftCode) {
-            if (!historyReady || !currentUsername) return;
-            const emp = EMPLOYEES.find(e => Number(e.id) === Number(empId));
-            if (!emp) return;
-            const [year, month] = currentPeriod().split("-").map(Number);
-            const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-            const shift = SHIFTS[shiftCode] || SHIFTS.LIBRE;
-            const payload = {
-                action: "save",
+        function scheduleSnapshot() {
+            return JSON.stringify({
                 usuario: currentUsername,
                 periodo: currentPeriod(),
-                dia: DAY_NAMES[new Date(year, month - 1, day).getDay()],
-                fechaTurno: date,
-                idEmpleado: emp.id,
-                empleado: emp.name,
-                rol: emp.role || "-",
-                codigoTurno: shift.code,
-                descripcion: shift.label,
-                horas: Number(shift.hours) || 0
-            };
-            // Serializa los envíos para mantener el orden de versiones.
-            historySaveQueue = historySaveQueue.then(async () => {
-                setHistoryStatus("guardando…", "loading");
-                const response = await fetch(HISTORY_APPS_SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify(payload)
-                });
-                // no-cors no permite leer la respuesta HTTP; el envío se marca como enviado,
-                // pero la confirmación definitiva debe revisarse en la hoja de historial.
-                setHistoryStatus("envío enviado; verifica la hoja", "success");
-            }).catch(error => {
-                console.error("Error al enviar horario:", error);
-                setHistoryStatus("error al guardar", "error");
+                data: scheduleData
             });
         }
 
-        function saveWholeSchedule() {
-            if (!historyReady) return;
-            Object.keys(scheduleData).forEach(day => {
-                EMPLOYEES.forEach(emp => saveScheduleCell(Number(day), emp.id, scheduleData[day][emp.id] || "LIBRE"));
+        function enqueueHistorySave(records, snapshot) {
+            if (!historyReady || !currentUsername || !records.length) return Promise.resolve(false);
+            const saveUser = currentUsername;
+            const savePeriod = currentPeriod();
+            const payload = {
+                action: "saveBatch",
+                usuario: saveUser,
+                periodo: savePeriod,
+                requestId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                records
+            };
+
+            historySaveQueue = historySaveQueue.then(async () => {
+                setHistoryStatus("guardando…", "loading");
+                let lastError = null;
+                for (let attempt = 1; attempt <= historyRetryCount; attempt++) {
+                    try {
+                        await fetch(HISTORY_APPS_SCRIPT_URL, {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "text/plain;charset=utf-8" },
+                            body: JSON.stringify(payload)
+                        });
+
+                        // POST no-cors no permite leer la respuesta. Verificamos el estado
+                        // consultando el historial y comparando los valores enviados.
+                        await new Promise(resolve => setTimeout(resolve, 700 + attempt * 350));
+                        const check = await requestHistoryLoad(saveUser, savePeriod);
+                        if (check && check.success === false) throw new Error(check.message || "No se pudo verificar el guardado");
+                        const savedRows = historyRowsFromResponse(check).map(normalizeHistoryRow);
+                        const saved = new Map();
+                        savedRows.forEach(row => {
+                            const date = normalizeDateForHistory(row.fechaTurno, row.dia, savePeriod);
+                            saved.set(`${date}|${Number(row.idEmpleado)}`, String(row.codigoTurno || "").toUpperCase());
+                        });
+                        const allConfirmed = records.every(record =>
+                            saved.get(`${record.fechaTurno}|${Number(record.idEmpleado)}`) === String(record.codigoTurno).toUpperCase()
+                        );
+                        if (!allConfirmed) throw new Error("El servidor todavía no refleja todos los cambios");
+                        historyLastSnapshot = snapshot || JSON.stringify({ usuario: saveUser, periodo: savePeriod });
+                        setHistoryStatus("guardado y verificado", "success");
+                        return true;
+                    } catch (error) {
+                        lastError = error;
+                        console.warn(`Intento ${attempt} de guardado fallido:`, error);
+                        if (attempt < historyRetryCount) await new Promise(resolve => setTimeout(resolve, 800 * attempt));
+                    }
+                }
+                console.error("No se pudo confirmar el guardado del historial:", lastError);
+                setHistoryStatus("no se pudo confirmar; reintenta guardar", "error");
+                return false;
             });
+            return historySaveQueue;
+        }
+
+        function saveScheduleCell(day, empId, shiftCode) {
+            const record = buildHistoryRecord(day, empId, shiftCode);
+            if (!record) return;
+            enqueueHistorySave([record], scheduleSnapshot());
+        }
+
+        function saveWholeSchedule() {
+            if (!historyReady || !currentUsername) return;
+            const records = [];
+            Object.keys(scheduleData).forEach(day => {
+                EMPLOYEES.forEach(emp => {
+                    const record = buildHistoryRecord(Number(day), emp.id, scheduleData[day][emp.id] || "LIBRE");
+                    if (record) records.push(record);
+                });
+            });
+            enqueueHistorySave(records, scheduleSnapshot());
+        }
+
+        function retrySaveSchedule() {
+            if (!historyReady) {
+                loadScheduleHistory().then(ok => { if (ok) saveWholeSchedule(); });
+                return;
+            }
+            saveWholeSchedule();
         }
 
         function initTable() {
@@ -1038,7 +1152,8 @@
             }
 
             renderFooterRow();
-            // Recupera el período del usuario activo; no aplicar datos de ejemplo antes de consultar.
+            // Carga el período sin crear ni guardar horarios de ejemplo automáticamente.
+            historyReady = false;
             loadScheduleHistory();
         }
 
@@ -1050,11 +1165,7 @@
                 calculateTotals();
                 validateCoverage();
                 // El cambio de rol regenera la columna y guarda sus días como nuevas versiones.
-                if (historyReady) {
-                    const [yy, mm] = currentPeriod().split("-").map(Number);
-                    const count = new Date(yy, mm, 0).getDate();
-                    for (let d = 1; d <= count; d++) saveScheduleCell(d, empId, scheduleData[d][empId]);
-                }
+                if (historyReady) saveWholeSchedule();
             }
         }
 
@@ -1168,18 +1279,15 @@
         }
 
         function clearSchedule() {
-            const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
-            const daysInMonth = new Date(year, month, 0).getDate();
-
+            if (!confirm("¿Deseas marcar todos los turnos del período como LIBRE y guardar el cambio en el historial?")) return;
+            const daysInMonth = Object.keys(scheduleData).length;
             for (let d = 1; d <= daysInMonth; d++) {
-                EMPLOYEES.forEach(emp => {
-                    scheduleData[d][emp.id] = "LIBRE";
-                });
+                EMPLOYEES.forEach(emp => { scheduleData[d][emp.id] = "LIBRE"; });
             }
-
             EMPLOYEES.forEach(emp => updateEmployeeColumnUI(emp.id));
             calculateTotals();
             validateCoverage();
+            saveWholeSchedule();
         }
 
         function populateSampleData() { EMPLOYEES.forEach(emp => applyRoleLogicForEmployee(emp.id)); calculateTotals(); validateCoverage(); }
