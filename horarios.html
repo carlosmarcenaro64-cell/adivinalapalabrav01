@@ -155,27 +155,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.6); }
 
         .shift-cell { font-size: 0.68rem; line-height: 1.15; font-weight: 800; }
-    
-        /* Refinamiento visual y accesibilidad */
-        html { scroll-behavior: smooth; }
-        body { background-image: radial-gradient(circle at 10% 0%, rgba(14,165,233,.08), transparent 28%), radial-gradient(circle at 90% 20%, rgba(99,102,241,.06), transparent 26%); }
-        button, input, select { -webkit-tap-highlight-color: transparent; }
-        button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
-        .glass-card { border-radius: 1.15rem; }
-        #schedule-table th, #schedule-table td { white-space: normal; }
-        #schedule-table tbody tr { transition: background-color .18s ease; }
-        #schedule-table tbody tr:hover { background-color: rgba(14,165,233,.055); }
-        .shift-cell { min-height: 28px; }
-        .modal-panel { max-height: min(90vh, 900px); overflow-y: auto; }
-        @media (max-width: 700px) {
-          header .max-w-7xl { align-items: flex-start; }
-          header .max-w-7xl > div:last-child { width: 100%; flex-wrap: wrap; }
-          header button { flex: 1 1 auto; justify-content: center; }
-          main { padding: .65rem !important; }
-          #schedule-table th { min-width: 112px; }
-          #schedule-table th:first-child, #schedule-table td:first-child { min-width: 64px; }
-        }
-        @media print { body { background: white !important; } #schedule-table { font-size: 8px; } }
     </style>
 </head>
 <body id="app-body" class="min-h-screen text-slate-800 flex flex-col bg-slate-100 relative overflow-x-hidden transition-colors duration-300">
@@ -206,14 +185,13 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 </h2>
                 <p class="text-xs text-slate-400 mb-6">Ingrese su código de usuario y contraseña autorizados</p>
-                 <p class="text-[10px] text-amber-300/90 mb-4">Aviso: este prototipo valida credenciales en el navegador. No introduzca contraseñas reales ni datos sensibles.</p>
 
                 <form id="loginForm" class="space-y-4">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Usuario</label>
                         <div class="relative flex items-center">
                             <i data-lucide="user" class="w-4 h-4 text-sky-400 absolute left-3"></i>
-                            <input id="loginUser" type="text" placeholder="Ej: krissia" class="input-neo w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold" required>
+                            <input id="loginUser" type="text" value="krissia" placeholder="Ej: krissia" class="input-neo w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold" required>
                         </div>
                     </div>
 
@@ -221,7 +199,7 @@
                         <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Contraseña</label>
                         <div class="relative flex items-center">
                             <i data-lucide="lock" class="w-4 h-4 text-sky-400 absolute left-3"></i>
-                            <input id="loginPassword" type="password" placeholder="••••••••" class="input-neo w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold" required>
+                            <input id="loginPassword" type="password" value="1902" placeholder="••••••••" class="input-neo w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold" required>
                         </div>
                     </div>
 
@@ -260,7 +238,7 @@
                     </div>
                     <div>
                         <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">Control de Horarios ISSS</h1>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Usuario activo: <span id="user-display" class="text-sky-600 dark:text-sky-400 font-bold uppercase"></span></p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Usuario activo: <span id="user-display" class="text-sky-600 dark:text-sky-400 font-bold uppercase"></span> <span id="history-sync-status" class="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">● Historial: pendiente</span></p>
                     </div>
                 </div>
 
@@ -288,9 +266,6 @@
                     <button onclick="exportImage()" class="px-3 py-2 bg-indigo-100 dark:bg-indigo-900/40 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 border border-indigo-300 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-200 rounded-xl text-xs font-medium flex items-center gap-1.5 transition">
                         <i data-lucide="image" class="w-4 h-4 text-indigo-500"></i>
                         <span>Exportar HD</span>
-                    </button>
-                    <button onclick="exportPDF()" class="px-3 py-2 bg-rose-100 dark:bg-rose-900/40 hover:bg-rose-200 dark:hover:bg-rose-900/60 border border-rose-300 dark:border-rose-500/40 text-rose-700 dark:text-rose-200 rounded-xl text-xs font-medium flex items-center gap-1.5 transition">
-                        <i data-lucide="file-pdf" class="w-4 h-4"></i><span>Exportar PDF</span>
                     </button>
                     <button onclick="window.print()" class="px-3 py-2 bg-slate-200 dark:bg-slate-900 hover:bg-slate-300 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-medium flex items-center gap-1.5 transition">
                         <i data-lucide="printer" class="w-4 h-4 text-slate-500"></i>
@@ -604,15 +579,17 @@
         // URLs DE GOOGLE SHEETS / APPS SCRIPT PUBLICADOS
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeObkBJ4l6zMu-qS4MwLxNw2s9iXfXSdazLZRje4MK7Uwu1zuMc5ydlD3kFBeIvJG3AP6BUxErdtPA/pub?output=csv";
         const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweZbVptsmlrkcM2-fVV_708z0B64-J4AwwdhG8dhxBLzlzMcjKbVAVIgbdZ_9QQRQr/exec";
+        // Servicio independiente: historial de horarios (NO reemplaza la hoja principal).
+        const HISTORY_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaG9g95f_GLedEkz400p1mgN_fqX-N0sX-9-ooV-5mbubqT0CmmqE6HWl4_nra2nkH_Q/exec";
+        let historyLoading = false;
+        let historyReady = false;
+        let historySaveQueue = Promise.resolve();
 
         // BASE DE DATOS LOCAL Y RELACIONAL POR USUARIO (FALLBACK / IN-MEMORY)
         let DB_USERS = {
             "krissia": { password: "1902" }
         };
 
-        let DB_ROLES_BY_USER = {};
-        let DB_SHIFTS_BY_USER = {};
-        let scheduleMonthKey = "";
         let DB_EMPLOYEES_BY_USER = {
             "krissia": [
                 { id: 1, name: "ESTEFANY GABRIELA ARIAS VILLANUEVA", role: "-", defaultShift: "0018" },
@@ -667,74 +644,107 @@
         };
 
         // CARGA ASÍNCRONA DE DATOS DESDE GOOGLE SHEETS EN SEGUNDO PLANO
-        async function syncFromGoogleSheet() {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
-            try {
-                const res = await fetch(GOOGLE_SHEET_CSV_URL, { signal: controller.signal, cache: "no-store" });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                parseCSVData(await res.text());
-                if (currentUsername) {
-                    loadUserWorkspace(currentUsername, true);
-                    EMPLOYEES = DB_EMPLOYEES_BY_USER[currentUsername] || EMPLOYEES;
-                    if (DB_ROLES_BY_USER[currentUsername]) ROLES = DB_ROLES_BY_USER[currentUsername];
-                    if (DB_SHIFTS_BY_USER[currentUsername]) SHIFTS = { ...SHIFTS, ...DB_SHIFTS_BY_USER[currentUsername] };
-                    initTable();
-                    renderShiftLegend();
+        function jsonpRequest(url, timeoutMs = 15000) {
+            return new Promise((resolve, reject) => {
+                const callbackName = "__isss_jsonp_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+                const script = document.createElement("script");
+                const timer = setTimeout(() => finish(new Error("Tiempo de espera agotado")), timeoutMs);
+                function cleanup() {
+                    clearTimeout(timer);
+                    delete window[callbackName];
+                    script.remove();
                 }
-            } catch (err) {
-                console.warn("Utilizando catálogo base local:", err);
-            } finally { clearTimeout(timeoutId); }
+                function finish(error, data) {
+                    cleanup();
+                    if (error) reject(error);
+                    else resolve(data);
+                }
+                window[callbackName] = data => finish(null, data);
+                const separator = url.includes("?") ? "&" : "?";
+                script.src = url + separator + "callback=" + encodeURIComponent(callbackName) + "&_=" + Date.now();
+                script.onerror = () => finish(new Error("No se pudo contactar Google Apps Script"));
+                document.head.appendChild(script);
+            });
         }
 
-        function parseCSVRows(text) {
-            const rows = []; let row = [], field = "", quoted = false;
-            for (let i = 0; i < text.length; i++) {
-                const c = text[i], n = text[i + 1];
-                if (c === '"' && quoted && n === '"') { field += '"'; i++; }
-                else if (c === '"') quoted = !quoted;
-                else if (c === ',' && !quoted) { row.push(field.trim()); field = ""; }
-                else if ((c === '\n' || c === '\r') && !quoted) {
-                    if (c === '\r' && n === '\n') i++;
-                    row.push(field.trim()); if (row.some(v => v !== "")) rows.push(row);
-                    row = []; field = "";
-                } else field += c;
+        async function syncFromGoogleSheet() {
+            try {
+                const url = new URL(HISTORY_APPS_SCRIPT_URL);
+                url.searchParams.set("action", "catalog");
+                const result = await jsonpRequest(url.toString());
+                const csvText = typeof result === "string" ? result : (result.csv || "");
+                if (csvText) parseCSVData(csvText);
+                else console.warn("Google no devolvió el catálogo; se utilizarán los datos locales.");
+            } catch (err) {
+                console.warn("No se pudo cargar el catálogo remoto; se utilizarán los datos locales:", err);
             }
-            row.push(field.trim()); if (row.some(v => v !== "")) rows.push(row);
-            return rows;
         }
 
         function parseCSVData(csv) {
-            const rows = parseCSVRows(csv);
-            if (rows.length < 2) return;
-            const parsedUsers = {}, parsedEmployeesByUser = {}, parsedRolesByUser = {}, parsedShiftsByUser = {};
-            for (const cols of rows.slice(1)) {
-                const userA = (cols[0] || "").toLowerCase();
-                const passB = cols[1] || "";
-                if (userA && passB) parsedUsers[userA] = { password: passB };
-                const employeeUser = (cols[3] || "").toLowerCase();
-                const id = Number.parseInt(cols[4], 10);
-                const name = cols[5] || "";
-                if (employeeUser && name) {
-                    if (!parsedEmployeesByUser[employeeUser]) parsedEmployeesByUser[employeeUser] = [];
-                    parsedEmployeesByUser[employeeUser].push({ id: Number.isFinite(id) ? id : parsedEmployeesByUser[employeeUser].length + 1, name, role: cols[6] || "-", defaultShift: "0018" });
+            const lines = csv.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length < 2) return;
+
+            let parsedUsers = {};
+            let parsedEmployeesByUser = {};
+            let parsedRolesByUser = {};
+            let parsedShiftsByUser = {};
+
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(",").map(c => c.replace(/^"|"$/g, '').trim());
+                
+                // Usuarios
+                const userA = cols[0] ? cols[0].toLowerCase() : "";
+                const passB = cols[1] ? cols[1] : "";
+                if (userA && passB) {
+                    parsedUsers[userA] = { password: passB };
                 }
-                const roleUser = (cols[8] || "").toLowerCase(), roleName = cols[9] || "";
+
+                // Empleados
+                const deUsuarioD = cols[3] ? cols[3].toLowerCase() : "";
+                const idE = cols[4] ? parseInt(cols[4]) : null;
+                const personalF = cols[5] ? cols[5] : "";
+                const tipoTurnoG = cols[6] ? cols[6] : "-";
+                if (deUsuarioD && personalF) {
+                    if (!parsedEmployeesByUser[deUsuarioD]) parsedEmployeesByUser[deUsuarioD] = [];
+                    parsedEmployeesByUser[deUsuarioD].push({
+                        id: idE || (parsedEmployeesByUser[deUsuarioD].length + 1),
+                        name: personalF,
+                        role: tipoTurnoG,
+                        defaultShift: "0018"
+                    });
+                }
+
+                // Roles (Cols I, J, K -> idx 8, 9, 10)
+                const roleUser = cols[8] ? cols[8].toLowerCase() : "";
+                const roleName = cols[9] ? cols[9] : "";
+                const roleSched = cols[10] ? cols[10] : "";
                 if (roleUser && roleName) {
                     if (!parsedRolesByUser[roleUser]) parsedRolesByUser[roleUser] = [{ name: "-", schedule: "" }];
-                    if (!parsedRolesByUser[roleUser].some(r => r.name === roleName)) parsedRolesByUser[roleUser].push({ name: roleName, schedule: cols[10] || "" });
+                    if (!parsedRolesByUser[roleUser].some(r => r.name === roleName)) {
+                        parsedRolesByUser[roleUser].push({ name: roleName, schedule: roleSched });
+                    }
                 }
-                const shiftUser = (cols[12] || "").toLowerCase(), code = (cols[13] || "").toUpperCase();
-                if (shiftUser && code) {
+
+                // Turnos (Cols M, N, O, P -> idx 12, 13, 14, 15)
+                const shiftUser = cols[12] ? cols[12].toLowerCase() : "";
+                const shiftCode = cols[13] ? cols[13].toUpperCase() : "";
+                const shiftHours = cols[14] ? parseInt(cols[14]) : 8;
+                const shiftLabel = cols[15] ? cols[15] : "";
+                if (shiftUser && shiftCode) {
                     if (!parsedShiftsByUser[shiftUser]) parsedShiftsByUser[shiftUser] = {};
-                    const hours = Number.parseFloat(cols[14]);
-                    parsedShiftsByUser[shiftUser][code] = { code, label: cols[15] || code, hours: Number.isFinite(hours) ? hours : 8, cssClass: `shift-${code.replace(/[^A-Z0-9]/gi, '')}` };
+                    parsedShiftsByUser[shiftUser][shiftCode] = {
+                        code: shiftCode,
+                        label: shiftLabel,
+                        hours: isNaN(shiftHours) ? 8 : shiftHours,
+                        cssClass: `shift-${shiftCode.replace(/[^A-Z0-9]/gi, '')}`
+                    };
                 }
             }
-            if (Object.keys(parsedUsers).length) DB_USERS = parsedUsers;
-            if (Object.keys(parsedEmployeesByUser).length) DB_EMPLOYEES_BY_USER = parsedEmployeesByUser;
-            DB_ROLES_BY_USER = parsedRolesByUser;
-            DB_SHIFTS_BY_USER = parsedShiftsByUser;
+
+            if (Object.keys(parsedUsers).length > 0) DB_USERS = parsedUsers;
+            if (Object.keys(parsedEmployeesByUser).length > 0) DB_EMPLOYEES_BY_USER = parsedEmployeesByUser;
+            if (window.DB_ROLES_BY_USER && Object.keys(parsedRolesByUser).length > 0) window.DB_ROLES_BY_USER = parsedRolesByUser;
+            if (window.DB_SHIFTS_BY_USER && Object.keys(parsedShiftsByUser).length > 0) window.DB_SHIFTS_BY_USER = parsedShiftsByUser;
         }
 
         function setupLoginLogic() {
@@ -752,12 +762,15 @@
 
                 if (DB_USERS[usernameInput] && String(DB_USERS[usernameInput].password) === String(passwordInput)) {
                     currentUsername = usernameInput;
-                    loadUserWorkspace(currentUsername, false);
                     EMPLOYEES = DB_EMPLOYEES_BY_USER[currentUsername] || [];
 
                     // Cargar roles y turnos del usuario si existen
-                    if (DB_ROLES_BY_USER[currentUsername]) ROLES = DB_ROLES_BY_USER[currentUsername];
-                    if (DB_SHIFTS_BY_USER[currentUsername]) SHIFTS = { ...SHIFTS, ...DB_SHIFTS_BY_USER[currentUsername] };
+                    if (window.DB_ROLES_BY_USER && window.DB_ROLES_BY_USER[currentUsername]) {
+                        ROLES = window.DB_ROLES_BY_USER[currentUsername];
+                    }
+                    if (window.DB_SHIFTS_BY_USER && window.DB_SHIFTS_BY_USER[currentUsername]) {
+                        Object.assign(SHIFTS, window.DB_SHIFTS_BY_USER[currentUsername]);
+                    }
 
                     // AL INGRESAR CON ÉXITO: ESTABLECER MODO CLARO DE FORMA PREDETERMINADA
                     applyTheme(false);
@@ -810,12 +823,145 @@
             });
         }
 
+        function setHistoryStatus(message, state = "neutral") {
+            const el = document.getElementById("history-sync-status");
+            if (!el) return;
+            const styles = {
+                neutral: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+                loading: "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300",
+                success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+                error: "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300"
+            };
+            el.className = "ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 " + (styles[state] || styles.neutral);
+            el.textContent = "● Historial: " + message;
+        }
+
+        function currentPeriod() {
+            return document.getElementById("month-picker").value;
+        }
+
+        function historyRowsFromResponse(json) {
+            if (Array.isArray(json)) return json;
+            if (!json || typeof json !== "object") return [];
+            return json.data || json.records || json.rows || json.historial || [];
+        }
+
+        function normalizeHistoryRow(row) {
+            if (Array.isArray(row)) {
+                return {
+                    dia: row[3], fechaTurno: row[4], idEmpleado: row[5],
+                    empleado: row[6], rol: row[7], codigoTurno: row[8],
+                    descripcion: row[9], horas: row[10]
+                };
+            }
+            return {
+                dia: row.dia ?? row.DIA,
+                fechaTurno: row.fechaTurno ?? row.FECHA_TURNO,
+                idEmpleado: row.idEmpleado ?? row.ID_EMPLEADO,
+                empleado: row.empleado ?? row.EMPLEADO,
+                rol: row.rol ?? row.ROL,
+                codigoTurno: row.codigoTurno ?? row.CODIGO_TURNO,
+                descripcion: row.descripcion ?? row.DESCRIPCION,
+                horas: row.horas ?? row.HORAS
+            };
+        }
+
+        async function loadScheduleHistory() {
+            if (!currentUsername || !currentPeriod()) return false;
+            historyLoading = true;
+            historyReady = false;
+            setHistoryStatus("cargando…", "loading");
+            try {
+                const url = new URL(HISTORY_APPS_SCRIPT_URL);
+                url.searchParams.set("action", "load");
+                url.searchParams.set("usuario", currentUsername);
+                url.searchParams.set("periodo", currentPeriod());
+                const json = await jsonpRequest(url.toString());
+                if (json && json.success === false) throw new Error(json.message || "El servidor rechazó la consulta");
+                const rows = historyRowsFromResponse(json).map(normalizeHistoryRow);
+                rows.forEach(item => {
+                    const rawDate = String(item.fechaTurno || "");
+                    const match = rawDate.match(/(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})/);
+                    const dayValue = match ? Number(match[3]) : Number(item.dia);
+                    const empId = Number(item.idEmpleado);
+                    const code = String(item.codigoTurno || "LIBRE").trim().toUpperCase();
+                    if (dayValue && scheduleData[dayValue] && EMPLOYEES.some(e => Number(e.id) === empId)) {
+                        scheduleData[dayValue][empId] = SHIFTS[code] ? code : "LIBRE";
+                    }
+                });
+                if (rows.length === 0) {
+                    populateSampleData();
+                    historyReady = true;
+                    saveWholeSchedule();
+                } else {
+                    Object.keys(scheduleData).forEach(day => {
+                        EMPLOYEES.forEach(emp => {
+                            const cell = document.getElementById(`cell-${day}-${emp.id}`);
+                            const code = scheduleData[day][emp.id] || "LIBRE";
+                            if (cell) cell.innerHTML = renderCellContent(SHIFTS[code] || SHIFTS.LIBRE);
+                        });
+                    });
+                    calculateTotals();
+                    validateCoverage();
+                    historyReady = true;
+                }
+                setHistoryStatus(rows.length ? "sincronizado" : "nuevo período guardado", "success");
+                return true;
+            } catch (error) {
+                console.error("No se pudo cargar el historial:", error);
+                setHistoryStatus("sin conexión", "error");
+                return false;
+            } finally {
+                historyLoading = false;
+            }
+        }
+
+        function saveScheduleCell(day, empId, shiftCode) {
+            if (!historyReady || !currentUsername) return;
+            const emp = EMPLOYEES.find(e => Number(e.id) === Number(empId));
+            if (!emp) return;
+            const [year, month] = currentPeriod().split("-").map(Number);
+            const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const shift = SHIFTS[shiftCode] || SHIFTS.LIBRE;
+            const payload = {
+                action: "save",
+                usuario: currentUsername,
+                periodo: currentPeriod(),
+                dia: DAY_NAMES[new Date(year, month - 1, day).getDay()],
+                fechaTurno: date,
+                idEmpleado: emp.id,
+                empleado: emp.name,
+                rol: emp.role || "-",
+                codigoTurno: shift.code,
+                descripcion: shift.label,
+                horas: Number(shift.hours) || 0
+            };
+            // Serializa los envíos para mantener el orden de versiones.
+            historySaveQueue = historySaveQueue.then(async () => {
+                setHistoryStatus("guardando…", "loading");
+                const response = await fetch(HISTORY_APPS_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                // no-cors no permite leer la respuesta HTTP; el envío se marca como enviado,
+                // pero la confirmación definitiva debe revisarse en la hoja de historial.
+                setHistoryStatus("envío enviado; verifica la hoja", "success");
+            }).catch(error => {
+                console.error("Error al enviar horario:", error);
+                setHistoryStatus("error al guardar", "error");
+            });
+        }
+
+        function saveWholeSchedule() {
+            if (!historyReady) return;
+            Object.keys(scheduleData).forEach(day => {
+                EMPLOYEES.forEach(emp => saveScheduleCell(Number(day), emp.id, scheduleData[day][emp.id] || "LIBRE"));
+            });
+        }
+
         function initTable() {
-            const selectedMonth = document.getElementById('month-picker').value;
-            if (scheduleMonthKey && scheduleMonthKey !== selectedMonth) saveScheduleForMonth(scheduleMonthKey);
-            const savedSchedule = loadScheduleForMonth(selectedMonth);
-            const hasSavedSchedule = Object.keys(savedSchedule).length > 0;
-            scheduleMonthKey = selectedMonth;
             const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
             const daysInMonth = new Date(year, month, 0).getDate();
 
@@ -861,7 +1007,7 @@
             });
 
             tbody.innerHTML = '';
-            scheduleData = savedSchedule || {};
+            scheduleData = {};
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month - 1, day);
@@ -869,7 +1015,7 @@
                 const isWeekend = (date.getDay() === 0 || date.getDay() === 6);
                 const isAsueto = isISSSHoliday(month, day);
 
-                scheduleData[day] = scheduleData[day] || {};
+                scheduleData[day] = {};
                 const tr = document.createElement('tr');
                 tr.className = `border-b border-slate-200 dark:border-slate-800/60 ${isWeekend ? 'bg-slate-200/50 dark:bg-slate-900/40' : 'hover:bg-slate-100/60 dark:hover:bg-slate-900/20'}`;
                 tr.id = `row-day-${day}`;
@@ -880,22 +1026,20 @@
                 tr.appendChild(dayTd);
 
                 EMPLOYEES.forEach(emp => {
-                    if (!scheduleData[day][emp.id] || !SHIFTS[scheduleData[day][emp.id]]) scheduleData[day][emp.id] = "LIBRE";
+                    scheduleData[day][emp.id] = "LIBRE";
                     const td = document.createElement('td');
                     td.id = `cell-${day}-${emp.id}`;
                     td.className = "p-0.5 border-r border-slate-200 dark:border-slate-800/40 cursor-pointer hover:opacity-80 transition-all";
                     td.onclick = () => openEditModal(day, emp.id);
-                    td.innerHTML = renderCellContent(SHIFTS[scheduleData[day][emp.id]] || SHIFTS["LIBRE"]);
+                    td.innerHTML = renderCellContent(SHIFTS["LIBRE"]);
                     tr.appendChild(td);
                 });
                 tbody.appendChild(tr);
             }
 
             renderFooterRow();
-            if (hasSavedSchedule) {
-                EMPLOYEES.forEach(emp => updateEmployeeColumnUI(emp.id));
-                calculateTotals(); validateCoverage();
-            } else populateSampleData();
+            // Recupera el período del usuario activo; no aplicar datos de ejemplo antes de consultar.
+            loadScheduleHistory();
         }
 
         function onRoleChange(empId, newRole) {
@@ -905,7 +1049,12 @@
                 applyRoleLogicForEmployee(empId);
                 calculateTotals();
                 validateCoverage();
-                saveCurrentWorkspace();
+                // El cambio de rol regenera la columna y guarda sus días como nuevas versiones.
+                if (historyReady) {
+                    const [yy, mm] = currentPeriod().split("-").map(Number);
+                    const count = new Date(yy, mm, 0).getDate();
+                    for (let d = 1; d <= count; d++) saveScheduleCell(d, empId, scheduleData[d][empId]);
+                }
             }
         }
 
@@ -946,7 +1095,6 @@
                 } else scheduleData[d][emp.id] = isAsueto ? "ASUETO" : isWeekday ? dayShifts[(emp.id + d) % dayShifts.length] : "LIBRE";
             }
             updateEmployeeColumnUI(empId);
-            saveCurrentWorkspace();
         }
 
         function updateEmployeeColumnUI(empId) {
@@ -1007,7 +1155,7 @@
                 if (cell) cell.innerHTML = renderCellContent(SHIFTS[shiftKey]);
                 calculateTotals();
                 validateCoverage();
-                saveCurrentWorkspace();
+                saveScheduleCell(day, empId, shiftKey);
             }
             closeModal();
         }
@@ -1016,6 +1164,7 @@
             EMPLOYEES.forEach(emp => applyRoleLogicForEmployee(emp.id));
             calculateTotals();
             validateCoverage();
+            saveWholeSchedule();
         }
 
         function clearSchedule() {
@@ -1031,7 +1180,6 @@
             EMPLOYEES.forEach(emp => updateEmployeeColumnUI(emp.id));
             calculateTotals();
             validateCoverage();
-            saveCurrentWorkspace();
         }
 
         function populateSampleData() { EMPLOYEES.forEach(emp => applyRoleLogicForEmployee(emp.id)); calculateTotals(); validateCoverage(); }
@@ -1058,8 +1206,8 @@
         function validateCoverage() {
             const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
             const daysInMonth = new Date(year, month, 0).getDate();
-            const minMorning = Math.max(0, Number.parseInt(document.getElementById('min-morning-weekday').value, 10) || 0);
-            const minNight = Math.max(0, Number.parseInt(document.getElementById('min-night-daily').value, 10) || 0);
+            const minMorning = parseInt(document.getElementById('min-morning-weekday').value) || 3;
+            const minNight = parseInt(document.getElementById('min-night-daily').value) || 2;
             let warnings = 0;
 
             for (let d = 1; d <= daysInMonth; d++) {
@@ -1125,7 +1273,6 @@
                 return;
             }
 
-            if (DB_USERS[newUser]) { alert("Ese usuario ya existe."); return; }
             DB_USERS[newUser] = { password: newPass };
             if (!DB_EMPLOYEES_BY_USER[newUser]) {
                 DB_EMPLOYEES_BY_USER[newUser] = [];
@@ -1152,7 +1299,7 @@
                     <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                         <div class="flex items-center gap-2">
                             <span class="font-extrabold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">${user}</span>
-                            <span class="text-slate-500 dark:text-slate-400 text-[11px]">Credenciales configuradas</span>
+                            <span class="text-slate-600 dark:text-slate-400 text-[11px]">Clave: <strong class="text-slate-800 dark:text-slate-200">${DB_USERS[user].password}</strong></span>
                         </div>
                         <span class="text-[10px] bg-slate-200 dark:bg-slate-800 text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded-full font-semibold">${empCount} empleados</span>
                     </div>
@@ -1211,7 +1358,6 @@
             renderShiftLegend();
             renderShiftList();
             initTable();
-            saveCurrentWorkspace();
         }
 
         function saveShift() {
@@ -1244,7 +1390,6 @@
             renderShiftList();
             resetShiftForm();
             initTable();
-            saveCurrentWorkspace();
         }
 
         function renderShiftList() {
@@ -1372,7 +1517,6 @@
 
             renderEmployeeList();
             initTable();
-            saveCurrentWorkspace();
         }
 
         function saveEmployee() {
@@ -1414,7 +1558,6 @@
             resetEmployeeForm();
             renderEmployeeList();
             initTable();
-            saveCurrentWorkspace();
         }
 
         // GESTIÓN DE ROLES MODAL
@@ -1529,7 +1672,6 @@
             renderRoleList();
             populateEmployeeRoleSelect();
             initTable();
-            saveCurrentWorkspace();
         }
 
         function renderRoleList() {
@@ -1565,88 +1707,16 @@
             lucide.createIcons();
         }
 
-        // PERSISTENCIA LOCAL POR USUARIO Y MES (sin sustituir Google Sheets)
-        function workspaceKey(user) { return `isss-control-v2:${user}`; }
-        function scheduleKey(user, month) { return `${workspaceKey(user)}:schedule:${month}`; }
-        function loadScheduleForMonth(month) {
-            if (!currentUsername) return {};
-            try { return JSON.parse(localStorage.getItem(scheduleKey(currentUsername, month)) || "{}"); }
-            catch (e) { console.warn("No se pudo leer el horario guardado", e); return {}; }
-        }
-        function saveScheduleForMonth(month) {
-            if (!currentUsername || !month) return;
-            try { localStorage.setItem(scheduleKey(currentUsername, month), JSON.stringify(scheduleData)); }
-            catch (e) { console.warn("No se pudo guardar el horario local", e); }
-        }
-        function saveCurrentWorkspace() {
-            if (!currentUsername) return;
-            if (scheduleMonthKey) saveScheduleForMonth(scheduleMonthKey);
-            DB_EMPLOYEES_BY_USER[currentUsername] = EMPLOYEES;
-            DB_ROLES_BY_USER[currentUsername] = ROLES;
-            DB_SHIFTS_BY_USER[currentUsername] = SHIFTS;
-            try {
-                localStorage.setItem(workspaceKey(currentUsername), JSON.stringify({ employees: EMPLOYEES, roles: ROLES, shifts: SHIFTS }));
-            } catch (e) { console.warn("No se pudo guardar el espacio de trabajo", e); }
-        }
-        function loadUserWorkspace(user, mergeOnly = false) {
-            try {
-                const saved = JSON.parse(localStorage.getItem(workspaceKey(user)) || "null");
-                if (saved) {
-                    if (!mergeOnly && Array.isArray(saved.employees)) DB_EMPLOYEES_BY_USER[user] = saved.employees;
-                    if (Array.isArray(saved.roles)) DB_ROLES_BY_USER[user] = saved.roles;
-                    if (saved.shifts && typeof saved.shifts === "object") DB_SHIFTS_BY_USER[user] = saved.shifts;
-                }
-            } catch (e) { console.warn("Datos locales inválidos; se usarán los datos disponibles", e); }
-        }
-        window.addEventListener('beforeunload', saveCurrentWorkspace);
-        document.getElementById('min-morning-weekday').addEventListener('change', validateCoverage);
-        document.getElementById('min-night-daily').addEventListener('change', validateCoverage);
-
-        async function exportPDF() {
-            const table = document.getElementById('schedule-table');
-            const scroller = table.parentElement;
-            const oldMaxHeight = scroller.style.maxHeight;
-            scroller.style.maxHeight = 'none';
-            try {
-                if (!window.jspdf || !window.jspdf.jsPDF) throw new Error('No se pudo cargar el generador PDF. Verifica tu conexión a Internet.');
-                const canvas = await html2canvas(table, { scale: 2, useCORS: true, backgroundColor: isDarkMode ? '#030712' : '#ffffff', windowWidth: Math.max(document.documentElement.clientWidth, table.scrollWidth) });
-                const pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-                const margin = 8, pageW = pdf.internal.pageSize.getWidth() - margin * 2, pageH = pdf.internal.pageSize.getHeight() - margin * 2;
-                const imgW = pageW, imgH = canvas.height * imgW / canvas.width;
-                const pageCanvas = document.createElement('canvas');
-                const ctx = pageCanvas.getContext('2d');
-                const sliceHeight = Math.floor(canvas.width * pageH / pageW);
-                let offset = 0, page = 0;
-                while (offset < canvas.height) {
-                    pageCanvas.width = canvas.width; pageCanvas.height = Math.min(sliceHeight, canvas.height - offset);
-                    ctx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
-                    ctx.drawImage(canvas, 0, offset, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
-                    if (page > 0) pdf.addPage();
-                    const slice = pageCanvas.toDataURL('image/png');
-                    const sliceH = pageCanvas.height * imgW / pageCanvas.width;
-                    pdf.addImage(slice, 'PNG', margin, margin, imgW, sliceH, undefined, 'FAST');
-                    offset += pageCanvas.height; page++;
-                }
-                const month = document.getElementById('month-picker').value || 'periodo';
-                pdf.save(`Horario_ISSS_${month}_${currentUsername || 'usuario'}.pdf`);
-            } catch (err) {
-                console.error('Error al exportar PDF:', err);
-                alert(err.message || 'No se pudo generar el PDF.');
-            } finally { scroller.style.maxHeight = oldMaxHeight; }
-        }
-
         function exportImage() {
             const tableElement = document.getElementById('schedule-table');
             const scrollContainer = tableElement.parentElement;
             const originalMaxHeight = scrollContainer.style.maxHeight;
             scrollContainer.style.maxHeight = 'none';
 
-            html2canvas(tableElement, {
-                scale: Math.min(3, Math.max(2, window.devicePixelRatio || 2)),
-                useCORS: true,
-                backgroundColor: isDarkMode ? "#030712" : "#ffffff",
-                windowWidth: Math.max(document.documentElement.clientWidth, tableElement.scrollWidth),
-                scrollX: 0, scrollY: 0
+            html2canvas(tableElement, { 
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: isDarkMode ? "#030712" : "#ffffff" 
             }).then(canvas => {
                 scrollContainer.style.maxHeight = originalMaxHeight;
                 const link = document.createElement("a");
