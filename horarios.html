@@ -647,7 +647,7 @@
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeObkBJ4l6zMu-qS4MwLxNw2s9iXfXSdazLZRje4MK7Uwu1zuMc5ydlD3kFBeIvJG3AP6BUxErdtPA/pub?output=csv";
         const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweZbVptsmlrkcM2-fVV_708z0B64-J4AwwdhG8dhxBLzlzMcjKbVAVIgbdZ_9QQRQr/exec";
         // Servicio independiente: historial de horarios (NO reemplaza la hoja principal).
-        const HISTORY_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaG9g95f_GLedEkz400p1mgN_fqX-N0sX-9-ooV-5mbubqT0CmmqE6HWl4_nra2nkH_Q/exec";
+        const HISTORY_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFWHz_LtsJLV7kJuKU195imWAjo9XQQ_46fHSHwxIe4ZHBuPOJViwutiqnPzp3yea0/exec";
         let historyLoading = false;
         let historyReady = false;
         let historySaveQueue = Promise.resolve();
@@ -929,8 +929,11 @@
         function logout() {
             historyReady = false;
             historyLoading = false;
-            currentUsername = null;
+            currentUsername = "";
+            EMPLOYEES = [];
             historyLastSnapshot = "";
+            const passwordField = document.getElementById("loginPassword");
+            if (passwordField) passwordField.value = "";
             const loginOverlay = document.querySelector('#login-overlay');
             const appContainer = document.querySelector('#app-container');
             
@@ -976,6 +979,13 @@
             return document.getElementById("month-picker").value;
         }
 
+        // Google Sheets puede devolver códigos numéricos sin sus ceros iniciales.
+        // Esta normalización mantiene los códigos de cuatro dígitos consistentes.
+        function normalizeShiftCode(value) {
+            const code = String(value ?? "").trim().toUpperCase();
+            return /^\d+$/.test(code) ? code.padStart(4, "0") : code;
+        }
+
         function historyRowsFromResponse(json) {
             if (Array.isArray(json)) return json;
             if (!json || typeof json !== "object") return [];
@@ -986,8 +996,8 @@
             if (Array.isArray(row)) {
                 return {
                     dia: row[3], fechaTurno: row[4], idEmpleado: row[5],
-                    empleado: row[6], rol: row[7], codigoTurno: row[8],
-                    descripcion: row[9], horas: row[10]
+                    empleado: row[6], rol: row[7], codigoTurno: normalizeShiftCode(row[8]),
+                    descripcion: row[9], horas: row[10], version: row[11]
                 };
             }
             return {
@@ -996,9 +1006,10 @@
                 idEmpleado: row.idEmpleado ?? row.ID_EMPLEADO,
                 empleado: row.empleado ?? row.EMPLEADO,
                 rol: row.rol ?? row.ROL,
-                codigoTurno: row.codigoTurno ?? row.CODIGO_TURNO,
+                codigoTurno: normalizeShiftCode(row.codigoTurno ?? row.CODIGO_TURNO),
                 descripcion: row.descripcion ?? row.DESCRIPCION,
-                horas: row.horas ?? row.HORAS
+                horas: row.horas ?? row.HORAS,
+                version: row.version ?? row.VERSION
             };
         }
 
@@ -1033,35 +1044,23 @@
             };
         }
 
-        function historyRowsFromResponse(json) {
-            if (Array.isArray(json)) return json;
-            if (!json || typeof json !== "object") return [];
-            return json.data || json.records || json.rows || json.historial || [];
-        }
-
-        function normalizeHistoryRow(row) {
-            if (Array.isArray(row)) {
-                return { dia: row[3], fechaTurno: row[4], idEmpleado: row[5], empleado: row[6], rol: row[7], codigoTurno: row[8], descripcion: row[9], horas: row[10], version: row[11] };
-            }
-            return {
-                dia: row.dia ?? row.DIA,
-                fechaTurno: row.fechaTurno ?? row.FECHA_TURNO,
-                idEmpleado: row.idEmpleado ?? row.ID_EMPLEADO,
-                empleado: row.empleado ?? row.EMPLEADO,
-                rol: row.rol ?? row.ROL,
-                codigoTurno: row.codigoTurno ?? row.CODIGO_TURNO,
-                descripcion: row.descripcion ?? row.DESCRIPCION,
-                horas: row.horas ?? row.HORAS,
-                version: row.version ?? row.VERSION
-            };
-        }
-
         async function requestHistoryLoad(username = currentUsername, period = currentPeriod()) {
+            const cleanUser = String(username || "").trim().toLocaleLowerCase("es");
+            const cleanPeriod = String(period || "").trim();
+            if (!cleanUser) throw new Error("No hay un usuario activo para consultar el historial.");
+            if (!/^\\d{4}-(0[1-9]|1[0-2])$/.test(cleanPeriod)) {
+                throw new Error("El período debe tener el formato AAAA-MM (por ejemplo, 2026-11).");
+            }
             const url = new URL(HISTORY_APPS_SCRIPT_URL);
             url.searchParams.set("action", "load");
-            url.searchParams.set("usuario", username);
-            url.searchParams.set("periodo", period);
-            return jsonpRequest(url.toString());
+            url.searchParams.set("usuario", cleanUser);
+            url.searchParams.set("periodo", cleanPeriod);
+            url.searchParams.set("_", String(Date.now()));
+            const result = await jsonpRequest(url.toString(), 20000);
+            if (!result || typeof result !== "object") {
+                throw new Error("El servicio de historial no devolvió una respuesta válida. Revisa la URL publicada.");
+            }
+            return result;
         }
 
         async function loadScheduleHistory() {
@@ -1089,7 +1088,7 @@
 
                 latest.forEach((item, key) => {
                     const [day, empId] = key.split("|").map(Number);
-                    const code = String(item.codigoTurno || "LIBRE").trim().toUpperCase();
+                    const code = normalizeShiftCode(item.codigoTurno || "LIBRE");
                     scheduleData[day][empId] = SHIFTS[code] ? code : "LIBRE";
                 });
 
@@ -1125,6 +1124,7 @@
 
         function enqueueHistorySave(records, snapshot) {
             if (!historyReady || !currentUsername || !records.length) return Promise.resolve(false);
+
             const saveUser = currentUsername;
             const savePeriod = currentPeriod();
             const payload = {
@@ -1135,46 +1135,82 @@
                 records
             };
 
+            // Evita que dos lotes simultáneos se pisen. Primero se envía el lote;
+            // después se consulta el GET varias veces para dar tiempo a Sheets a reflejarlo.
             historySaveQueue = historySaveQueue.then(async () => {
                 setHistoryStatus("guardando…", "loading");
+
+                const expected = new Map(records.map(record => [
+                    `${record.fechaTurno}|${Number(record.idEmpleado)}`,
+                    normalizeShiftCode(record.codigoTurno)
+                ]));
+
+                async function verifySavedRecords() {
+                    const check = await requestHistoryLoad(saveUser, savePeriod);
+                    if (check && check.success === false) {
+                        throw new Error(check.message || "El servidor rechazó la verificación");
+                    }
+
+                    const savedRows = historyRowsFromResponse(check).map(normalizeHistoryRow);
+                    const saved = new Map();
+
+                    savedRows.forEach(row => {
+                        const date = normalizeDateForHistory(row.fechaTurno, row.dia, savePeriod);
+                        saved.set(
+                            `${date}|${Number(row.idEmpleado)}`,
+                            normalizeShiftCode(row.codigoTurno)
+                        );
+                    });
+
+                    for (const [key, code] of expected.entries()) {
+                        if (saved.get(key) !== code) return false;
+                    }
+                    return true;
+                }
+
                 let lastError = null;
                 for (let attempt = 1; attempt <= historyRetryCount; attempt++) {
                     try {
                         await fetch(HISTORY_APPS_SCRIPT_URL, {
                             method: "POST",
                             mode: "no-cors",
+                            cache: "no-store",
                             headers: { "Content-Type": "text/plain;charset=utf-8" },
                             body: JSON.stringify(payload)
                         });
 
-                        // POST no-cors no permite leer la respuesta. Verificamos el estado
-                        // consultando el historial y comparando los valores enviados.
-                        await new Promise(resolve => setTimeout(resolve, 1200 + attempt * 1200));
-                        const check = await requestHistoryLoad(saveUser, savePeriod);
-                        if (check && check.success === false) throw new Error(check.message || "No se pudo verificar el guardado");
-                        const savedRows = historyRowsFromResponse(check).map(normalizeHistoryRow);
-                        const saved = new Map();
-                        savedRows.forEach(row => {
-                            const date = normalizeDateForHistory(row.fechaTurno, row.dia, savePeriod);
-                            saved.set(`${date}|${Number(row.idEmpleado)}`, String(row.codigoTurno || "").toUpperCase());
-                        });
-                        const allConfirmed = records.every(record =>
-                            saved.get(`${record.fechaTurno}|${Number(record.idEmpleado)}`) === String(record.codigoTurno).toUpperCase()
-                        );
-                        if (!allConfirmed) throw new Error("El servidor todavía no refleja todos los cambios");
-                        historyLastSnapshot = snapshot || JSON.stringify({ usuario: saveUser, periodo: savePeriod });
-                        setHistoryStatus("guardado y verificado", "success");
-                        return true;
+                        // El POST en no-cors no expone su respuesta. No reenviamos
+                        // inmediatamente: consultamos el historial hasta 5 veces.
+                        let confirmed = false;
+                        for (let poll = 0; poll < 5; poll++) {
+                            await new Promise(resolve => setTimeout(resolve, 1200 + poll * 700));
+                            if (await verifySavedRecords()) {
+                                confirmed = true;
+                                break;
+                            }
+                        }
+
+                        if (confirmed) {
+                            historyLastSnapshot = snapshot || scheduleSnapshot();
+                            setHistoryStatus("guardado y verificado", "success");
+                            return true;
+                        }
+
+                        throw new Error("El historial todavía no refleja todos los turnos enviados");
                     } catch (error) {
                         lastError = error;
-                        console.warn(`Intento ${attempt} de guardado fallido:`, error);
-                        if (attempt < historyRetryCount) await new Promise(resolve => setTimeout(resolve, 800 * attempt));
+                        console.warn(`Intento ${attempt} de guardado/verificación fallido:`, error);
+                        if (attempt < historyRetryCount) {
+                            await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
+                        }
                     }
                 }
+
                 console.error("No se pudo confirmar el guardado del historial:", lastError);
-                setHistoryStatus("no se pudo confirmar; reintenta guardar", "error");
+                setHistoryStatus("no se pudo confirmar; revisa la implementación del historial", "error");
                 return false;
             });
+
             return historySaveQueue;
         }
 
@@ -1185,7 +1221,10 @@
         }
 
         function saveWholeSchedule() {
-            if (!historyReady || !currentUsername) return;
+            if (!historyReady || historyLoading || !currentUsername) {
+                setHistoryStatus("esperando carga del período", "loading");
+                return Promise.resolve(false);
+            }
             const records = [];
             Object.keys(scheduleData).forEach(day => {
                 EMPLOYEES.forEach(emp => {
