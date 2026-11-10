@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
     <meta name="description" content="Sistema de control y planificación de horarios del personal ISSS.">
-    <title>Sistema de Control de Horarios ISSS - Acceso Seguro</title>
+    <title>Sistema de Control de Horarios ISSS / MINSAL - Acceso</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -250,14 +250,14 @@
                     <span>Acceso al Sistema</span>
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 </h2>
-                <p class="text-xs text-slate-400 mb-6">Ingrese su código de usuario y contraseña autorizados</p>
+                <p class="text-xs text-slate-400 mb-6">Ingrese su usuario y contraseña</p>
 
                 <form id="loginForm" class="space-y-4">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Usuario</label>
                         <div class="relative flex items-center">
                             <i data-lucide="user" class="w-4 h-4 text-sky-400 absolute left-3"></i>
-                            <input id="loginUser" type="text" value="krissia" placeholder="Ej: krissia" class="input-neo w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold" required>
+                            <input id="loginUser" type="text" placeholder="Usuario" class="input-neo w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold" required autocomplete="off">
                         </div>
                     </div>
 
@@ -265,7 +265,7 @@
                         <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Contraseña</label>
                         <div class="relative flex items-center">
                             <i data-lucide="lock" class="w-4 h-4 text-sky-400 absolute left-3"></i>
-                            <input id="loginPassword" type="password" value="1902" placeholder="••••••••" class="input-neo w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold" required>
+                            <input id="loginPassword" type="password" placeholder="Contraseña" class="input-neo w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold" required autocomplete="new-password">
                         </div>
                     </div>
 
@@ -284,11 +284,25 @@
                     </button>
                 </form>
 
-                <div class="mt-6 pt-4 border-t border-slate-800 text-center">
-                    <p class="text-[11px] text-slate-400">¿No tienes cuenta? <span class="text-sky-400 font-semibold cursor-pointer" onclick="alert('Acceso restringido. Por favor contacte con el Administrador para crear su usuario.')">Contactar Administrador</span></p>
-                </div>
+
             </section>
         </div>
+    </div>
+
+    <!-- SELECTOR DE INSTITUCIÓN DESPUÉS DEL LOGIN -->
+    <div id="institution-picker" class="fixed inset-0 z-[80] hidden items-center justify-center p-4 bg-slate-950/95 backdrop-blur-xl">
+      <section class="login-card-neo w-full max-w-md rounded-3xl p-7 text-white">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="p-3 rounded-2xl bg-sky-500/15 text-sky-300"><i data-lucide="building-2" class="w-7 h-7"></i></div>
+          <div><h2 class="text-xl font-black">Seleccionar institución</h2><p class="text-xs text-slate-400">Elige en cuál deseas trabajar en esta sesión.</p></div>
+        </div>
+        <p class="text-xs text-slate-300 mb-4">Puedes cambiar de institución cuando quieras sin cerrar sesión.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button type="button" onclick="activateInstitution('ISSS')" class="rounded-2xl border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500/20 p-5 text-left transition"><span class="block text-2xl font-black text-sky-300">ISSS</span><span class="block text-xs text-slate-400 mt-1">Entrar al espacio ISSS</span></button>
+          <button type="button" onclick="activateInstitution('MINSAL')" class="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 p-5 text-left transition"><span class="block text-2xl font-black text-emerald-300">MINSAL</span><span class="block text-xs text-slate-400 mt-1">Entrar al espacio MINSAL</span></button>
+        </div>
+        <button type="button" onclick="logout()" class="w-full mt-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-semibold">Cerrar sesión</button>
+      </section>
     </div>
 
     <!-- ================= APLICACIÓN PRINCIPAL ================= -->
@@ -304,19 +318,16 @@
                     </div>
                     <div>
                         <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">Control de Horarios ISSS</h1>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Usuario activo: <span id="user-display" class="text-sky-600 dark:text-sky-400 font-bold uppercase"></span> <span id="history-sync-status" class="ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">● Historial: pendiente</span>
-                        <button type="button" onclick="retrySaveSchedule()" class="ml-1 text-[10px] text-sky-600 dark:text-sky-400 hover:underline" title="Volver a guardar y verificar">Reintentar guardado</button></p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Usuario activo: <span id="user-display" class="text-sky-600 dark:text-sky-400 font-bold uppercase"></span> · <span id="institution-display" class="text-emerald-600 dark:text-emerald-400 font-bold">Sin institución</span></p>
                     </div>
                 </div>
 
                 <!-- Botones de Acción Principal -->
                 <div class="flex items-center space-x-2">
+                    <button type="button" id="admin-users-button" onclick="openUserManager()" class="hidden px-3 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 rounded-xl text-xs font-semibold">Administrar usuarios</button>
+                    <button type="button" onclick="showInstitutionPicker(true)" class="px-3 py-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-700 dark:text-sky-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition" title="Volver a seleccionar institución"><i data-lucide="building-2" class="w-4 h-4"></i><span>Cambiar institución</span></button>
                     <button id="btn-theme-toggle" onclick="toggleTheme()" class="p-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-amber-400 rounded-xl transition shadow-sm" title="Cambiar Tema (Claro / Oscuro)">
                         <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
-                    </button>
-                    <button id="btn-admin-users" onclick="openUserManager()" class="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
-                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i>
-                        <span>Gestionar Cuentas</span>
                     </button>
                     <button onclick="openEmployeeManager()" class="px-3 py-2 bg-slate-200 dark:bg-slate-900 hover:bg-slate-300 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
                         <i data-lucide="users" class="w-4 h-4 text-sky-500"></i>
@@ -646,8 +657,78 @@
         // URLs DE GOOGLE SHEETS / APPS SCRIPT PUBLICADOS
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeObkBJ4l6zMu-qS4MwLxNw2s9iXfXSdazLZRje4MK7Uwu1zuMc5ydlD3kFBeIvJG3AP6BUxErdtPA/pub?output=csv";
         const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweZbVptsmlrkcM2-fVV_708z0B64-J4AwwdhG8dhxBLzlzMcjKbVAVIgbdZ_9QQRQr/exec";
-        // Servicio independiente: historial de horarios (NO reemplaza la hoja principal).
-        const HISTORY_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFWHz_LtsJLV7kJuKU195imWAjo9XQQ_46fHSHwxIe4ZHBuPOJViwutiqnPzp3yea0/exec";
+
+        // API POST segura para Apps Script mediante formulario oculto + postMessage.
+        let isssApiCounter = 0;
+        const isssPendingRequests = new Map();
+        window.addEventListener("message", event => {
+            // Apps Script puede responder desde un origen googleusercontent.com
+            // y la navegación/redirección puede cambiar event.source. Validamos
+            // el origen de Google y el requestId aleatorio de la petición pendiente.
+            const trustedOrigin = event.origin === "https://script.google.com" ||
+                (event.origin.startsWith("https://") && event.origin.endsWith(".googleusercontent.com"));
+            if (!trustedOrigin) return;
+            const msg = event.data;
+            if (!msg || typeof msg !== "object" || !msg.requestId) return;
+            const pending = isssPendingRequests.get(msg.requestId);
+            if (!pending) return;
+            clearTimeout(pending.timer);
+            isssPendingRequests.delete(msg.requestId);
+            pending.cleanup();
+            const result = msg.result;
+            if (!result || result.status !== "success") {
+                pending.reject(new Error(result?.message || "La operación fue rechazada."));
+            } else {
+                pending.resolve(result);
+            }
+        });
+        function apiPost(payload, timeoutMs = 30000) {
+            return new Promise((resolve, reject) => {
+                const requestId = "req_" + Date.now() + "_" + (++isssApiCounter);
+                const frameName = "isss_api_frame_" + isssApiCounter;
+                const frame = document.createElement("iframe");
+                frame.name = frameName;
+                frame.style.display = "none";
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = GOOGLE_APPS_SCRIPT_URL;
+                form.target = frameName;
+                form.style.display = "none";
+                const field = document.createElement("input");
+                field.type = "hidden";
+                field.name = "payload";
+                field.value = JSON.stringify({...payload, requestId});
+                form.appendChild(field);
+                let settled = false;
+                const cleanup = () => {
+                    try { form.remove(); } catch (_) {}
+                    // Dejar el iframe unos milisegundos después de recibir la respuesta.
+                    setTimeout(() => { try { frame.remove(); } catch (_) {} }, 50);
+                };
+                const timer = setTimeout(() => {
+                    if (settled) return;
+                    settled = true;
+                    isssPendingRequests.delete(requestId);
+                    cleanup();
+                    reject(new Error("El servidor no devolvió confirmación. Comprueba que implementaste la versión nueva de Apps Script."));
+                }, timeoutMs);
+                isssPendingRequests.set(requestId, {
+                    resolve: value => { if (settled) return; settled = true; resolve(value); },
+                    reject: error => { if (settled) return; settled = true; reject(error); },
+                    cleanup, timer, frame
+                });
+                document.body.append(frame, form);
+                try { form.submit(); }
+                catch (error) {
+                    clearTimeout(timer);
+                    isssPendingRequests.delete(requestId);
+                    cleanup();
+                    reject(error);
+                }
+            });
+        }
+
+                // Historial antiguo desactivado por solicitud del administrador.
         let historyLoading = false;
         let historyReady = false;
         let historySaveQueue = Promise.resolve();
@@ -674,6 +755,7 @@
         };
 
         let currentUsername = "";
+        let currentInstitution = "";
         let EMPLOYEES = [];
 
         let SHIFTS = {
@@ -808,7 +890,7 @@
                 // Hoja principal: A-B usuarios; D-G personal; I-K roles; M-P turnos.
                 const user = key(cols[0]);
                 const password = clean(cols[1]);
-                if (user && password) parsedUsers[user] = { password };
+                if (user) parsedUsers[user] = { password: "" };
 
                 const employeeUser = key(cols[3]);
                 const employeeId = Number.parseInt(clean(cols[4]), 10);
@@ -860,90 +942,139 @@
             return true;
         }
 
+        let currentSessionId = "";
+        let sessionHeartbeatTimer = null;
+        let sessionHeartbeatBusy = false;
+
+        function startSessionHeartbeat() {
+            stopSessionHeartbeat();
+            sessionHeartbeatTimer = setInterval(async () => {
+                if (!currentUsername || !currentSessionId || sessionHeartbeatBusy) return;
+                sessionHeartbeatBusy = true;
+                try {
+                    await apiPost({action:"heartbeat", usuario:currentUsername, sessionId:currentSessionId});
+                } catch (err) {
+                    stopSessionHeartbeat();
+                    alert("Tu sesión dejó de estar activa: " + (err.message || "No se pudo renovar.") + " Vuelve a iniciar sesión.");
+                    logout(false);
+                } finally { sessionHeartbeatBusy = false; }
+            }, 45000);
+        }
+        function stopSessionHeartbeat() {
+            if (sessionHeartbeatTimer) clearInterval(sessionHeartbeatTimer);
+            sessionHeartbeatTimer = null;
+        }
+
         function setupLoginLogic() {
             const loginForm = document.querySelector('#loginForm');
             const loginOverlay = document.querySelector('#login-overlay');
-            const appContainer = document.querySelector('#app-container');
             const loginNotice = document.querySelector('#loginNotice');
-
             loginForm.addEventListener('submit', async e => {
                 e.preventDefault();
-                const usernameInput = document.querySelector('#loginUser').value.trim().toLocaleLowerCase("es");
-                const passwordInput = document.querySelector('#loginPassword').value;
-
-                loginNotice.innerText = "Conectando con la hoja principal...";
-                const submitButton = loginForm.querySelector('button[type="submit"]');
-                if (submitButton) submitButton.disabled = true;
-
+                const entered = document.querySelector('#loginUser').value.trim().toLocaleLowerCase("es");
+                const password = document.querySelector('#loginPassword').value;
+                const button = loginForm.querySelector('button[type="submit"]');
+                loginNotice.textContent = "Validando acceso...";
+                if (button) button.disabled = true;
                 try {
-                    const catalogOk = catalogLoadPromise ? await catalogLoadPromise : false;
-                    if (!catalogOk) {
-                        throw new Error("No se pudo conectar con la hoja principal de usuarios.");
-                    }
-                    loginNotice.innerText = "";
-
-                    if (DB_USERS[usernameInput] && String(DB_USERS[usernameInput].password) === String(passwordInput)) {
-                    currentUsername = usernameInput;
-                    EMPLOYEES = DB_EMPLOYEES_BY_USER[currentUsername] || [];
-
-                    // Cargar roles y turnos del usuario si existen
-                    if (window.DB_ROLES_BY_USER && window.DB_ROLES_BY_USER[currentUsername]) {
-                        ROLES = window.DB_ROLES_BY_USER[currentUsername];
-                    }
-                    if (window.DB_SHIFTS_BY_USER && window.DB_SHIFTS_BY_USER[currentUsername]) {
-                        Object.assign(SHIFTS, window.DB_SHIFTS_BY_USER[currentUsername]);
-                    }
-
-                    // AL INGRESAR CON ÉXITO: ESTABLECER MODO CLARO DE FORMA PREDETERMINADA
+                    const result = await apiPost({action:"login", usuario:entered, contrasena:password});
+                    currentUsername = result.usuario;
+                    currentSessionId = result.sessionId;
+                    const adminBtn = document.getElementById("admin-users-button");
+                    if (adminBtn) adminBtn.classList.toggle("hidden", currentUsername !== "carlos");
+                    currentInstitution = "";
                     applyTheme(false);
-
-                    loginOverlay.style.opacity = '0';
-                    loginOverlay.style.transform = 'scale(1.05)';
-                    
+                    loginOverlay.style.opacity = "0";
+                    loginOverlay.style.transform = "scale(1.05)";
                     setTimeout(() => {
-                        loginOverlay.style.display = 'none';
-                        appContainer.classList.remove('hidden');
-                        appContainer.classList.add('flex');
-                        document.getElementById('user-display').innerText = currentUsername;
-                        
-                        renderShiftLegend();
-                        initTable();
-                        lucide.createIcons();
-                    }, 400);
-                    } else {
-                        loginNotice.innerText = Object.keys(DB_USERS).length <= 1
-                            ? "No se pudo cargar la lista de usuarios. Verifique la conexión con la hoja principal y vuelva a intentar."
-                            : "Usuario o contraseña incorrectos.";
-                    }
-                } catch (error) {
-                    console.error("Error durante el inicio de sesión:", error);
-                    loginNotice.innerText = error && error.message
-                        ? "No se pudo cargar el catálogo principal: " + error.message
-                        : "No se pudo validar la cuenta. Intente nuevamente.";
+                        loginOverlay.style.display = "none";
+                        showInstitutionPicker(false);
+                    }, 350);
+                    loginNotice.textContent = "";
+                    document.querySelector('#loginPassword').value = "";
+                } catch (err) {
+                    loginNotice.textContent = err.message || "No se pudo validar la cuenta.";
                 } finally {
-                    if (submitButton) submitButton.disabled = false;
+                    if (button) button.disabled = false;
                 }
             });
         }
 
-        function logout() {
+        function showInstitutionPicker(returning = false) {
+            const appContainer = document.getElementById('app-container');
+            const picker = document.getElementById('institution-picker');
+            if (returning) {
+                appContainer.classList.remove('flex');
+                appContainer.classList.add('hidden');
+            }
+            picker.classList.remove('hidden');
+            picker.classList.add('flex');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        async function activateInstitution(institution) {
+            if (!["ISSS", "MINSAL"].includes(institution) || !currentUsername || !currentSessionId) return;
+            const buttons = document.querySelectorAll("#institution-picker button");
+            buttons.forEach(button => button.disabled = true);
+            try {
+                const confirmation = await apiPost({action:"confirmLogin", usuario:currentUsername, sessionId:currentSessionId, institucion:institution}, 30000);
+                currentInstitution = confirmation.institucion || institution;
+                startSessionHeartbeat();
+            } catch (err) {
+                buttons.forEach(button => button.disabled = false);
+                alert("No se pudo completar el acceso: " + (err.message || "Error de conexión") + ". La sesión pendiente caducará automáticamente; vuelve a intentarlo.");
+                currentUsername = ""; currentSessionId = ""; currentInstitution = "";
+                const picker = document.getElementById("institution-picker");
+                picker.classList.remove("flex"); picker.classList.add("hidden");
+                const overlay = document.getElementById("login-overlay");
+                overlay.style.display = "flex"; overlay.style.opacity = "1"; overlay.style.transform = "scale(1)";
+                return;
+            }
+            buttons.forEach(button => button.disabled = false);
+            const picker = document.getElementById("institution-picker");
+            picker.classList.remove("flex"); picker.classList.add("hidden");
+            const appContainer = document.getElementById("app-container");
+            appContainer.classList.remove("hidden"); appContainer.classList.add("flex");
+            const dataUser = currentUsername === "krissia"
+                ? (institution === "ISSS" ? "krissia" : "krissiaminsal")
+                : currentUsername;
+            EMPLOYEES = DB_EMPLOYEES_BY_USER[dataUser] || [];
+            if (window.DB_ROLES_BY_USER && window.DB_ROLES_BY_USER[dataUser]) ROLES = window.DB_ROLES_BY_USER[dataUser];
+            if (window.DB_SHIFTS_BY_USER && window.DB_SHIFTS_BY_USER[dataUser]) {
+                SHIFTS = {...SHIFTS, ...window.DB_SHIFTS_BY_USER[dataUser]};
+            }
+            const userDisplay = document.getElementById("user-display");
+            const institutionDisplay = document.getElementById("institution-display");
+            if (userDisplay) userDisplay.innerText = currentUsername;
+            if (institutionDisplay) institutionDisplay.innerText = currentInstitution;
+            renderShiftLegend(); initTable();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        async function logout(releaseServer = true) {
+            stopSessionHeartbeat();
+            const oldUser = currentUsername, oldSession = currentSessionId;
+            if (releaseServer && oldUser && oldSession) {
+                try { await apiPost({action:"logout", usuario:oldUser, sessionId:oldSession}); }
+                catch (err) { console.warn("No se pudo confirmar el cierre remoto; la sesión caducará automáticamente.", err); }
+            }
+            currentSessionId = "";
             historyReady = false;
             historyLoading = false;
+            const adminBtn = document.getElementById("admin-users-button"); if (adminBtn) adminBtn.classList.add("hidden");
             currentUsername = "";
+            currentInstitution = "";
             EMPLOYEES = [];
             historyLastSnapshot = "";
             const passwordField = document.getElementById("loginPassword");
             if (passwordField) passwordField.value = "";
             const loginOverlay = document.querySelector('#login-overlay');
             const appContainer = document.querySelector('#app-container');
-            
-            appContainer.classList.remove('flex');
-            appContainer.classList.add('hidden');
+            const institutionPicker = document.querySelector('#institution-picker');
+            if (institutionPicker) { institutionPicker.classList.remove('flex'); institutionPicker.classList.add('hidden'); }
+            appContainer.classList.remove('flex'); appContainer.classList.add('hidden');
             loginOverlay.style.display = 'flex';
-            setTimeout(() => { 
-                loginOverlay.style.opacity = '1'; 
-                loginOverlay.style.transform = 'scale(1)';
-            }, 50);
+            setTimeout(() => { loginOverlay.style.opacity = '1'; loginOverlay.style.transform = 'scale(1)'; }, 50);
         }
 
         function isISSSHoliday(month, day) {
@@ -962,288 +1093,11 @@
             });
         }
 
-        function setHistoryStatus(message, state = "neutral") {
-            const el = document.getElementById("history-sync-status");
-            if (!el) return;
-            const styles = {
-                neutral: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
-                loading: "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300",
-                success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
-                error: "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300"
-            };
-            el.className = "ml-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 " + (styles[state] || styles.neutral);
-            el.textContent = "● Historial: " + message;
-        }
-
-        function currentPeriod() {
-            return document.getElementById("month-picker").value;
-        }
-
-        // Google Sheets puede devolver códigos numéricos sin sus ceros iniciales.
-        // Esta normalización mantiene los códigos de cuatro dígitos consistentes.
-        function normalizeShiftCode(value) {
-            const code = String(value ?? "").trim().toUpperCase();
-            return /^\d+$/.test(code) ? code.padStart(4, "0") : code;
-        }
-
-        function historyRowsFromResponse(json) {
-            if (Array.isArray(json)) return json;
-            if (!json || typeof json !== "object") return [];
-            return json.data || json.records || json.rows || json.historial || [];
-        }
-
-        function normalizeHistoryRow(row) {
-            if (Array.isArray(row)) {
-                return {
-                    dia: row[3], fechaTurno: row[4], idEmpleado: row[5],
-                    empleado: row[6], rol: row[7], codigoTurno: normalizeShiftCode(row[8]),
-                    descripcion: row[9], horas: row[10], version: row[11]
-                };
-            }
-            return {
-                dia: row.dia ?? row.DIA,
-                fechaTurno: row.fechaTurno ?? row.FECHA_TURNO,
-                idEmpleado: row.idEmpleado ?? row.ID_EMPLEADO,
-                empleado: row.empleado ?? row.EMPLEADO,
-                rol: row.rol ?? row.ROL,
-                codigoTurno: normalizeShiftCode(row.codigoTurno ?? row.CODIGO_TURNO),
-                descripcion: row.descripcion ?? row.DESCRIPCION,
-                horas: row.horas ?? row.HORAS,
-                version: row.version ?? row.VERSION
-            };
-        }
-
-        // Historial: guardado por lotes, cola serializada y verificación de lectura.
-        let historyRevision = 0;
-        let historyLastSnapshot = "";
-        let historyRetryCount = 3;
-
-        function normalizeDateForHistory(value, fallbackDay, period) {
-            const raw = String(value || "");
-            const match = raw.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-            if (match) return `${match[1]}-${String(Number(match[2])).padStart(2,"0")}-${String(Number(match[3])).padStart(2,"0")}`;
-            const [y, m] = String(period || currentPeriod()).split("-").map(Number);
-            return `${y}-${String(m).padStart(2,"0")}-${String(Number(fallbackDay)).padStart(2,"0")}`;
-        }
-
-        function buildHistoryRecord(day, empId, shiftCode) {
-            const emp = EMPLOYEES.find(e => Number(e.id) === Number(empId));
-            if (!emp) return null;
-            const [year, month] = currentPeriod().split("-").map(Number);
-            const date = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-            const shift = SHIFTS[shiftCode] || SHIFTS.LIBRE;
-            return {
-                dia: DAY_NAMES[new Date(year, month - 1, day).getDay()],
-                fechaTurno: date,
-                idEmpleado: Number(emp.id),
-                empleado: String(emp.name || ""),
-                rol: String(emp.role || "-"),
-                codigoTurno: String(shift.code),
-                descripcion: String(shift.label || ""),
-                horas: Number(shift.hours) || 0
-            };
-        }
-
-        async function requestHistoryLoad(username = currentUsername, period = currentPeriod()) {
-            const cleanUser = String(username || "").trim().toLocaleLowerCase("es");
-            const cleanPeriod = String(period || "").trim();
-            if (!cleanUser) throw new Error("No hay un usuario activo para consultar el historial.");
-            if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(cleanPeriod)) {
-                throw new Error("El período debe tener el formato AAAA-MM (por ejemplo, 2026-11).");
-            }
-            const url = new URL(HISTORY_APPS_SCRIPT_URL);
-            url.searchParams.set("action", "load");
-            url.searchParams.set("usuario", cleanUser);
-            url.searchParams.set("periodo", cleanPeriod);
-            url.searchParams.set("_", String(Date.now()));
-            const result = await jsonpRequest(url.toString(), 20000);
-            if (!result || typeof result !== "object") {
-                throw new Error("El servicio de historial no devolvió una respuesta válida. Revisa la URL publicada.");
-            }
-            return result;
-        }
-
-        async function loadScheduleHistory() {
-            if (!currentUsername || !currentPeriod()) return false;
-            historyLoading = true;
-            historyReady = false;
-            historyLastSnapshot = "";
-            setHistoryStatus("cargando…", "loading");
-            try {
-                const json = await requestHistoryLoad();
-                if (json && json.success === false) throw new Error(json.message || "El servidor rechazó la consulta");
-                const rows = historyRowsFromResponse(json).map(normalizeHistoryRow);
-                const validEmployees = new Set(EMPLOYEES.map(e => Number(e.id)));
-                const latest = new Map();
-
-                rows.forEach(item => {
-                    const date = normalizeDateForHistory(item.fechaTurno, item.dia, currentPeriod());
-                    const day = Number(date.slice(-2));
-                    const empId = Number(item.idEmpleado);
-                    if (!Number.isInteger(day) || !validEmployees.has(empId) || !scheduleData[day]) return;
-                    const key = `${day}|${empId}`;
-                    const previous = latest.get(key);
-                    if (!previous || Number(item.version || 0) >= Number(previous.version || 0)) latest.set(key, item);
-                });
-
-                latest.forEach((item, key) => {
-                    const [day, empId] = key.split("|").map(Number);
-                    const code = normalizeShiftCode(item.codigoTurno || "LIBRE");
-                    scheduleData[day][empId] = SHIFTS[code] ? code : "LIBRE";
-                });
-
-                Object.keys(scheduleData).forEach(day => {
-                    EMPLOYEES.forEach(emp => {
-                        const cell = document.getElementById(`cell-${day}-${emp.id}`);
-                        if (cell) cell.innerHTML = renderCellContent(SHIFTS[scheduleData[day][emp.id]] || SHIFTS.LIBRE);
-                    });
-                });
-                calculateTotals();
-                validateCoverage();
-                historyReady = true;
-                historyLastSnapshot = JSON.stringify(scheduleData);
-                setHistoryStatus(rows.length ? "sincronizado" : "período nuevo (sin guardar)", "success");
-                return true;
-            } catch (error) {
-                console.error("No se pudo cargar el historial:", error);
-                historyReady = false;
-                setHistoryStatus("sin conexión: " + String(error.message || error).slice(0, 90), "error");
-                const statusEl = document.getElementById("history-sync-status");
-                if (statusEl) statusEl.title = String(error.stack || error.message || error);
-                return false;
-            } finally {
-                historyLoading = false;
-            }
-        }
-
-        function scheduleSnapshot() {
-            return JSON.stringify({
-                usuario: currentUsername,
-                periodo: currentPeriod(),
-                data: scheduleData
-            });
-        }
-
-        function enqueueHistorySave(records, snapshot) {
-            if (!historyReady || !currentUsername || !records.length) return Promise.resolve(false);
-
-            const saveUser = currentUsername;
-            const savePeriod = currentPeriod();
-            const payload = {
-                action: "saveBatch",
-                usuario: saveUser,
-                periodo: savePeriod,
-                requestId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-                records
-            };
-
-            // Evita que dos lotes simultáneos se pisen. Primero se envía el lote;
-            // después se consulta el GET varias veces para dar tiempo a Sheets a reflejarlo.
-            historySaveQueue = historySaveQueue.then(async () => {
-                setHistoryStatus("guardando…", "loading");
-
-                const expected = new Map(records.map(record => [
-                    `${record.fechaTurno}|${Number(record.idEmpleado)}`,
-                    normalizeShiftCode(record.codigoTurno)
-                ]));
-
-                async function verifySavedRecords() {
-                    const check = await requestHistoryLoad(saveUser, savePeriod);
-                    if (check && check.success === false) {
-                        throw new Error(check.message || "El servidor rechazó la verificación");
-                    }
-
-                    const savedRows = historyRowsFromResponse(check).map(normalizeHistoryRow);
-                    const saved = new Map();
-
-                    savedRows.forEach(row => {
-                        const date = normalizeDateForHistory(row.fechaTurno, row.dia, savePeriod);
-                        saved.set(
-                            `${date}|${Number(row.idEmpleado)}`,
-                            normalizeShiftCode(row.codigoTurno)
-                        );
-                    });
-
-                    for (const [key, code] of expected.entries()) {
-                        if (saved.get(key) !== code) return false;
-                    }
-                    return true;
-                }
-
-                let lastError = null;
-                for (let attempt = 1; attempt <= historyRetryCount; attempt++) {
-                    try {
-                        await fetch(HISTORY_APPS_SCRIPT_URL, {
-                            method: "POST",
-                            mode: "no-cors",
-                            cache: "no-store",
-                            headers: { "Content-Type": "text/plain;charset=utf-8" },
-                            body: JSON.stringify(payload)
-                        });
-
-                        // El POST en no-cors no expone su respuesta. No reenviamos
-                        // inmediatamente: consultamos el historial hasta 5 veces.
-                        let confirmed = false;
-                        for (let poll = 0; poll < 5; poll++) {
-                            await new Promise(resolve => setTimeout(resolve, 1200 + poll * 700));
-                            if (await verifySavedRecords()) {
-                                confirmed = true;
-                                break;
-                            }
-                        }
-
-                        if (confirmed) {
-                            historyLastSnapshot = snapshot || scheduleSnapshot();
-                            setHistoryStatus("guardado y verificado", "success");
-                            return true;
-                        }
-
-                        throw new Error("El historial todavía no refleja todos los turnos enviados");
-                    } catch (error) {
-                        lastError = error;
-                        console.warn(`Intento ${attempt} de guardado/verificación fallido:`, error);
-                        if (attempt < historyRetryCount) {
-                            await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
-                        }
-                    }
-                }
-
-                console.error("No se pudo confirmar el guardado del historial:", lastError);
-                setHistoryStatus("no se pudo confirmar; revisa la implementación del historial", "error");
-                return false;
-            });
-
-            return historySaveQueue;
-        }
-
-        function saveScheduleCell(day, empId, shiftCode) {
-            const record = buildHistoryRecord(day, empId, shiftCode);
-            if (!record) return;
-            enqueueHistorySave([record], scheduleSnapshot());
-        }
-
-        function saveWholeSchedule() {
-            if (!historyReady || historyLoading || !currentUsername) {
-                setHistoryStatus("esperando carga del período", "loading");
-                return Promise.resolve(false);
-            }
-            const records = [];
-            Object.keys(scheduleData).forEach(day => {
-                EMPLOYEES.forEach(emp => {
-                    const record = buildHistoryRecord(Number(day), emp.id, scheduleData[day][emp.id] || "LIBRE");
-                    if (record) records.push(record);
-                });
-            });
-            return enqueueHistorySave(records, scheduleSnapshot());
-        }
-
-        function retrySaveSchedule() {
-            if (!historyReady) {
-                loadScheduleHistory().then(ok => { if (ok) saveWholeSchedule(); });
-                return;
-            }
-            saveWholeSchedule();
-        }
+        // El módulo de historial anterior queda desactivado. Los horarios se mantienen
+        // en memoria durante la sesión; la hoja principal no se modifica.
+        function saveScheduleCell(day, empId, shiftCode) { /* guardado histórico desactivado */ }
+        function saveWholeSchedule() { return Promise.resolve(false); }
+        function retrySaveSchedule() { alert("El historial antiguo está desactivado."); }
 
         function initTable() {
             const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
@@ -1324,7 +1178,6 @@
             renderFooterRow();
             // Carga el período sin crear ni guardar horarios de ejemplo automáticamente.
             historyReady = false;
-            loadScheduleHistory();
         }
 
         function onRoleChange(empId, newRole) {
@@ -1335,7 +1188,7 @@
                 calculateTotals();
                 validateCoverage();
                 // El cambio de rol regenera la columna y guarda sus días como nuevas versiones.
-                if (historyReady) saveWholeSchedule();
+
             }
         }
 
@@ -1445,7 +1298,7 @@
             EMPLOYEES.forEach(emp => applyRoleLogicForEmployee(emp.id));
             calculateTotals();
             validateCoverage();
-            saveWholeSchedule();
+
         }
 
         function clearSchedule() {
@@ -1457,7 +1310,7 @@
             EMPLOYEES.forEach(emp => updateEmployeeColumnUI(emp.id));
             calculateTotals();
             validateCoverage();
-            saveWholeSchedule();
+
         }
 
         function populateSampleData() { EMPLOYEES.forEach(emp => applyRoleLogicForEmployee(emp.id)); calculateTotals(); validateCoverage(); }
@@ -1515,10 +1368,11 @@
         }
 
         // GESTIÓN DE CUENTAS POR ADMINISTRADOR
-        function openUserManager() {
+        async function openUserManager() {
+            if (currentUsername !== "carlos") { alert("Solo Carlos, administrador, puede gestionar usuarios."); return; }
             document.getElementById('user-manager-modal').classList.remove('hidden');
             document.getElementById('user-manager-modal').classList.add('flex');
-            renderUserList();
+            await renderUserList();
             lucide.createIcons();
         }
 
@@ -1530,59 +1384,86 @@
         // FUNCIÓN MEJORADA PARA ENVIAR CAMBIOS A GOOGLE SHEETS
         async function sendToGoogleSheet(payload) {
             try {
-                await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(payload)
-                });
-                console.log("Cambio enviado correctamente a Apps Script:", payload.action);
+                const enriched = {...payload, de_usuario: currentUsername, sessionId: currentSessionId};
+                return await apiPost(enriched);
             } catch (e) {
                 console.warn("Error enviando cambios a Google Sheets:", e);
+                throw e;
             }
         }
 
-        function createAccountByAdmin() {
+        async function createAccountByAdmin() {
+            if (currentUsername !== "carlos") { alert("Acceso exclusivo del administrador Carlos."); return; }
             const newUser = document.getElementById('admin-new-user').value.trim().toLowerCase();
-            const newPass = document.getElementById('admin-new-pass').value.trim();
-
-            if (!newUser || !newPass) {
-                alert("Ingrese usuario y contraseña válidos.");
-                return;
-            }
-
-            DB_USERS[newUser] = { password: newPass };
-            if (!DB_EMPLOYEES_BY_USER[newUser]) {
-                DB_EMPLOYEES_BY_USER[newUser] = [];
-            }
-
-            // Guardar usuario en Google Sheets (Columnas A y B)
-            sendToGoogleSheet({
-                action: "saveUser",
-                usuario: newUser,
-                contrasena: newPass
-            });
-
-            document.getElementById('admin-new-user').value = "";
-            document.getElementById('admin-new-pass').value = "";
-            renderUserList();
+            const newPass = document.getElementById('admin-new-pass').value;
+            if (!newUser || !newPass) { alert("Ingrese usuario y contraseña válidos."); return; }
+            try {
+                await apiPost({action:"saveUser", de_usuario:currentUsername, usuario:newUser, contrasena:newPass});
+                document.getElementById('admin-new-user').value = "";
+                document.getElementById('admin-new-pass').value = "";
+                await syncFromGoogleSheet();
+                await renderUserList();
+                alert("Cuenta guardada correctamente.");
+            } catch (err) { alert(err.message || "No se pudo crear la cuenta."); }
         }
 
-        function renderUserList() {
-            const container = document.getElementById('user-list-container');
-            container.innerHTML = '';
-            Object.keys(DB_USERS).forEach(user => {
-                const empCount = (DB_EMPLOYEES_BY_USER[user] || []).length;
-                container.innerHTML += `
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                        <div class="flex items-center gap-2">
-                            <span class="font-extrabold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">${user}</span>
-                            <span class="text-slate-600 dark:text-slate-400 text-[11px]">Cuenta registrada</span>
-                        </div>
-                        <span class="text-[10px] bg-slate-200 dark:bg-slate-800 text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded-full font-semibold">${empCount} empleados</span>
-                    </div>
-                `;
-            });
+        async function renderUserList() {
+            if (currentUsername !== "carlos") return;
+            const container = document.getElementById("user-list-container");
+            container.innerHTML = '<p class="text-xs text-slate-500">Consultando sesiones activas...</p>';
+            try {
+                const result = await apiPost({action:"adminSessions", admin:currentUsername, sessionId:currentSessionId});
+                container.innerHTML = "";
+                result.sessions.forEach(session => {
+                    const row = document.createElement("div");
+                    row.className = "flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800";
+                    const info = document.createElement("div");
+                    const name = document.createElement("strong"); name.textContent = session.usuario;
+                    const status = document.createElement("div");
+                    status.className = "text-xs mt-1 " + (session.activo ? "text-emerald-600" : "text-slate-500");
+                    status.textContent = session.activo ? "ON · Sesión activa" : "OFF · Disponible";
+                    const details = document.createElement("div");
+                    details.className = "text-[10px] text-slate-500 mt-1";
+                    details.textContent = "Último inicio de sesión: " + (session.ultimaActividad ? new Date(session.ultimaActividad).toLocaleString("es-SV") : "—");
+                    info.append(name,status,details);
+                    const actions = document.createElement("div"); actions.className = "flex flex-wrap gap-2";
+                    if (!["carlos","krissia","krissiaminsal"].includes(session.usuario)) {
+                        const changePass = document.createElement("button");
+                        changePass.className = "px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold";
+                        changePass.textContent = "Cambiar clave";
+                        changePass.onclick = async () => {
+                            const pass = prompt("Nueva contraseña (mínimo 8 caracteres) para " + session.usuario + ":");
+                            if (pass === null) return;
+                            try { await apiPost({action:"updateUser",de_usuario:currentUsername,sessionId:currentSessionId,usuarioObjetivo:session.usuario,contrasena:pass}); alert("Contraseña actualizada."); }
+                            catch(err) { alert(err.message || "No se pudo actualizar."); }
+                        };
+                        const del = document.createElement("button");
+                        del.className = "px-3 py-1.5 rounded-lg bg-slate-600 text-white text-xs font-semibold";
+                        del.textContent = "Eliminar";
+                        del.onclick = async () => {
+                            if (!confirm("¿Eliminar la cuenta " + session.usuario + "?")) return;
+                            try { await apiPost({action:"deleteUser",de_usuario:currentUsername,sessionId:currentSessionId,usuarioObjetivo:session.usuario}); await renderUserList(); }
+                            catch(err) { alert(err.message || "No se pudo eliminar."); }
+                        };
+                        actions.append(changePass,del);
+                    }
+                    if (session.activo) {
+                        const release = document.createElement("button");
+                        release.className = "px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-semibold";
+                        release.textContent = "Forzar cierre";
+                        release.onclick = async () => {
+                            if (!confirm("¿Cerrar la sesión activa de " + session.usuario + "?")) return;
+                            try { await apiPost({action:"forceLogout", admin:currentUsername, sessionId:currentSessionId, usuarioObjetivo:session.usuario}); await renderUserList(); }
+                            catch(err) { alert(err.message || "No se pudo liberar la sesión."); }
+                        };
+                        actions.appendChild(release);
+                    }
+                    row.append(info,actions); container.appendChild(row);
+                });
+                if (!result.sessions.length) container.textContent = "No hay usuarios registrados.";
+            } catch (err) {
+                container.textContent = "No se pudo consultar el estado de las sesiones: " + (err.message || "");
+            }
         }
 
         // GESTIÓN DE TURNOS MODAL
@@ -2206,5 +2087,97 @@
         }
 
     </script>
+
+<!-- CAPA NUEVA: cuenta y panel administrativo (interfaz de demostración) -->
+<style>
+#account-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.account-action{border:1px solid #334155;background:#0f172a;color:#e2e8f0;padding:9px 12px;border-radius:12px;font-size:12px;font-weight:700;display:inline-flex;gap:7px;align-items:center}
+.account-action:hover{background:#1e293b;border-color:#38bdf8}
+#account-hub{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:16px;background:#020617cc;backdrop-filter:blur(9px)}
+#account-hub.open{display:flex}
+#account-card{width:min(980px,100%);max-height:90vh;overflow:auto;background:#0b1220;color:#e2e8f0;border:1px solid #263449;border-radius:22px;box-shadow:0 25px 90px #0009}
+.hub-tab{padding:9px 13px;border-radius:10px;background:#172235;color:#cbd5e1;font-size:12px;font-weight:700}
+.hub-tab.active{background:#0369a1;color:white}.hub-panel{display:none}.hub-panel.active{display:block}
+.hub-field{width:100%;background:#111c2e;border:1px solid #334155;border-radius:10px;padding:10px;color:white;font-size:13px}
+.hub-card{background:#111c2e;border:1px solid #263449;border-radius:15px;padding:15px}
+.hub-stat{font-size:25px;font-weight:900;color:#7dd3fc}.hub-muted{font-size:11px;color:#94a3b8}
+.hub-primary{background:#0284c7;color:white;padding:9px 13px;border-radius:10px;font-size:12px;font-weight:800}
+.hub-danger{background:#7f1d1d;color:#fecaca;padding:9px 13px;border-radius:10px;font-size:12px;font-weight:800}
+@media(max-width:640px){#account-tools{width:100%}.account-action{flex:1;justify-content:center}#account-card{max-height:95vh}}
+</style>
+<div id="account-hub" aria-hidden="true">
+ <section id="account-card">
+  <header class="p-5 border-b border-slate-700 flex items-start justify-between gap-3">
+   <div><div class="text-xs uppercase tracking-widest text-sky-400 font-bold">Control de acceso</div><h2 class="text-2xl font-black mt-1">Centro de cuenta</h2><p class="text-xs text-slate-400 mt-1" id="hub-user-label">Sesión activa</p></div>
+   <button class="account-action" onclick="closeAccountHub()">✕ Cerrar</button>
+  </header>
+  <div class="p-4 border-b border-slate-800 flex gap-2 flex-wrap">
+   <button class="hub-tab active" data-hub-tab="profile" onclick="switchHubTab('profile')">Mi cuenta</button>
+   <button class="hub-tab" data-hub-tab="security" onclick="switchHubTab('security')">Seguridad</button>
+   <button class="hub-tab" data-hub-tab="admin" id="hub-admin-tab" onclick="switchHubTab('admin')" style="display:none">Panel administrador</button>
+  </div>
+  <div class="p-5 space-y-4">
+   <div class="hub-panel active" id="hub-profile"><div class="grid md:grid-cols-2 gap-3">
+    <div class="hub-card"><div class="text-xs text-slate-400">Usuario</div><div class="text-lg font-extrabold mt-1" id="hub-username">—</div><div class="hub-muted mt-2">El acceso continúa siendo con usuario y contraseña.</div></div>
+    <div class="hub-card"><div class="text-xs text-slate-400">Institución</div><div class="text-lg font-extrabold mt-1">ISSS / MINSAL</div><div class="hub-muted mt-2">La selección y separación de datos se conectará al backend.</div></div>
+   </div><div class="hub-card"><h3 class="font-bold mb-2">Correo de recuperación</h3><input id="hub-email" class="hub-field" type="email" placeholder="correo@ejemplo.com"><p class="hub-muted mt-2">Se utilizará únicamente para recuperar la contraseña, no para iniciar sesión.</p><button class="hub-primary mt-3" onclick="hubDemoNotice('El correo se guardará cuando esté conectado el servicio seguro de autenticación.')">Guardar correo</button></div></div>
+   <div class="hub-panel" id="hub-security"><div class="hub-card"><h3 class="font-bold mb-3">Cambiar mi contraseña</h3><div class="grid md:grid-cols-2 gap-3"><input class="hub-field" type="password" placeholder="Contraseña actual"><input class="hub-field" type="password" placeholder="Nueva contraseña"></div><input class="hub-field mt-3" type="password" placeholder="Confirmar nueva contraseña"><button class="hub-primary mt-3" onclick="hubDemoNotice('El cambio de contraseña requiere validar la sesión en el servidor. No se ha modificado ninguna clave en esta vista previa.')">Actualizar contraseña</button></div><div class="hub-card mt-3"><h3 class="font-bold">Sesiones abiertas</h3><p class="hub-muted mt-1 mb-3">Puedes cerrar las sesiones de tus otros dispositivos o finalizar esta sesión.</p><button class="hub-danger" onclick="hubDemoNotice('La revocación global de sesiones se habilitará con Firebase Authentication y backend.')">Cerrar todas mis sesiones</button><button class="account-action ml-2" onclick="logout()">Cerrar esta sesión</button></div></div>
+   <div class="hub-panel" id="hub-admin"><div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4"><div class="hub-card"><div class="hub-muted">Usuarios registrados</div><div class="hub-stat" id="hub-stat-users">—</div></div><div class="hub-card"><div class="hub-muted">Solicitudes pendientes</div><div class="hub-stat" id="hub-stat-pending">0</div></div><div class="hub-card"><div class="hub-muted">Instituciones</div><div class="hub-stat">2</div></div><div class="hub-card"><div class="hub-muted">Estado de seguridad</div><div class="text-sm font-bold text-amber-300 mt-2">Backend pendiente</div></div></div>
+    <div class="hub-card"><div class="flex items-center justify-between gap-2"><h3 class="font-bold">Solicitudes de creación de cuenta</h3><span class="text-xs text-slate-400">Aprobación administrativa</span></div><p class="hub-muted mt-2">Revisa los datos y aprueba o rechaza cada solicitud.</p><div id="hub-requests-list" class="mt-3 space-y-2"><div class="rounded-xl border border-dashed border-slate-600 p-5 text-center text-sm text-slate-400">No hay solicitudes pendientes.</div></div></div>
+    <div class="hub-card mt-3"><h3 class="font-bold">Administración de usuarios</h3><p class="hub-muted mt-2">Gestión de cuentas, cambio/restablecimiento de contraseñas, bloqueo, permisos y cierre forzado de todas las sesiones de un usuario.</p><div id="hub-user-list" class="mt-3 space-y-2"></div></div>
+    <div class="hub-card mt-3"><h3 class="font-bold">Auditoría y configuración</h3><p class="hub-muted mt-1">Registro de accesos, cambios de horarios, modificaciones de cuentas y acciones administrativas.</p></div>
+   </div>
+  </div>
+  <footer class="px-5 py-3 border-t border-slate-800 text-[11px] text-amber-300">Vista previa de interfaz. Las operaciones de autenticación y administración no se ejecutan hasta integrar Firebase y un backend seguro.</footer>
+ </section>
+</div>
+<script>
+(function(){
+ function addAccountButtons(){
+  const header=document.querySelector('#app-container header .max-w-7xl > .flex.items-center.space-x-2');
+  if(!header || document.getElementById('account-tools')) return;
+  const wrap=document.createElement('div'); wrap.id='account-tools';
+  wrap.innerHTML='<button class="account-action" onclick="openAccountHub(\'profile\')"><i data-lucide="user-round" class="w-4 h-4"></i> Mi cuenta</button><button class="account-action" id="open-admin-hub" onclick="openAccountHub(\'admin\')" style="display:none"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Administración</button>';
+  header.insertBefore(wrap,header.firstChild);
+ }
+ window.openAccountHub=function(tab){
+  const admin=(String(typeof currentUsername!=='undefined'?currentUsername:'').toLowerCase()==='carlos');
+  document.getElementById('hub-user-label').textContent='Sesión activa: '+(typeof currentUsername!=='undefined'?currentUsername:'usuario');
+  document.getElementById('hub-username').textContent=(typeof currentUsername!=='undefined'?currentUsername:'—');
+  document.getElementById('hub-admin-tab').style.display=admin?'inline-block':'none';
+  document.getElementById('open-admin-hub').style.display=admin?'inline-flex':'none';
+  document.getElementById('hub-stat-users').textContent=typeof DB_USERS!=='undefined'?Object.keys(DB_USERS).length:'—';
+  const list=document.getElementById('hub-user-list'); list.innerHTML=''; if(admin)renderRequests();
+  if(admin && typeof DB_USERS!=='undefined') Object.keys(DB_USERS).forEach(u=>{const row=document.createElement('div');row.className='flex justify-between items-center gap-2 rounded-lg bg-slate-900 p-3 text-sm';row.innerHTML='<span class="font-bold"></span><span class="text-xs text-slate-400">Cuenta registrada</span>';row.querySelector('span').textContent=u;list.appendChild(row)});
+  document.getElementById('account-hub').classList.add('open'); document.getElementById('account-hub').setAttribute('aria-hidden','false'); switchHubTab(tab||'profile'); if(window.lucide)lucide.createIcons();
+ };
+ window.closeAccountHub=function(){document.getElementById('account-hub').classList.remove('open');document.getElementById('account-hub').setAttribute('aria-hidden','true')};
+ window.switchHubTab=function(tab){document.querySelectorAll('.hub-tab').forEach(x=>x.classList.toggle('active',x.dataset.hubTab===tab));document.querySelectorAll('.hub-panel').forEach(x=>x.classList.toggle('active',x.id==='hub-'+tab))};
+ window.hubDemoNotice=function(msg){alert(msg)};
+ const REQUESTS_KEY='isss_control_user_requests_v1';
+ function getRequests(){try{return JSON.parse(localStorage.getItem(REQUESTS_KEY)||'[]')}catch(e){return []}}
+ function saveRequests(items){localStorage.setItem(REQUESTS_KEY,JSON.stringify(items))}
+ window.openRegistration=function(){const m=document.getElementById('registration-modal');m.classList.remove('hidden');m.classList.add('flex');document.getElementById('reg-notice').textContent='';};
+ window.closeRegistration=function(){const m=document.getElementById('registration-modal');m.classList.add('hidden');m.classList.remove('flex');};
+ window.submitRegistration=function(e){
+  e.preventDefault(); const name=document.getElementById('reg-name').value.trim(), username=document.getElementById('reg-user').value.trim().toLowerCase(), email=document.getElementById('reg-email').value.trim().toLowerCase(), institutions=Array.from(document.querySelectorAll('input[name="reg-institution"]:checked')).map(x=>x.value), pass=document.getElementById('reg-password').value, pass2=document.getElementById('reg-password2').value, notice=document.getElementById('reg-notice');
+  if(!institutions.length){notice.textContent='Selecciona al menos una institución: ISSS, MINSAL o ambas.';return}
+  if(pass!==pass2){notice.textContent='Las contraseñas no coinciden.';return} if(pass.length<8){notice.textContent='La contraseña debe tener al menos 8 caracteres.';return}
+  if(username==='carlos'){notice.textContent='Ese nombre de usuario está reservado.';return}
+  const req=getRequests(); if(req.some(x=>x.username===username&&x.status==='pending')){notice.textContent='Ya existe una solicitud pendiente con ese usuario.';return}
+  if(typeof DB_USERS!=='undefined'&&DB_USERS[username]){notice.textContent='Ese usuario ya está registrado.';return}
+  // Solo se conserva una solicitud local de demostración; nunca se almacena la contraseña.
+  req.push({id:'req_'+Date.now(),name,username,email,institutions,status:'pending',createdAt:new Date().toISOString()}); saveRequests(req);
+  document.getElementById('registrationForm').reset(); notice.className='text-xs min-h-4 text-emerald-300'; notice.textContent=''; closeRegistration(); alert('Solicitud registrada en esta vista previa. Para que llegue al panel de Carlos desde otros dispositivos, falta conectar el backend seguro.');
+  if(String(window.currentUsername||'').toLowerCase()==='carlos') renderRequests();
+ };
+ window.renderRequests=function(){const box=document.getElementById('hub-requests-list'); if(!box)return; const pending=getRequests().filter(x=>x.status==='pending'); document.getElementById('hub-stat-pending').textContent=pending.length; box.innerHTML=''; if(!pending.length){box.innerHTML='<div class="rounded-xl border border-dashed border-slate-600 p-5 text-center text-sm text-slate-400">No hay solicitudes pendientes.</div>';return;} pending.forEach(req=>{const card=document.createElement('div');card.className='rounded-xl bg-slate-900 border border-slate-700 p-3'; const title=document.createElement('div');title.className='font-bold text-sm';title.textContent=req.name+' (@'+req.username+')'; const detail=document.createElement('div');detail.className='text-xs text-slate-400 mt-1';detail.textContent=req.email+' · '+(Array.isArray(req.institutions)?req.institutions.join(' + '):(req.institution||'Institución no especificada'))+' · '+new Date(req.createdAt).toLocaleString(); const actions=document.createElement('div');actions.className='flex gap-2 mt-3'; const approve=document.createElement('button');approve.className='hub-primary';approve.textContent='Aprobar';approve.onclick=()=>decideRequest(req.id,'approved'); const reject=document.createElement('button');reject.className='hub-danger';reject.textContent='Rechazar';reject.onclick=()=>decideRequest(req.id,'rejected'); actions.append(approve,reject);card.append(title,detail,actions);box.append(card);});};
+ window.decideRequest=function(id,status){if(String(window.currentUsername||'').toLowerCase()!=='carlos'){alert('Solo el administrador principal puede resolver solicitudes.');return}const items=getRequests();const item=items.find(x=>x.id===id);if(!item)return; item.status=status;item.reviewedAt=new Date().toISOString();saveRequests(items);renderRequests();alert(status==='approved'?'Solicitud marcada como aprobada. La creación efectiva de la cuenta requiere backend/Firebase.':'Solicitud rechazada.');};
+ const oldLogout=window.logout; window.addEventListener('load',()=>{addAccountButtons(); if(window.lucide)lucide.createIcons()});
+ const observer=new MutationObserver(()=>{if(document.getElementById('app-container')&&!document.getElementById('app-container').classList.contains('hidden'))addAccountButtons()});
+ observer.observe(document.getElementById('app-container'),{attributes:true,attributeFilter:['class']});
+})();
+</script>
+
 </body>
 </html>
