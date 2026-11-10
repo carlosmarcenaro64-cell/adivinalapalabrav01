@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
     <meta name="description" content="Sistema de control y planificación de horarios del personal ISSS.">
-    <title>Sistema de Control de Horarios ISSS / MINSAL - Acceso</title>
+    <title>Sistema de Control de Horarios ISSS - Acceso Seguro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -250,7 +250,7 @@
                     <span>Acceso al Sistema</span>
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 </h2>
-                <p class="text-xs text-slate-400 mb-6">Ingrese su usuario y contraseña</p>
+                <p class="text-xs text-slate-400 mb-6">Ingrese su usuario y contraseña; después elija ISSS o MINSAL</p>
 
                 <form id="loginForm" class="space-y-4">
                     <div>
@@ -284,9 +284,43 @@
                     </button>
                 </form>
 
-
+                <div class="mt-6 pt-4 border-t border-slate-800 text-center">
+                    <p class="text-[11px] text-slate-400">¿No tienes cuenta? <button type="button" class="text-sky-400 font-bold hover:text-sky-300" onclick="openRegistration()">Solicitar creación de usuario</button></p>
+                    <p class="text-[10px] text-slate-500 mt-2">Tu cuenta quedará pendiente hasta que el administrador la apruebe.</p>
+                </div>
             </section>
         </div>
+    </div>
+
+    <!-- SOLICITUD DE CREACIÓN DE CUENTA -->
+    <div id="registration-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+      <section class="login-card-neo w-full max-w-lg rounded-2xl p-6 text-white">
+        <div class="flex items-center justify-between mb-4"><div><h2 class="text-xl font-black">Solicitar una cuenta</h2><p class="text-xs text-slate-400 mt-1">Completa tus datos para enviar la solicitud.</p></div><button type="button" class="text-slate-400 hover:text-white text-xl" onclick="closeRegistration()">✕</button></div>
+        <form id="registrationForm" class="space-y-3" onsubmit="submitRegistration(event)">
+          <div><label class="block text-xs text-slate-300 mb-1">Nombre completo</label><input id="reg-name" class="input-neo w-full rounded-xl p-3 text-sm" required maxlength="100" placeholder="Nombre y apellido"></div>
+          <div><label class="block text-xs text-slate-300 mb-1">Nombre de usuario</label><input id="reg-user" class="input-neo w-full rounded-xl p-3 text-sm" required minlength="3" maxlength="30" pattern="[A-Za-z0-9._-]+" placeholder="Ej. usuario.apellido"></div>
+          <div><label class="block text-xs text-slate-300 mb-1">Correo para recuperación</label><input id="reg-email" type="email" class="input-neo w-full rounded-xl p-3 text-sm" required maxlength="150" placeholder="correo@ejemplo.com"></div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-2">Institución (puedes seleccionar una o ambas)</label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-3 cursor-pointer hover:border-sky-500">
+                <input type="checkbox" name="reg-institution" value="ISSS" class="h-4 w-4 accent-sky-500">
+                <span class="text-sm font-bold">ISSS</span>
+              </label>
+              <label class="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-3 cursor-pointer hover:border-sky-500">
+                <input type="checkbox" name="reg-institution" value="MINSAL" class="h-4 w-4 accent-sky-500">
+                <span class="text-sm font-bold">MINSAL</span>
+              </label>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1">Si trabajas en ambas instituciones, marca las dos.</p>
+          </div>
+          <div><label class="block text-xs text-slate-300 mb-1">Contraseña solicitada</label><input id="reg-password" type="password" class="input-neo w-full rounded-xl p-3 text-sm" required minlength="8" autocomplete="new-password" placeholder="Mínimo 8 caracteres"></div>
+          <div><label class="block text-xs text-slate-300 mb-1">Confirmar contraseña</label><input id="reg-password2" type="password" class="input-neo w-full rounded-xl p-3 text-sm" required minlength="8" autocomplete="new-password" placeholder="Repite la contraseña"></div>
+          <p id="reg-notice" class="text-xs min-h-4 text-rose-300" role="status"></p>
+          <button type="submit" class="btn-neon-primary w-full py-3 rounded-xl font-bold text-xs uppercase">Enviar solicitud</button>
+          <p class="text-[10px] text-slate-500 text-center">No podrás iniciar sesión hasta que el administrador apruebe la solicitud.</p>
+        </form>
+      </section>
     </div>
 
     <!-- SELECTOR DE INSTITUCIÓN DESPUÉS DEL LOGIN -->
@@ -294,9 +328,9 @@
       <section class="login-card-neo w-full max-w-md rounded-3xl p-7 text-white">
         <div class="flex items-center gap-3 mb-5">
           <div class="p-3 rounded-2xl bg-sky-500/15 text-sky-300"><i data-lucide="building-2" class="w-7 h-7"></i></div>
-          <div><h2 class="text-xl font-black">Seleccionar institución</h2><p class="text-xs text-slate-400">Elige en cuál deseas trabajar en esta sesión.</p></div>
+          <div><h2 class="text-xl font-black">Inicio · Selecciona tu área</h2><p class="text-xs text-slate-400">Elige la institución en la que deseas trabajar.</p></div>
         </div>
-        <p class="text-xs text-slate-300 mb-4">Puedes cambiar de institución cuando quieras sin cerrar sesión.</p>
+        <p class="text-xs text-slate-300 mb-4">Sesión de <strong id="home-user-display" class="text-white"></strong>. Puedes volver aquí con el botón Home.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button type="button" onclick="activateInstitution('ISSS')" class="rounded-2xl border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500/20 p-5 text-left transition"><span class="block text-2xl font-black text-sky-300">ISSS</span><span class="block text-xs text-slate-400 mt-1">Entrar al espacio ISSS</span></button>
           <button type="button" onclick="activateInstitution('MINSAL')" class="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 p-5 text-left transition"><span class="block text-2xl font-black text-emerald-300">MINSAL</span><span class="block text-xs text-slate-400 mt-1">Entrar al espacio MINSAL</span></button>
@@ -324,8 +358,8 @@
 
                 <!-- Botones de Acción Principal -->
                 <div class="flex items-center space-x-2">
-                    <button type="button" id="admin-users-button" onclick="openUserManager()" class="hidden px-3 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 rounded-xl text-xs font-semibold">Administrar usuarios</button>
-                    <button type="button" onclick="showInstitutionPicker(true)" class="px-3 py-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-700 dark:text-sky-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition" title="Volver a seleccionar institución"><i data-lucide="building-2" class="w-4 h-4"></i><span>Cambiar institución</span></button>
+                    <button type="button" id="home-button" onclick="goHome()" class="px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition" title="Volver al inicio para elegir ISSS o MINSAL"><i data-lucide="home" class="w-4 h-4"></i><span>Home</span></button>
+                    <button type="button" id="change-institution-button" onclick="goHome()" class="px-3 py-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-700 dark:text-sky-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition" title="Volver a seleccionar institución"><i data-lucide="building-2" class="w-4 h-4"></i><span>Cambiar institución</span></button>
                     <button id="btn-theme-toggle" onclick="toggleTheme()" class="p-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-amber-400 rounded-xl transition shadow-sm" title="Cambiar Tema (Claro / Oscuro)">
                         <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
                     </button>
@@ -657,83 +691,7 @@
         // URLs DE GOOGLE SHEETS / APPS SCRIPT PUBLICADOS
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeObkBJ4l6zMu-qS4MwLxNw2s9iXfXSdazLZRje4MK7Uwu1zuMc5ydlD3kFBeIvJG3AP6BUxErdtPA/pub?output=csv";
         const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbweZbVptsmlrkcM2-fVV_708z0B64-J4AwwdhG8dhxBLzlzMcjKbVAVIgbdZ_9QQRQr/exec";
-
-        // API POST segura para Apps Script mediante formulario oculto + postMessage.
-        let isssApiCounter = 0;
-        const isssPendingRequests = new Map();
-        window.addEventListener("message", event => {
-            // Apps Script puede responder desde un origen googleusercontent.com
-            // y la navegación/redirección puede cambiar event.source. Validamos
-            // el origen de Google y el requestId aleatorio de la petición pendiente.
-            const trustedOrigin = event.origin === "https://script.google.com" ||
-                (event.origin.startsWith("https://") && event.origin.endsWith(".googleusercontent.com"));
-            if (!trustedOrigin) return;
-            const msg = event.data;
-            if (!msg || typeof msg !== "object" || !msg.requestId) return;
-            const pending = isssPendingRequests.get(msg.requestId);
-            if (!pending) return;
-            clearTimeout(pending.timer);
-            isssPendingRequests.delete(msg.requestId);
-            pending.cleanup();
-            const result = msg.result;
-            if (!result || result.status !== "success") {
-                pending.reject(new Error(result?.message || "La operación fue rechazada."));
-            } else {
-                pending.resolve(result);
-            }
-        });
-        function apiPost(payload, timeoutMs = 30000) {
-            return new Promise((resolve, reject) => {
-                const requestId = "req_" + Date.now() + "_" + (++isssApiCounter);
-                const frameName = "isss_api_frame_" + isssApiCounter;
-                const frame = document.createElement("iframe");
-                frame.name = frameName;
-                frame.style.display = "none";
-                const form = document.createElement("form");
-                form.method = "POST";
-                form.action = GOOGLE_APPS_SCRIPT_URL;
-                form.target = frameName;
-                form.style.display = "none";
-                const field = document.createElement("input");
-                field.type = "hidden";
-                field.name = "payload";
-                field.value = JSON.stringify({...payload, requestId});
-                form.appendChild(field);
-                let settled = false;
-                const cleanup = () => {
-                    try { form.remove(); } catch (_) {}
-                    // Dejar el iframe unos milisegundos después de recibir la respuesta.
-                    setTimeout(() => { try { frame.remove(); } catch (_) {} }, 50);
-                };
-                const timer = setTimeout(() => {
-                    if (settled) return;
-                    settled = true;
-                    isssPendingRequests.delete(requestId);
-                    cleanup();
-                    reject(new Error("El servidor no devolvió confirmación. Comprueba que implementaste la versión nueva de Apps Script."));
-                }, timeoutMs);
-                isssPendingRequests.set(requestId, {
-                    resolve: value => { if (settled) return; settled = true; resolve(value); },
-                    reject: error => { if (settled) return; settled = true; reject(error); },
-                    cleanup, timer, frame
-                });
-                document.body.append(frame, form);
-                try { form.submit(); }
-                catch (error) {
-                    clearTimeout(timer);
-                    isssPendingRequests.delete(requestId);
-                    cleanup();
-                    reject(error);
-                }
-            });
-        }
-
-                // Historial antiguo desactivado por solicitud del administrador.
-        let historyLoading = false;
-        let historyReady = false;
-        let historySaveQueue = Promise.resolve();
-
-        // BASE DE DATOS LOCAL Y RELACIONAL POR USUARIO (FALLBACK / IN-MEMORY)
+// BASE DE DATOS LOCAL Y RELACIONAL POR USUARIO (FALLBACK / IN-MEMORY)
         let DB_USERS = {
             "krissia": { password: "1902" }
         };
@@ -754,7 +712,9 @@
             ]
         };
 
-        let currentUsername = "";
+        let currentUsername = "";          // Cuenta institucional activa: *_isss o *_minsal
+        let currentBaseUsername = "";      // Usuario principal: krissia o carlos
+        let currentLoginPassword = "";     // Se conserva solo en memoria durante la sesión
         let currentInstitution = "";
         let EMPLOYEES = [];
 
@@ -777,6 +737,8 @@
             { name: "VACACIONES", schedule: "" },
             { name: "TURNO DE CIERRE DE DÍA", schedule: "10AM A 6PM" }
         ];
+        const DEFAULT_SHIFTS = JSON.parse(JSON.stringify(SHIFTS));
+        const DEFAULT_ROLES = JSON.parse(JSON.stringify(ROLES));
         let editingRoleName = null;
 
         const ISSS_HOLIDAYS = ["01-01", "05-01", "05-10", "06-17", "08-03", "08-04", "08-05", "08-06", "09-15", "11-02", "12-24", "12-25", "12-31"];
@@ -799,13 +761,16 @@
             return new Promise((resolve, reject) => {
                 const callbackName = "__isss_jsonp_" + Date.now() + "_" + Math.random().toString(36).slice(2);
                 const script = document.createElement("script");
-                const timer = setTimeout(() => finish(new Error("Tiempo de espera agotado")), timeoutMs);
+                let settled = false;
+                const timer = setTimeout(() => finish(new Error("Tiempo de espera agotado al consultar Google Apps Script")), timeoutMs);
                 function cleanup() {
                     clearTimeout(timer);
-                    delete window[callbackName];
-                    script.remove();
+                    try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+                    if (script.parentNode) script.parentNode.removeChild(script);
                 }
                 function finish(error, data) {
+                    if (settled) return;
+                    settled = true;
                     cleanup();
                     if (error) reject(error);
                     else resolve(data);
@@ -844,25 +809,60 @@
 
         async function syncFromGoogleSheet() {
             try {
-                // La hoja principal tiene su propio Apps Script. El historial NO se consulta aquí.
+                // El Apps Script principal debe responder JSONP con {status:"success", data:[...]}.
                 const url = new URL(GOOGLE_APPS_SCRIPT_URL);
                 url.searchParams.set("action", "catalog");
-                const result = await jsonpRequest(url.toString(), 20000);
+                url.searchParams.set("_", String(Date.now()));
+                const result = await jsonpRequest(url.toString(), 25000);
 
-                if (!result || result.status !== "success" || !Array.isArray(result.data)) {
-                    throw new Error((result && result.message) || "La hoja principal no devolvió el catálogo.");
+                let rows = null;
+                if (Array.isArray(result)) {
+                    // Compatibilidad con el doGet antiguo que devolvía directamente la matriz.
+                    rows = result;
+                } else if (result && result.status === "success" && Array.isArray(result.data)) {
+                    rows = result.data;
+                } else {
+                    const detail = result && (result.message || result.error);
+                    throw new Error(detail || "Respuesta inesperada del Apps Script principal. Vuelve a implementar la versión corregida.");
                 }
 
-                if (!parseCSVData(result.data)) {
-                    throw new Error("No se encontraron cuentas válidas en las columnas A y B.");
+                if (!parseCSVData(rows)) {
+                    throw new Error("La hoja respondió, pero no se encontraron usuarios en A:B. Revisa que la primera fila tenga encabezados y que existan usuarios.");
                 }
 
                 console.info("Catálogo principal cargado. Cuentas:", Object.keys(DB_USERS).length);
                 return true;
             } catch (err) {
                 console.error("Error cargando usuarios y catálogo principal:", err);
+                const notice = document.getElementById("loginNotice");
+                if (notice) {
+                    notice.textContent = "No se pudo conectar con la hoja principal: " + String(err.message || err);
+                }
                 return false;
             }
+        }
+
+        function canonicalAccountName(value) {
+            const user = String(value == null ? "" : value).trim().toLocaleLowerCase("es");
+            const aliases = {
+                "krissia": "krissia_isss",
+                "krissiaminsal": "krissia_minsal",
+                "carlos": "carlos_isss"
+            };
+            return aliases[user] || user;
+        }
+
+        function baseAccountName(value) {
+            const user = String(value || "").trim().toLocaleLowerCase("es");
+            if (user === "krissia" || user.startsWith("krissia_")) return "krissia";
+            if (user === "carlos" || user.startsWith("carlos_")) return "carlos";
+            return user;
+        }
+
+        function accountForInstitution(baseUser, institution) {
+            const base = baseAccountName(baseUser);
+            if (!["krissia", "carlos"].includes(base)) return "";
+            return base + (institution === "ISSS" ? "_isss" : "_minsal");
         }
 
         function parseCSVData(source) {
@@ -888,11 +888,11 @@
             for (let i = 1; i < rows.length; i++) {
                 const cols = rows[i].map(clean);
                 // Hoja principal: A-B usuarios; D-G personal; I-K roles; M-P turnos.
-                const user = key(cols[0]);
+                const user = key(cols[0]); // A:B contiene usuarios base: krissia / carlos.
                 const password = clean(cols[1]);
-                if (user) parsedUsers[user] = { password: "" };
+                if (user && password) parsedUsers[user] = { password };
 
-                const employeeUser = key(cols[3]);
+                const employeeUser = canonicalAccountName(cols[3]);
                 const employeeId = Number.parseInt(clean(cols[4]), 10);
                 const employeeName = clean(cols[5]);
                 const employeeRole = clean(cols[6]) || "-";
@@ -909,7 +909,7 @@
                     }
                 }
 
-                const roleUser = key(cols[8]);
+                const roleUser = canonicalAccountName(cols[8]);
                 const roleName = clean(cols[9]);
                 const roleSchedule = clean(cols[10]);
                 if (roleUser && roleName) {
@@ -919,8 +919,8 @@
                     else parsedRolesByUser[roleUser].push({ name: roleName, schedule: roleSchedule });
                 }
 
-                const shiftUser = key(cols[12]);
-                const shiftCode = clean(cols[13]).toUpperCase();
+                const shiftUser = canonicalAccountName(cols[12]);
+                const shiftCode = normalizeShiftCode(clean(cols[13]));
                 const shiftHours = Number.parseFloat(clean(cols[14]));
                 const shiftLabel = clean(cols[15]);
                 if (shiftUser && shiftCode) {
@@ -942,47 +942,47 @@
             return true;
         }
 
-        let currentSessionId = "";
-        let sessionHeartbeatTimer = null;
-        let sessionHeartbeatBusy = false;
-
-        function startSessionHeartbeat() {
-            stopSessionHeartbeat();
-            sessionHeartbeatTimer = setInterval(async () => {
-                if (!currentUsername || !currentSessionId || sessionHeartbeatBusy) return;
-                sessionHeartbeatBusy = true;
-                try {
-                    await apiPost({action:"heartbeat", usuario:currentUsername, sessionId:currentSessionId});
-                } catch (err) {
-                    stopSessionHeartbeat();
-                    alert("Tu sesión dejó de estar activa: " + (err.message || "No se pudo renovar.") + " Vuelve a iniciar sesión.");
-                    logout(false);
-                } finally { sessionHeartbeatBusy = false; }
-            }, 45000);
-        }
-        function stopSessionHeartbeat() {
-            if (sessionHeartbeatTimer) clearInterval(sessionHeartbeatTimer);
-            sessionHeartbeatTimer = null;
-        }
-
         function setupLoginLogic() {
             const loginForm = document.querySelector('#loginForm');
             const loginOverlay = document.querySelector('#login-overlay');
             const loginNotice = document.querySelector('#loginNotice');
+            if (!loginForm || !loginNotice) throw new Error("No se encontró el formulario de acceso.");
+            if (loginForm.dataset.loginBound === "true") return;
+            loginForm.dataset.loginBound = "true";
+
             loginForm.addEventListener('submit', async e => {
                 e.preventDefault();
-                const entered = document.querySelector('#loginUser').value.trim().toLocaleLowerCase("es");
+                const entered = baseAccountName(document.querySelector('#loginUser').value);
                 const password = document.querySelector('#loginPassword').value;
-                const button = loginForm.querySelector('button[type="submit"]');
-                loginNotice.textContent = "Validando acceso...";
-                if (button) button.disabled = true;
+                const submitButton = loginForm.querySelector('button[type="submit"]');
+
+                if (!["krissia", "carlos"].includes(entered) || !password) {
+                    loginNotice.textContent = "Ingrese su usuario y contraseña.";
+                    return;
+                }
+
+                loginNotice.textContent = "Conectando y validando credenciales...";
+                if (submitButton) submitButton.disabled = true;
+
                 try {
-                    const result = await apiPost({action:"login", usuario:entered, contrasena:password});
-                    currentUsername = result.usuario;
-                    currentSessionId = result.sessionId;
-                    const adminBtn = document.getElementById("admin-users-button");
-                    if (adminBtn) adminBtn.classList.toggle("hidden", currentUsername !== "carlos");
+                    const catalogOk = catalogLoadPromise ? await catalogLoadPromise : false;
+                    if (!catalogOk) throw new Error("No se pudo conectar con la hoja principal.");
+
+                    // A:B autentica al usuario base una sola vez.
+                    // El sufijo _isss / _minsal solo separa los datos institucionales.
+                    const baseAccount = DB_USERS[entered];
+                    const validBase = baseAccount &&
+                        String(baseAccount.password) === String(password);
+
+                    if (!validBase) {
+                        throw new Error("Usuario o contraseña incorrectos. Verifique el usuario y la contraseña en A:B.");
+                    }
+
+                    currentBaseUsername = entered;
+                    currentLoginPassword = password;
+                    currentUsername = "";
                     currentInstitution = "";
+
                     applyTheme(false);
                     loginOverlay.style.opacity = "0";
                     loginOverlay.style.transform = "scale(1.05)";
@@ -991,90 +991,141 @@
                         showInstitutionPicker(false);
                     }, 350);
                     loginNotice.textContent = "";
-                    document.querySelector('#loginPassword').value = "";
-                } catch (err) {
-                    loginNotice.textContent = err.message || "No se pudo validar la cuenta.";
+                } catch (error) {
+                    console.error("Error durante el inicio de sesión:", error);
+                    loginNotice.textContent = error && error.message
+                        ? error.message
+                        : "No se pudo validar la cuenta.";
                 } finally {
-                    if (button) button.disabled = false;
+                    if (submitButton) submitButton.disabled = false;
                 }
             });
         }
 
         function showInstitutionPicker(returning = false) {
-            const appContainer = document.getElementById('app-container');
-            const picker = document.getElementById('institution-picker');
+            const appContainer = document.getElementById("app-container");
+            const picker = document.getElementById("institution-picker");
+
             if (returning) {
-                appContainer.classList.remove('flex');
-                appContainer.classList.add('hidden');
+                appContainer.classList.remove("flex");
+                appContainer.classList.add("hidden");
             }
-            picker.classList.remove('hidden');
-            picker.classList.add('flex');
-            if (window.lucide) lucide.createIcons();
+
+            const homeUser = document.getElementById("home-user-display");
+            if (homeUser) homeUser.textContent = currentBaseUsername || "Usuario";
+            const isssButton = picker.querySelector('[onclick="activateInstitution(\'ISSS\')"]');
+            const minsalButton = picker.querySelector('[onclick="activateInstitution(\'MINSAL\')"]');
+
+            // La cuenta base ya fue autenticada en A:B.
+            // No se requieren cuentas duplicadas ni contraseñas por institución.
+            const canISSS = Boolean(currentBaseUsername && DB_USERS[currentBaseUsername]);
+            const canMINSAL = canISSS;
+
+            if (isssButton) {
+                isssButton.disabled = !canISSS;
+                isssButton.classList.toggle("opacity-40", !canISSS);
+                isssButton.classList.toggle("cursor-not-allowed", !canISSS);
+                isssButton.querySelector("span:last-child").textContent =
+                    canISSS ? "Entrar al espacio ISSS" : "Usuario no autenticado";
+            }
+            if (minsalButton) {
+                minsalButton.disabled = !canMINSAL;
+                minsalButton.classList.toggle("opacity-40", !canMINSAL);
+                minsalButton.classList.toggle("cursor-not-allowed", !canMINSAL);
+                minsalButton.querySelector("span:last-child").textContent =
+                    canMINSAL ? "Entrar al espacio MINSAL" : "Usuario no autenticado";
+            }
+
+            picker.classList.remove("hidden");
+            picker.classList.add("flex");
+            refreshIcons();
         }
 
-        async function activateInstitution(institution) {
-            if (!["ISSS", "MINSAL"].includes(institution) || !currentUsername || !currentSessionId) return;
-            const buttons = document.querySelectorAll("#institution-picker button");
-            buttons.forEach(button => button.disabled = true);
-            try {
-                const confirmation = await apiPost({action:"confirmLogin", usuario:currentUsername, sessionId:currentSessionId, institucion:institution}, 30000);
-                currentInstitution = confirmation.institucion || institution;
-                startSessionHeartbeat();
-            } catch (err) {
-                buttons.forEach(button => button.disabled = false);
-                alert("No se pudo completar el acceso: " + (err.message || "Error de conexión") + ". La sesión pendiente caducará automáticamente; vuelve a intentarlo.");
-                currentUsername = ""; currentSessionId = ""; currentInstitution = "";
-                const picker = document.getElementById("institution-picker");
-                picker.classList.remove("flex"); picker.classList.add("hidden");
-                const overlay = document.getElementById("login-overlay");
-                overlay.style.display = "flex"; overlay.style.opacity = "1"; overlay.style.transform = "scale(1)";
+        function goHome() {
+            // La matriz no tiene persistencia porque el historial fue retirado.
+            // Se limpia al cambiar de institución para impedir que horarios temporales
+            // de una institución se muestren accidentalmente en la otra.
+            if (Object.keys(scheduleData || {}).length) {
+                const ok = confirm("Volver al Home cambiará el área de trabajo. La matriz temporal actual se limpiará porque el historial está desactivado. ¿Continuar?");
+                if (!ok) return;
+            }
+            scheduleData = {};
+            EMPLOYEES = [];
+            ROLES = JSON.parse(JSON.stringify(DEFAULT_ROLES));
+            SHIFTS = JSON.parse(JSON.stringify(DEFAULT_SHIFTS));
+            currentUsername = "";
+            currentInstitution = "";
+            showInstitutionPicker(true);
+        }
+
+        function activateInstitution(institution) {
+            if (!["ISSS", "MINSAL"].includes(institution)) return;
+
+            if (!currentBaseUsername || !DB_USERS[currentBaseUsername]) {
+                alert("La sesión no está autenticada. Cierre sesión e ingrese nuevamente.");
                 return;
             }
-            buttons.forEach(button => button.disabled = false);
+
+            // El usuario de A:B es la cuenta base; el sufijo identifica al propietario
+            // de empleados, roles y turnos en las columnas D:G, I:K y M:P.
+            const dataUser = accountForInstitution(currentBaseUsername, institution);
+            currentUsername = dataUser;
+            currentInstitution = institution;
+
             const picker = document.getElementById("institution-picker");
-            picker.classList.remove("flex"); picker.classList.add("hidden");
+            picker.classList.remove("flex");
+            picker.classList.add("hidden");
+
             const appContainer = document.getElementById("app-container");
-            appContainer.classList.remove("hidden"); appContainer.classList.add("flex");
-            const dataUser = currentUsername === "krissia"
-                ? (institution === "ISSS" ? "krissia" : "krissiaminsal")
-                : currentUsername;
-            EMPLOYEES = DB_EMPLOYEES_BY_USER[dataUser] || [];
-            if (window.DB_ROLES_BY_USER && window.DB_ROLES_BY_USER[dataUser]) ROLES = window.DB_ROLES_BY_USER[dataUser];
-            if (window.DB_SHIFTS_BY_USER && window.DB_SHIFTS_BY_USER[dataUser]) {
-                SHIFTS = {...SHIFTS, ...window.DB_SHIFTS_BY_USER[dataUser]};
-            }
+            appContainer.classList.remove("hidden");
+            appContainer.classList.add("flex");
+
+            // Cargar únicamente el perfil exacto de la institución seleccionada.
+            EMPLOYEES = (DB_EMPLOYEES_BY_USER[dataUser] || []).map(emp => ({ ...emp }));
+            ROLES = (window.DB_ROLES_BY_USER && window.DB_ROLES_BY_USER[dataUser])
+                ? window.DB_ROLES_BY_USER[dataUser].map(role => ({ ...role }))
+                : JSON.parse(JSON.stringify(DEFAULT_ROLES));
+            SHIFTS = {
+                ...JSON.parse(JSON.stringify(DEFAULT_SHIFTS)),
+                ...((window.DB_SHIFTS_BY_USER && window.DB_SHIFTS_BY_USER[dataUser])
+                    ? window.DB_SHIFTS_BY_USER[dataUser] : {})
+            };
+
             const userDisplay = document.getElementById("user-display");
             const institutionDisplay = document.getElementById("institution-display");
             if (userDisplay) userDisplay.innerText = currentUsername;
             if (institutionDisplay) institutionDisplay.innerText = currentInstitution;
-            renderShiftLegend(); initTable();
-            if (window.lucide) lucide.createIcons();
+
+            scheduleData = {};
+            renderShiftLegend();
+            initTable();
+            refreshIcons();
         }
 
-        async function logout(releaseServer = true) {
-            stopSessionHeartbeat();
-            const oldUser = currentUsername, oldSession = currentSessionId;
-            if (releaseServer && oldUser && oldSession) {
-                try { await apiPost({action:"logout", usuario:oldUser, sessionId:oldSession}); }
-                catch (err) { console.warn("No se pudo confirmar el cierre remoto; la sesión caducará automáticamente.", err); }
-            }
-            currentSessionId = "";
-            historyReady = false;
-            historyLoading = false;
-            const adminBtn = document.getElementById("admin-users-button"); if (adminBtn) adminBtn.classList.add("hidden");
+        function logout() {
             currentUsername = "";
+            currentBaseUsername = "";
+            currentLoginPassword = "";
             currentInstitution = "";
             EMPLOYEES = [];
-            historyLastSnapshot = "";
+            ROLES = JSON.parse(JSON.stringify(DEFAULT_ROLES));
+            SHIFTS = JSON.parse(JSON.stringify(DEFAULT_SHIFTS));
+            const switchButton = document.getElementById("change-institution-button");
+            if (switchButton) switchButton.classList.remove("hidden");
             const passwordField = document.getElementById("loginPassword");
             if (passwordField) passwordField.value = "";
             const loginOverlay = document.querySelector('#login-overlay');
             const appContainer = document.querySelector('#app-container');
-            const institutionPicker = document.querySelector('#institution-picker');
+            const institutionPicker = document.getElementById('institution-picker');
             if (institutionPicker) { institutionPicker.classList.remove('flex'); institutionPicker.classList.add('hidden'); }
-            appContainer.classList.remove('flex'); appContainer.classList.add('hidden');
+            
+            appContainer.classList.remove('flex');
+            appContainer.classList.add('hidden');
             loginOverlay.style.display = 'flex';
-            setTimeout(() => { loginOverlay.style.opacity = '1'; loginOverlay.style.transform = 'scale(1)'; }, 50);
+            setTimeout(() => { 
+                loginOverlay.style.opacity = '1'; 
+                loginOverlay.style.transform = 'scale(1)';
+            }, 50);
         }
 
         function isISSSHoliday(month, day) {
@@ -1093,11 +1144,16 @@
             });
         }
 
-        // El módulo de historial anterior queda desactivado. Los horarios se mantienen
-        // en memoria durante la sesión; la hoja principal no se modifica.
-        function saveScheduleCell(day, empId, shiftCode) { /* guardado histórico desactivado */ }
-        function saveWholeSchedule() { return Promise.resolve(false); }
-        function retrySaveSchedule() { alert("El historial antiguo está desactivado."); }
+        function currentPeriod() {
+            return document.getElementById("month-picker").value;
+        }
+
+        // Google Sheets puede devolver códigos numéricos sin sus ceros iniciales.
+        // Esta normalización mantiene los códigos de cuatro dígitos consistentes.
+        function normalizeShiftCode(value) {
+            const code = String(value ?? "").trim().toUpperCase();
+            return /^\d+$/.test(code) ? code.padStart(4, "0") : code;
+        }
 
         function initTable() {
             const [year, month] = document.getElementById('month-picker').value.split('-').map(Number);
@@ -1176,8 +1232,8 @@
             }
 
             renderFooterRow();
-            // Carga el período sin crear ni guardar horarios de ejemplo automáticamente.
-            historyReady = false;
+            // Los horarios se mantienen únicamente en la sesión actual.
+            // No se consulta ni se guarda ningún historial externo.
         }
 
         function onRoleChange(empId, newRole) {
@@ -1187,8 +1243,6 @@
                 applyRoleLogicForEmployee(empId);
                 calculateTotals();
                 validateCoverage();
-                // El cambio de rol regenera la columna y guarda sus días como nuevas versiones.
-
             }
         }
 
@@ -1289,7 +1343,6 @@
                 if (cell) cell.innerHTML = renderCellContent(SHIFTS[shiftKey]);
                 calculateTotals();
                 validateCoverage();
-                saveScheduleCell(day, empId, shiftKey);
             }
             closeModal();
         }
@@ -1298,11 +1351,10 @@
             EMPLOYEES.forEach(emp => applyRoleLogicForEmployee(emp.id));
             calculateTotals();
             validateCoverage();
-
         }
 
         function clearSchedule() {
-            if (!confirm("¿Deseas marcar todos los turnos del período como LIBRE y guardar el cambio en el historial?")) return;
+            if (!confirm("¿Deseas marcar todos los turnos del período como LIBRE?")) return;
             const daysInMonth = Object.keys(scheduleData).length;
             for (let d = 1; d <= daysInMonth; d++) {
                 EMPLOYEES.forEach(emp => { scheduleData[d][emp.id] = "LIBRE"; });
@@ -1310,7 +1362,6 @@
             EMPLOYEES.forEach(emp => updateEmployeeColumnUI(emp.id));
             calculateTotals();
             validateCoverage();
-
         }
 
         function populateSampleData() { EMPLOYEES.forEach(emp => applyRoleLogicForEmployee(emp.id)); calculateTotals(); validateCoverage(); }
@@ -1368,11 +1419,10 @@
         }
 
         // GESTIÓN DE CUENTAS POR ADMINISTRADOR
-        async function openUserManager() {
-            if (currentUsername !== "carlos") { alert("Solo Carlos, administrador, puede gestionar usuarios."); return; }
+        function openUserManager() {
             document.getElementById('user-manager-modal').classList.remove('hidden');
             document.getElementById('user-manager-modal').classList.add('flex');
-            await renderUserList();
+            renderUserList();
             lucide.createIcons();
         }
 
@@ -1384,86 +1434,59 @@
         // FUNCIÓN MEJORADA PARA ENVIAR CAMBIOS A GOOGLE SHEETS
         async function sendToGoogleSheet(payload) {
             try {
-                const enriched = {...payload, de_usuario: currentUsername, sessionId: currentSessionId};
-                return await apiPost(enriched);
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+                console.log("Cambio enviado correctamente a Apps Script:", payload.action);
             } catch (e) {
                 console.warn("Error enviando cambios a Google Sheets:", e);
-                throw e;
             }
         }
 
-        async function createAccountByAdmin() {
-            if (currentUsername !== "carlos") { alert("Acceso exclusivo del administrador Carlos."); return; }
+        function createAccountByAdmin() {
             const newUser = document.getElementById('admin-new-user').value.trim().toLowerCase();
-            const newPass = document.getElementById('admin-new-pass').value;
-            if (!newUser || !newPass) { alert("Ingrese usuario y contraseña válidos."); return; }
-            try {
-                await apiPost({action:"saveUser", de_usuario:currentUsername, usuario:newUser, contrasena:newPass});
-                document.getElementById('admin-new-user').value = "";
-                document.getElementById('admin-new-pass').value = "";
-                await syncFromGoogleSheet();
-                await renderUserList();
-                alert("Cuenta guardada correctamente.");
-            } catch (err) { alert(err.message || "No se pudo crear la cuenta."); }
+            const newPass = document.getElementById('admin-new-pass').value.trim();
+
+            if (!newUser || !newPass) {
+                alert("Ingrese usuario y contraseña válidos.");
+                return;
+            }
+
+            DB_USERS[newUser] = { password: newPass };
+            if (!DB_EMPLOYEES_BY_USER[newUser]) {
+                DB_EMPLOYEES_BY_USER[newUser] = [];
+            }
+
+            // Guardar usuario en Google Sheets (Columnas A y B)
+            sendToGoogleSheet({
+                action: "saveUser",
+                usuario: newUser,
+                contrasena: newPass
+            });
+
+            document.getElementById('admin-new-user').value = "";
+            document.getElementById('admin-new-pass').value = "";
+            renderUserList();
         }
 
-        async function renderUserList() {
-            if (currentUsername !== "carlos") return;
-            const container = document.getElementById("user-list-container");
-            container.innerHTML = '<p class="text-xs text-slate-500">Consultando sesiones activas...</p>';
-            try {
-                const result = await apiPost({action:"adminSessions", admin:currentUsername, sessionId:currentSessionId});
-                container.innerHTML = "";
-                result.sessions.forEach(session => {
-                    const row = document.createElement("div");
-                    row.className = "flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800";
-                    const info = document.createElement("div");
-                    const name = document.createElement("strong"); name.textContent = session.usuario;
-                    const status = document.createElement("div");
-                    status.className = "text-xs mt-1 " + (session.activo ? "text-emerald-600" : "text-slate-500");
-                    status.textContent = session.activo ? "ON · Sesión activa" : "OFF · Disponible";
-                    const details = document.createElement("div");
-                    details.className = "text-[10px] text-slate-500 mt-1";
-                    details.textContent = "Último inicio de sesión: " + (session.ultimaActividad ? new Date(session.ultimaActividad).toLocaleString("es-SV") : "—");
-                    info.append(name,status,details);
-                    const actions = document.createElement("div"); actions.className = "flex flex-wrap gap-2";
-                    if (!["carlos","krissia","krissiaminsal"].includes(session.usuario)) {
-                        const changePass = document.createElement("button");
-                        changePass.className = "px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold";
-                        changePass.textContent = "Cambiar clave";
-                        changePass.onclick = async () => {
-                            const pass = prompt("Nueva contraseña (mínimo 8 caracteres) para " + session.usuario + ":");
-                            if (pass === null) return;
-                            try { await apiPost({action:"updateUser",de_usuario:currentUsername,sessionId:currentSessionId,usuarioObjetivo:session.usuario,contrasena:pass}); alert("Contraseña actualizada."); }
-                            catch(err) { alert(err.message || "No se pudo actualizar."); }
-                        };
-                        const del = document.createElement("button");
-                        del.className = "px-3 py-1.5 rounded-lg bg-slate-600 text-white text-xs font-semibold";
-                        del.textContent = "Eliminar";
-                        del.onclick = async () => {
-                            if (!confirm("¿Eliminar la cuenta " + session.usuario + "?")) return;
-                            try { await apiPost({action:"deleteUser",de_usuario:currentUsername,sessionId:currentSessionId,usuarioObjetivo:session.usuario}); await renderUserList(); }
-                            catch(err) { alert(err.message || "No se pudo eliminar."); }
-                        };
-                        actions.append(changePass,del);
-                    }
-                    if (session.activo) {
-                        const release = document.createElement("button");
-                        release.className = "px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-semibold";
-                        release.textContent = "Forzar cierre";
-                        release.onclick = async () => {
-                            if (!confirm("¿Cerrar la sesión activa de " + session.usuario + "?")) return;
-                            try { await apiPost({action:"forceLogout", admin:currentUsername, sessionId:currentSessionId, usuarioObjetivo:session.usuario}); await renderUserList(); }
-                            catch(err) { alert(err.message || "No se pudo liberar la sesión."); }
-                        };
-                        actions.appendChild(release);
-                    }
-                    row.append(info,actions); container.appendChild(row);
-                });
-                if (!result.sessions.length) container.textContent = "No hay usuarios registrados.";
-            } catch (err) {
-                container.textContent = "No se pudo consultar el estado de las sesiones: " + (err.message || "");
-            }
+        function renderUserList() {
+            const container = document.getElementById('user-list-container');
+            container.innerHTML = '';
+            Object.keys(DB_USERS).forEach(user => {
+                const empCount = (DB_EMPLOYEES_BY_USER[user] || []).length;
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">${user}</span>
+                            <span class="text-slate-600 dark:text-slate-400 text-[11px]">Cuenta registrada</span>
+                        </div>
+                        <span class="text-[10px] bg-slate-200 dark:bg-slate-800 text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded-full font-semibold">${empCount} empleados</span>
+                    </div>
+                `;
+            });
         }
 
         // GESTIÓN DE TURNOS MODAL
