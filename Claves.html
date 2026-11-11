@@ -11,9 +11,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Claves ISSS">
     <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icon-claves-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="./icon-claves.png">
-    <link rel="apple-touch-icon" href="./icon-claves.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icon-claves.png">
+    <link rel="apple-touch-icon" href="./icon-claves-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -327,9 +327,25 @@
                     <label class="block text-xs font-black uppercase text-slate-400 mb-1.5">Usuario (Col F)</label>
                     <input type="text" id="newUsuario" required placeholder="Ej. A004046" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs font-mono text-white focus:ring-2 focus:ring-emerald-500">
                 </div>
+                <div class="mb-4" id="newOwnerWrap">
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-1.5">Propietario (Col D)</label>
+                    <select id="newOwner" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white focus:ring-2 focus:ring-emerald-500"></select>
+                </div>
                 <div class="mb-4">
-                    <label class="block text-xs font-black uppercase text-slate-400 mb-1.5">Contraseña (Col G)</label>
-                    <input type="text" id="newPassword" required placeholder="Contraseña" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs font-mono font-bold text-white focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-1.5">Permitir cambio de contraseña (Col J)</label>
+                    <select id="newAllowChange" onchange="toggleNewPasswordMode()" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white focus:ring-2 focus:ring-emerald-500">
+                        <option value="si">Sí, permitir editar</option>
+                        <option value="no">No, usar una clave existente</option>
+                    </select>
+                </div>
+                <div class="mb-4" id="newPasswordInputWrap">
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-1.5">Contraseña nueva (Col G)</label>
+                    <input type="text" id="newPassword" placeholder="Contraseña" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs font-mono font-bold text-white focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div class="mb-4 hidden" id="newPasswordSourceWrap">
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-1.5">Seleccionar contraseña existente del usuario</label>
+                    <select id="newPasswordSource" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white focus:ring-2 focus:ring-emerald-500"></select>
+                    <p class="text-[10px] text-slate-400 mt-1">Se vinculará a la celda de contraseña original. Si cambia la original, esta también se actualizará.</p>
                 </div>
                 <div class="mb-6">
                     <label class="block text-xs font-black uppercase text-slate-400 mb-1.5">Centro de Atención (Col H)</label>
@@ -726,6 +742,7 @@
                             const pass = row[6] ? String(row[6]).trim() : "";
                             const centro = row[7] ? String(row[7]).trim() : "";
                             const fecha = row[8] ? String(row[8]).trim() : "";
+                            const permitirCambio = row[9] ? String(row[9]).trim().toLowerCase() : "si";
                             if (sistema.toLowerCase() === "sistema") return;
 
                             if ((deUsuario === currentActiveUser || currentActiveUser === "carlos") && (sistema || usuario)) {
@@ -736,7 +753,8 @@
                                     usuario,
                                     contrasena: pass,
                                     centro_de_atencion: centro,
-                                    actualizada: fecha
+                                    actualizada: fecha,
+                                    permitirCambio: permitirCambio !== "no"
                                 });
                             }
                         });
@@ -771,19 +789,19 @@
             });
         }
 
-        async function editCardPassword(sistema, usuario) {
-            const nuevaClave = prompt(`Ingrese la nueva contraseña para ${usuario} en ${sistema}:`);
-            if (!nuevaClave) return;
+        async function editCardPassword(rowIndex, sistema, usuario) {
+            const item = allData.find(row => Number(row.originalIndex) === Number(rowIndex));
+            if (!item) { showToast("No se encontró el registro.", false); return; }
+            const isAdmin = currentActiveUser === "carlos";
+            if (!item.permitirCambio && !isAdmin) {
+                showToast("Esta contraseña está bloqueada para edición.", false);
+                return;
+            }
 
-            // Actualización instantánea en pantalla
-            allData.forEach(item => {
-                if (item.sistema === sistema && item.usuario === usuario) {
-                    item.contrasena = nuevaClave;
-                }
-            });
-            renderSystems(allData);
+            const nuevaClave = prompt(`Ingrese la nueva contraseña para ${usuario} en ${sistema}:`, item.contrasena || "");
+            if (nuevaClave === null || !nuevaClave.trim()) return;
 
-            showToast("Sincronizando con Google Sheets...");
+            showToast("Actualizando contraseña...");
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
@@ -791,19 +809,45 @@
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({
                         action: "updateCredential",
+                        rowIndex: Number(rowIndex),
                         sistema: sistema,
                         usuario: usuario,
-                        nuevaContrasena: nuevaClave,
-                        syncVinculados: true
+                        nuevaContrasena: nuevaClave.trim(),
+                        actor: currentActiveUser
                     })
                 });
-
                 playSound('success');
-                showToast("Solicitud enviada. Actualizando vista; no se puede confirmar desde no-cors.", false);
-                setTimeout(loadSheetData, 800);
+                showToast("Solicitud enviada. Se actualizará al sincronizar.", false);
+                setTimeout(loadSheetData, 1000);
             } catch (e) {
                 playSound('error');
                 showToast("Error de comunicación", false);
+            }
+        }
+
+        async function setAllowChange(rowIndex, allow) {
+            if (currentActiveUser !== "carlos") {
+                showToast("Solo el administrador puede cambiar este permiso.", false);
+                return;
+            }
+            const label = allow ? "permitir" : "bloquear";
+            if (!confirm(`¿Deseas ${label} el cambio de contraseña para la fila ${rowIndex}?`)) return;
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({
+                        action: "setAllowChange",
+                        rowIndex: Number(rowIndex),
+                        allowChange: allow ? "si" : "no",
+                        actor: currentActiveUser
+                    })
+                });
+                showToast("Permiso actualizado; sincronizando...", false);
+                setTimeout(loadSheetData, 1000);
+            } catch (error) {
+                showToast("No se pudo actualizar el permiso.", false);
             }
         }
 
@@ -981,7 +1025,8 @@
                                         <div class="flex items-center gap-1.5 flex-wrap">
                                             <button type="button" data-action="copy-user" data-value="${escapeHTML(item.usuario || '')}" class="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] rounded-xl font-bold border border-slate-700"><i class="fa-solid fa-copy mr-1"></i>Usuario</button>
                                             <button type="button" data-action="copy-pass" data-value="${escapeHTML(item.contrasena || '')}" class="px-2.5 py-2 bg-green-950 hover:bg-green-900 text-emerald-200 text-[11px] rounded-xl font-bold border border-emerald-800"><i class="fa-solid fa-key mr-1"></i>Clave</button>
-                                            <button type="button" data-action="edit-row" data-system="${escapeHTML(sistema)}" data-user="${escapeHTML(item.usuario || '')}" title="Editar contraseña" class="px-3 py-2 bg-amber-950 hover:bg-amber-900 text-amber-200 text-xs rounded-xl border border-amber-800"><i class="fa-solid fa-pen"></i></button>
+                                            ${item.permitirCambio || currentActiveUser === "carlos" ? `<button type="button" data-action="edit-row" data-row="${Number(item.originalIndex) || 0}" data-system="${escapeHTML(sistema)}" data-user="${escapeHTML(item.usuario || '')}" title="Editar contraseña" class="px-3 py-2 bg-amber-950 hover:bg-amber-900 text-amber-200 text-xs rounded-xl border border-amber-800"><i class="fa-solid fa-pen"></i></button>` : `<span title="Cambio de contraseña bloqueado" class="px-3 py-2 bg-slate-800 text-slate-400 text-xs rounded-xl border border-slate-700"><i class="fa-solid fa-lock"></i></span>`}
+                                            ${currentActiveUser === "carlos" ? `<button type="button" data-action="toggle-permission" data-row="${Number(item.originalIndex) || 0}" data-allow="${item.permitirCambio ? 'si' : 'no'}" title="Cambiar permiso de edición" class="px-3 py-2 ${item.permitirCambio ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-rose-950 text-rose-300 border-rose-800'} text-xs rounded-xl border"><i class="fa-solid ${item.permitirCambio ? 'fa-lock-open' : 'fa-lock'}"></i></button>` : ''}
                                             <button type="button" data-action="delete-row" data-row="${Number(item.originalIndex) || 0}" title="Eliminar registro" class="px-3 py-2 bg-rose-950 hover:bg-rose-900 text-rose-200 text-xs rounded-xl border border-rose-800"><i class="fa-solid fa-trash"></i></button>
                                         </div>
                                     </div>
@@ -1000,7 +1045,8 @@
             const action = button.dataset.action;
             if (action === 'copy-user') copyToClipboard(button.dataset.value, 'usuario');
             if (action === 'copy-pass') copyToClipboard(button.dataset.value, 'contraseña');
-            if (action === 'edit-row') editCardPassword(button.dataset.system, button.dataset.user);
+            if (action === 'edit-row') editCardPassword(Number(button.dataset.row), button.dataset.system, button.dataset.user);
+            if (action === 'toggle-permission') setAllowChange(Number(button.dataset.row), button.dataset.allow !== 'si');
             if (action === 'delete-row') deleteCardRow(Number(button.dataset.row));
         });
 
@@ -1072,20 +1118,72 @@
             document.getElementById('adminModal').classList.add('flex');
         }
 
-        function openCreateModal() { document.getElementById('createModal').classList.remove('hidden'); document.getElementById('createModal').classList.add('flex'); }
+        function openCreateModal() {
+            const modal = document.getElementById('createModal');
+            const ownerWrap = document.getElementById('newOwnerWrap');
+            const ownerSelect = document.getElementById('newOwner');
+            const isAdmin = currentActiveUser === 'carlos';
+            ownerWrap.classList.toggle('hidden', !isAdmin);
+            if (isAdmin) {
+                const owners = Object.keys(USERS_DATABASE).filter(Boolean).sort();
+                ownerSelect.innerHTML = owners.map(u => `<option value="${escapeHTML(u)}">${escapeHTML(u)}</option>`).join('');
+                if (!owners.length) ownerSelect.innerHTML = `<option value="carlos">carlos</option>`;
+            } else {
+                ownerSelect.innerHTML = `<option value="${escapeHTML(currentActiveUser || '')}">${escapeHTML(currentActiveUser || '')}</option>`;
+            }
+            document.getElementById('newAllowChange').value = 'si';
+            toggleNewPasswordMode();
+            refreshPasswordSourceOptions();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+        function toggleNewPasswordMode() {
+            const allow = document.getElementById('newAllowChange').value === 'si';
+            document.getElementById('newPasswordInputWrap').classList.toggle('hidden', !allow);
+            document.getElementById('newPasswordSourceWrap').classList.toggle('hidden', allow);
+            document.getElementById('newPassword').required = allow;
+            document.getElementById('newPasswordSource').required = !allow;
+            if (!allow) refreshPasswordSourceOptions();
+        }
+
+        function refreshPasswordSourceOptions() {
+            const select = document.getElementById('newPasswordSource');
+            if (!select) return;
+            const owner = currentActiveUser === 'carlos'
+                ? (document.getElementById('newOwner')?.value || '')
+                : String(currentActiveUser || '');
+            const candidates = allData.filter(item => item.deUsuario === owner && item.contrasena);
+            select.innerHTML = candidates.map(item =>
+                `<option value="${Number(item.originalIndex)}">${escapeHTML(item.sistema)} · ${escapeHTML(item.usuario)} · ${escapeHTML(item.contrasena)}</option>`
+            ).join('');
+            if (!candidates.length) {
+                select.innerHTML = `<option value="">No hay contraseñas existentes para este usuario</option>`;
+            }
+        }
+
+        document.getElementById('newOwner')?.addEventListener('change', refreshPasswordSourceOptions);
 
         async function handleCreateSubmit(e) {
             e.preventDefault();
             const sys = document.getElementById('newSistema').value.trim().toUpperCase();
             const usr = document.getElementById('newUsuario').value.trim();
-            const pass = document.getElementById('newPassword').value.trim();
+            const allow = document.getElementById('newAllowChange').value;
+            const owner = currentActiveUser === 'carlos'
+                ? document.getElementById('newOwner').value
+                : currentActiveUser;
+            const pass = allow === 'si' ? document.getElementById('newPassword').value.trim() : '';
+            const sourceRow = allow === 'no' ? Number(document.getElementById('newPasswordSource').value) : 0;
             const cnt = document.getElementById('newCentro').value.trim();
             const hoy = new Date().toLocaleDateString('es-SV');
 
-            closeModal('createModal');
-            showToast("Guardando en Google Sheets...");
+            if (!owner) { showToast("Selecciona el propietario.", false); return; }
+            if (allow === 'si' && !pass) { showToast("Escribe la contraseña.", false); return; }
+            if (allow === 'no' && !sourceRow) { showToast("No hay una contraseña existente seleccionada.", false); return; }
 
+            showToast("Guardando en Google Sheets...");
             try {
                 await fetch(SCRIPT_URL, {
                     method: "POST",
@@ -1093,14 +1191,19 @@
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({
                         action: "createRow",
-                        user: currentActiveUser,
+                        user: owner,
                         sistema: sys,
                         usuario: usr,
                         pass: pass,
+                        passwordSourceRow: sourceRow,
+                        allowChange: allow,
                         centro: cnt,
-                        fecha: hoy
+                        fecha: hoy,
+                        actor: currentActiveUser
                     })
                 });
+                closeModal('createModal');
+                document.getElementById('createForm').reset();
                 playSound('success');
                 showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
                 setTimeout(loadSheetData, 1500);
