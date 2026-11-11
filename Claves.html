@@ -131,6 +131,14 @@
                 <p class="text-xs text-slate-500 mt-1.5 font-semibold">Control y Consulta de Accesos Institucionales</p>
             </div>
 
+            <section id="loginNotesPanel" class="hidden mb-5 p-4 rounded-2xl border border-blue-200 bg-blue-50/95 shadow-inner" aria-live="polite">
+                <div class="flex items-center gap-2 mb-2 text-blue-900">
+                    <i class="fa-solid fa-bell text-blue-700"></i>
+                    <h3 class="text-xs font-black uppercase tracking-wider">Avisos para iniciar sesión</h3>
+                </div>
+                <div id="loginNotesList" class="space-y-2 text-sm text-slate-700"></div>
+            </section>
+
             <form onsubmit="handleLogin(event)" class="space-y-5">
                 <div>
                     <label class="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5">Usuario</label>
@@ -337,6 +345,8 @@
         // La autenticación actual sigue dependiendo del CSV publicado: debe migrarse
         // a un backend privado antes de usar este portal con credenciales reales.
         let USERS_DATABASE = {};
+        // Notas de inicio de sesión: columna K = "login", columna L = texto de la nota.
+        let LOGIN_NOTES = [];
 
         let currentActiveUser = null;
         let allData = [];
@@ -418,6 +428,11 @@
             createSnow();
             startChristmasCountdown();
 
+            // Mantiene actualizados los avisos del login mientras no haya sesión iniciada.
+            setInterval(() => {
+                if (!currentActiveUser && !document.hidden) preloadUsersFromCSV();
+            }, 60000);
+
             // Attaching audio trigger to all standard click buttons
             document.addEventListener('click', (e) => {
                 if (e.target.closest('button, a, input[type="submit"]')) {
@@ -478,6 +493,27 @@
             }
         }
 
+
+        function renderLoginNotes() {
+            const panel = document.getElementById("loginNotesPanel");
+            const list = document.getElementById("loginNotesList");
+            if (!panel || !list) return;
+
+            list.replaceChildren();
+            if (!LOGIN_NOTES.length) {
+                panel.classList.add("hidden");
+                return;
+            }
+
+            LOGIN_NOTES.forEach((note) => {
+                const item = document.createElement("div");
+                item.className = "rounded-xl border border-blue-100 bg-white/80 px-3 py-2 whitespace-pre-wrap break-words";
+                item.textContent = note;
+                list.appendChild(item);
+            });
+            panel.classList.remove("hidden");
+        }
+
         function preloadUsersFromCSV() {
             return new Promise((resolve) => {
                 if (!window.Papa) {
@@ -489,11 +525,18 @@
                     download: true, header: false, skipEmptyLines: true,
                     complete: function(results) {
                         if (results.data && results.data.length) {
+                            LOGIN_NOTES = [];
                             results.data.forEach((row) => {
                                 const u = row[0] ? String(row[0]).trim().toLowerCase() : "";
                                 const p = row[1] ? String(row[1]).trim() : "";
                                 if (u && u !== "usuario" && p) USERS_DATABASE[u] = p;
+
+                                // Hoja: K (índice 10) = de usuario; L (índice 11) = nota.
+                                const noteOwner = row[10] ? String(row[10]).trim().toLowerCase() : "";
+                                const noteText = row[11] ? String(row[11]).trim() : "";
+                                if (noteOwner === "login" && noteText) LOGIN_NOTES.push(noteText);
                             });
+                            renderLoginNotes();
                             resolve(true);
                         } else {
                             showToast("No se encontraron usuarios en la fuente de acceso", false);
