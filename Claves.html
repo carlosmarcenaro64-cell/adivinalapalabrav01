@@ -235,6 +235,13 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+            <section id="userNotesPanel" class="hidden mb-6 p-4 sm:p-5 rounded-2xl border border-amber-400/40 bg-gradient-to-r from-blue-950/95 to-slate-900/95 shadow-xl" aria-live="polite">
+                <div class="flex items-center gap-2 mb-3 text-amber-300">
+                    <i class="fa-solid fa-bell"></i>
+                    <h2 class="text-xs font-black uppercase tracking-wider">Avisos para tu usuario</h2>
+                </div>
+                <div id="userNotesList" class="space-y-2 text-sm text-slate-100"></div>
+            </section>
             <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><div class="text-xs text-slate-400"><i class="fa-solid fa-shield-halved text-emerald-400 mr-2"></i>Sesión activa · <span id="recordCountLabel">Datos sincronizados desde la hoja</span></div><span class="text-[10px] uppercase tracking-widest text-slate-500">Portal de accesos</span></div>
             <div class="holiday-banner glass-card-dark rounded-3xl p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 border border-white/10 shadow-2xl">
                 <div>
@@ -347,6 +354,7 @@
         let USERS_DATABASE = {};
         // Notas de inicio de sesión: columna K = "login", columna L = texto de la nota.
         let LOGIN_NOTES = [];
+        let USER_NOTES = [];
 
         let currentActiveUser = null;
         let allData = [];
@@ -494,6 +502,50 @@
         }
 
 
+        function loadNoteRows(rows) {
+            LOGIN_NOTES = [];
+            USER_NOTES = [];
+
+            (rows || []).forEach((row) => {
+                // K = de usuario; L = nota.
+                const owner = row[10] ? String(row[10]).trim().toLowerCase() : "";
+                const note = row[11] ? String(row[11]).trim() : "";
+                if (!owner || !note) return;
+
+                if (owner === "login") {
+                    LOGIN_NOTES.push(note);
+                } else {
+                    USER_NOTES.push({ owner, note });
+                }
+            });
+
+            renderLoginNotes();
+            renderCurrentUserNotes();
+        }
+
+        function renderCurrentUserNotes() {
+            const panel = document.getElementById("userNotesPanel");
+            const list = document.getElementById("userNotesList");
+            if (!panel || !list) return;
+
+            list.replaceChildren();
+            const activeUser = String(currentActiveUser || "").trim().toLowerCase();
+            const notes = USER_NOTES.filter(item => item.owner === activeUser);
+
+            if (!activeUser || !notes.length) {
+                panel.classList.add("hidden");
+                return;
+            }
+
+            notes.forEach((entry) => {
+                const item = document.createElement("div");
+                item.className = "rounded-xl border border-white/10 bg-white/5 px-3 py-2 whitespace-pre-wrap break-words";
+                item.textContent = entry.note;
+                list.appendChild(item);
+            });
+            panel.classList.remove("hidden");
+        }
+
         function renderLoginNotes() {
             const panel = document.getElementById("loginNotesPanel");
             const list = document.getElementById("loginNotesList");
@@ -525,18 +577,12 @@
                     download: true, header: false, skipEmptyLines: true,
                     complete: function(results) {
                         if (results.data && results.data.length) {
-                            LOGIN_NOTES = [];
                             results.data.forEach((row) => {
                                 const u = row[0] ? String(row[0]).trim().toLowerCase() : "";
                                 const p = row[1] ? String(row[1]).trim() : "";
                                 if (u && u !== "usuario" && p) USERS_DATABASE[u] = p;
-
-                                // Hoja: K (índice 10) = de usuario; L (índice 11) = nota.
-                                const noteOwner = row[10] ? String(row[10]).trim().toLowerCase() : "";
-                                const noteText = row[11] ? String(row[11]).trim() : "";
-                                if (noteOwner === "login" && noteText) LOGIN_NOTES.push(noteText);
                             });
-                            renderLoginNotes();
+                            loadNoteRows(results.data);
                             resolve(true);
                         } else {
                             showToast("No se encontraron usuarios en la fuente de acceso", false);
@@ -581,6 +627,7 @@
             if (USERS_DATABASE[uInput] && USERS_DATABASE[uInput] === pInput) {
                 errDiv.querySelector('span').textContent = 'Usuario o contraseña incorrectos.';
                 currentActiveUser = uInput;
+                renderCurrentUserNotes();
                 errDiv.classList.add('hidden');
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'flex';
@@ -606,6 +653,7 @@
             playSound('click');
             stopAutoSync();
             currentActiveUser = null;
+            renderCurrentUserNotes();
             syncInProgress = false;
             setSyncStatus("Sesión cerrada");
             allData = []; // Clear in-memory array on logout
@@ -670,6 +718,7 @@
                             throw new Error("Respuesta CSV no válida");
                         }
                         const parsed = [];
+                        loadNoteRows(results.data || []);
                         (results.data || []).forEach((row, idx) => {
                             const deUsuario = row[3] ? String(row[3]).trim().toLowerCase() : "";
                             const sistema = row[4] ? String(row[4]).trim().toUpperCase() : "";
