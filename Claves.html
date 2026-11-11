@@ -5,17 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claves ISSS &bull; Portal Seguro</title>
-
-    <!-- Manifest PWA Web App Settings con Icono de Candado HD -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlNpc3RlbWEgZGUgQ2xhdmVzIElTU1MiLAogICJzaG9ydF9uYW1lIjogIkNsYXZlcyBJU1NTIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGQxYjJhIiwKICAidGhlbWVfY29sb3IiOiAiIzBkMWIyYSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDt1dGY4LDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgNTEyIDUxMic+PHJlY3Qgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInIHJ4PScxMDAnIGZpbGw9JyUyMzI1NjNlYicvPjxwYXRoIGQ9J00zNjggMjE2aC0yNHYtNjRjMC00OC41LTM5LjUtODgtODgtODhzLTg4IDM5LjUtODggODh2NjRoLTI0Yy0xMy4yIDAtMjQgMTAuOC0yNCAyNHYxNjBjMCAxMy4yIDEwLjggMjQgMjQgMjRoMjQwYzEzLjIgMCAyNC0xMC44IDI0LTI0VjI0MGMwLTEzLjItMTAuOC0yNC0yNC0yNHptLTEyMCAxNDRjLTE3LjcgMC0zMi0xNC4zLTMyLTMyczE0LjMtMzIgMzItOSAzMiAxNC4zIDMyIDMyLTE0LjMgMzItMzIgMzJ6bTU2LTE0NEgyMDh2LTY0YzAtMjYuNSAyMS41LTQ4IDQ4LTQ4czQ4IDIxLjUgNDggNDh2NjR6JyBmaWxsPSclMjNmZmZmZmYnLz48L3N2Zz4iLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9">
-    <meta name="theme-color" content="#0d1b2a">
+    <meta name="theme-color" content="#00529b">
+    <meta name="application-name" content="Claves ISSS">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Claves ISSS">
-
-    <!-- Favicon & Apple Touch Icon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%232563eb'/><path d='M368 216h-24v-64c0-48.5-39.5-88-88-88s-88 39.5-88 88v64h-24c-13.2 0-24 10.8-24 24v160c0 13.2 10.8 24 24 24h240c13.2 0 24-10.8 24-24V240c0-13.2-10.8-24-24-24zm-120 144c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm56-144H208v-64c0-26.5 21.5-48 48-48s48 21.5 48 48v64z' fill='%23ffffff'/></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%232563eb'/><path d='M368 216h-24v-64c0-48.5-39.5-88-88-88s-88 39.5-88 88v64h-24c-13.2 0-24 10.8-24 24v160c0 13.2 10.8 24 24 24h240c13.2 0 24-10.8 24-24V240c0-13.2-10.8-24-24-24zm-120 144c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm56-144H208v-64c0-26.5 21.5-48 48-48s48 21.5 48 48v64z' fill='%23ffffff'/></svg>">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-claves-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icon-claves.png">
+    <link rel="apple-touch-icon" href="./icon-claves.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -1046,6 +1044,17 @@
         });
 
     </script>
-</body>
+
+    <script>
+      // Instalación PWA de Claves ISSS. Requiere HTTPS (GitHub Pages lo proporciona).
+      if ("serviceWorker" in navigator && location.protocol === "https:") {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js", { scope: "./" })
+            .then(() => console.info("Claves ISSS: aplicación instalable habilitada."))
+            .catch(err => console.warn("No se pudo registrar el Service Worker:", err));
+        });
+      }
+    </script>
+\n</body>
 </html>
 ```
