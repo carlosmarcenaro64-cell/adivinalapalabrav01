@@ -246,7 +246,7 @@
 
                     <input type="search" id="searchInput" autocomplete="off" placeholder="Buscar sistema, usuario o centro..." 
                         class="w-full md:w-80 pl-4 pr-4 py-3 bg-slate-900/90 border border-slate-700 text-white rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium shadow-inner">
-                    <button type="button" onclick="loadSheetData()" title="Actualizar datos" aria-label="Actualizar datos" class="shrink-0 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black shadow-lg"><i class="fa-solid fa-rotate"></i></button>
+                    <button type="button" onclick="loadSheetData({silent:false})" title="Actualizar datos" aria-label="Actualizar datos" class="shrink-0 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black shadow-lg"><i class="fa-solid fa-rotate"></i></button>
                 </div>
             </div>
 
@@ -554,6 +554,7 @@
                 playSound('success');
                 showToast(`Bienvenido ${currentActiveUser.toUpperCase()} ❄️`);
                 loadSheetData();
+                startAutoSync();
             } else {
                 playSound('error');
                 errDiv.classList.remove('hidden');
@@ -562,7 +563,10 @@
 
         function logout() {
             playSound('click');
+            stopAutoSync();
             currentActiveUser = null;
+            syncInProgress = false;
+            setSyncStatus("Sesión cerrada");
             allData = []; // Clear in-memory array on logout
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
@@ -570,23 +574,68 @@
             document.getElementById('loginPass').value = '';
         }
 
-        function loadSheetData() {
-            // Fuerza sincronización limpia directo desde Google Sheets desactivando caché
+        // Sincronización automática: consulta Google Sheets cada 60 segundos.
+        // Se detiene al cerrar sesión y se pausa cuando la pestaña no está visible.
+        const AUTO_SYNC_INTERVAL_MS = 60000;
+        let autoSyncTimer = null;
+        let syncInProgress = false;
+        let lastSuccessfulSync = null;
+
+        function setSyncStatus(message, state = "ok") {
+            const label = document.getElementById("syncStatusText");
+            const dot = document.getElementById("syncStatusDot");
+            if (label) label.textContent = message;
+            if (dot) {
+                dot.className = "w-2 h-2 rounded-full " +
+                    (state === "error" ? "bg-rose-400" :
+                     state === "busy" ? "bg-amber-300 animate-pulse" :
+                     "bg-emerald-400 animate-pulse");
+            }
+        }
+
+        function startAutoSync() {
+            stopAutoSync();
+            if (!currentActiveUser) return;
+            setSyncStatus("Sincronización activa");
+            autoSyncTimer = setInterval(() => {
+                if (currentActiveUser && !document.hidden) loadSheetData({ silent: true });
+            }, AUTO_SYNC_INTERVAL_MS);
+        }
+
+        function stopAutoSync() {
+            if (autoSyncTimer) clearInterval(autoSyncTimer);
+            autoSyncTimer = null;
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden && currentActiveUser) {
+                loadSheetData({ silent: true });
+            }
+        });
+
+        function loadSheetData(options = {}) {
+            const silent = options.silent === true;
+            if (!currentActiveUser || syncInProgress) return;
+            syncInProgress = true;
+            setSyncStatus("Actualizando…", "busy");
+
             Papa.parse(CSV_PUBLIC_URL + "&t=" + Date.now(), {
                 download: true,
                 header: false,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    let parsed = [];
-                    if (results.data && results.data.length > 0) {
-                        results.data.forEach((row, idx) => {
+                    try {
+                        if (!results || results.errors?.length && (!results.data || !results.data.length)) {
+                            throw new Error("Respuesta CSV no válida");
+                        }
+                        const parsed = [];
+                        (results.data || []).forEach((row, idx) => {
                             const deUsuario = row[3] ? String(row[3]).trim().toLowerCase() : "";
                             const sistema = row[4] ? String(row[4]).trim().toUpperCase() : "";
                             const usuario = row[5] ? String(row[5]).trim() : "";
                             const pass = row[6] ? String(row[6]).trim() : "";
                             const centro = row[7] ? String(row[7]).trim() : "";
                             const fecha = row[8] ? String(row[8]).trim() : "";
-
                             if (sistema.toLowerCase() === "sistema") return;
 
                             if ((deUsuario === currentActiveUser || currentActiveUser === "carlos") && (sistema || usuario)) {
@@ -594,28 +643,40 @@
                                     originalIndex: idx + 1,
                                     deUsuario: deUsuario || "desconocido",
                                     sistema: sistema || "GENERAL",
-                                    usuario: usuario,
+                                    usuario,
                                     contrasena: pass,
                                     centro_de_atencion: centro,
                                     actualizada: fecha
                                 });
                             }
                         });
-                    }
-                    allData = parsed;
-                    const countLabel = document.getElementById('recordCountLabel');
-                    if (countLabel) countLabel.textContent = `${allData.length} registros disponibles`;
 
-                    if (currentActiveUser === "carlos") {
-                        populateAdminUserSelector();
+                        // Solo reemplazar datos cuando la consulta devuelve una respuesta válida.
+                        allData = parsed;
+                        lastSuccessfulSync = new Date();
+                        const countLabel = document.getElementById("recordCountLabel");
+                        if (countLabel) countLabel.textContent = `${allData.length} registros disponibles`;
+                        if (currentActiveUser === "carlos") {
+                            populateAdminUserSelector();
+                            renderAdminUsersList();
+                        }
+                        refreshView();
+                        setSyncStatus("Actualizado " + lastSuccessfulSync.toLocaleTimeString("es-SV", {
+                            hour: "2-digit", minute: "2-digit", second: "2-digit"
+                        }));
+                        if (!silent) showToast("Datos sincronizados con Google Sheets.");
+                    } catch (error) {
+                        setSyncStatus("Error de sincronización", "error");
+                        if (!silent) showToast("No se pudieron interpretar los datos recibidos.", false);
+                    } finally {
+                        syncInProgress = false;
                     }
-
-                    renderSystems(allData);
-                    if (currentActiveUser === 'carlos') renderAdminUsersList();
                 },
                 error: function() {
-                    showToast("No se pudieron cargar los registros. Revisa la conexión.", false);
-                    document.getElementById('systemsContainer').innerHTML = '<div class="col-span-full p-8 text-center rounded-3xl border border-rose-900 bg-rose-950/40 text-rose-200">Error al consultar Google Sheets. Intenta actualizar nuevamente.</div>';
+                    syncInProgress = false;
+                    setSyncStatus("Sin conexión · reintentando", "error");
+                    if (!silent) showToast("No se pudieron cargar los registros. Revisa la conexión.", false);
+                    // Conserva los últimos datos válidos en pantalla si falla temporalmente la red.
                 }
             });
         }
@@ -639,6 +700,7 @@
                     mode: "no-cors",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify({
+                        action: "updateCredential",
                         sistema: sistema,
                         usuario: usuario,
                         nuevaContrasena: nuevaClave,
