@@ -1,4 +1,5 @@
-ñ<!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -64,6 +65,15 @@
       #systemsContainer>section:nth-child(3n+1){animation-delay:.06s}#systemsContainer>section:nth-child(3n+2){animation-delay:.14s}#systemsContainer>section:nth-child(3n){animation-delay:.22s}
       @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
       @media(max-width:640px){.watermark-marcenaro{bottom:8px;right:8px;opacity:.85}.ornament{display:none}}
+
+
+      .christmas-countdown{display:flex;align-items:center;gap:10px;padding:9px 13px;border:1px solid rgba(251,191,36,.42);border-radius:16px;background:linear-gradient(115deg,rgba(0,82,155,.32),rgba(2,8,23,.86));box-shadow:0 0 22px rgba(251,191,36,.10),inset 0 1px rgba(255,255,255,.08);animation:countdownGlow 3s ease-in-out infinite alternate}
+      .christmas-countdown .count-unit{min-width:36px;text-align:center}
+      .christmas-countdown .count-value{display:block;color:#fff;font-size:1.05rem;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums;text-shadow:0 0 12px rgba(96,165,250,.55)}
+      .christmas-countdown .count-label{display:block;color:#fbbf24;font-size:.52rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+      .christmas-countdown .count-separator{color:#fbbf24;font-weight:900;opacity:.8}
+      @keyframes countdownGlow{from{box-shadow:0 0 12px rgba(251,191,36,.08),inset 0 1px rgba(255,255,255,.08)}to{box-shadow:0 0 25px rgba(251,191,36,.22),inset 0 1px rgba(255,255,255,.12)}}
+      @media(max-width:640px){.christmas-countdown{width:100%;justify-content:center;order:3}.christmas-countdown .count-value{font-size:.95rem}}
 
       /* Identidad visual institucional: azul, negro y blanco; Navidad como acento decorativo */
       body{color:#f8fafc;background-color:#050b16}
@@ -179,7 +189,19 @@
                     </div>
                 </div>
                 
-                <div class="flex items-center space-x-3">
+                <div id="christmasCountdown" class="christmas-countdown" role="timer" aria-label="Cuenta regresiva para Navidad 2026">
+                    <span class="text-xl" aria-hidden="true">🎄</span>
+                    <div class="countdown-heading text-[9px] font-black uppercase tracking-wider text-amber-300 leading-tight">Faltan para<br>Navidad</div>
+                    <div class="count-unit"><span id="christmasDays" class="count-value">--</span><span class="count-label">Días</span></div>
+                    <span class="count-separator">:</span>
+                    <div class="count-unit"><span id="christmasHours" class="count-value">--</span><span class="count-label">Horas</span></div>
+                    <span class="count-separator">:</span>
+                    <div class="count-unit"><span id="christmasMinutes" class="count-value">--</span><span class="count-label">Min</span></div>
+                    <span class="count-separator">:</span>
+                    <div class="count-unit"><span id="christmasSeconds" class="count-value">--</span><span class="count-label">Seg</span></div>
+                </div>
+
+                <div class="flex items-center space-x-3 flex-wrap justify-center">
                     <div class="flex items-center space-x-2 mr-2">
                         <a href="https://carlosmarcenaro64-cell.github.io/adivinalapalabrav01/Cumple.html" target="_blank" 
                            class="w-10 h-10 bg-amber-500/20 hover:bg-amber-400 text-amber-300 hover:text-slate-950 rounded-2xl flex items-center justify-center transition-all border border-amber-400/40 text-base shadow-lg hover:scale-110" 
@@ -396,6 +418,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             usersLoaded = await preloadUsersFromCSV();
             createSnow();
+            startChristmasCountdown();
 
             // Attaching audio trigger to all standard click buttons
             document.addEventListener('click', (e) => {
@@ -404,6 +427,43 @@
                 }
             });
         });
+
+        // Cuenta regresiva hasta el 24/12/2026 a las 00:00, hora local.
+        let christmasTimer = null;
+        function updateChristmasCountdown() {
+            const target = new Date(2026, 11, 24, 0, 0, 0, 0);
+            const remaining = Math.max(0, target.getTime() - Date.now());
+            const days = Math.floor(remaining / 86400000);
+            const hours = Math.floor((remaining % 86400000) / 3600000);
+            const minutes = Math.floor((remaining % 3600000) / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+
+            const values = {
+                christmasDays: String(days).padStart(2, "0"),
+                christmasHours: String(hours).padStart(2, "0"),
+                christmasMinutes: String(minutes).padStart(2, "0"),
+                christmasSeconds: String(seconds).padStart(2, "0")
+            };
+            Object.entries(values).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = value;
+            });
+
+            if (remaining === 0) {
+                const heading = document.querySelector("#christmasCountdown .countdown-heading");
+                if (heading) heading.innerHTML = "¡Llegó<br>Navidad!";
+                if (christmasTimer) {
+                    clearInterval(christmasTimer);
+                    christmasTimer = null;
+                }
+            }
+        }
+
+        function startChristmasCountdown() {
+            updateChristmasCountdown();
+            if (christmasTimer) clearInterval(christmasTimer);
+            christmasTimer = setInterval(updateChristmasCountdown, 1000);
+        }
 
         function createSnow() {
             const container = document.getElementById("snowContainer");
