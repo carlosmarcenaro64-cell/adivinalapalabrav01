@@ -589,16 +589,23 @@
                     resolve(false);
                     return;
                 }
-                Papa.parse(CSV_PUBLIC_URL + "&t=" + Date.now(), {
+                Papa.parse(CSV_PUBLIC_URL + "&_users_nocache=" + Date.now() + "_" + Math.random().toString(36).slice(2), {
                     download: true, header: false, skipEmptyLines: true,
+                    downloadRequestHeaders: {
+                        "Cache-Control": "no-cache, no-store, max-age=0",
+                        "Pragma": "no-cache"
+                    },
                     complete: function(results) {
                         if (results.data && results.data.length) {
+                            const freshUsers = {};
                             results.data.forEach((row) => {
                                 const u = row[0] ? String(row[0]).trim().toLowerCase() : "";
                                 const p = row[1] ? String(row[1]).trim() : "";
-                                if (u && u !== "usuario" && p) USERS_DATABASE[u] = p;
+                                if (u && u !== "usuario" && p) freshUsers[u] = p;
                             });
+                            USERS_DATABASE = freshUsers;
                             loadNoteRows(results.data);
+                            if (currentActiveUser === "carlos" && typeof renderAdminUsersList === "function") renderAdminUsersList();
                             resolve(true);
                         } else {
                             showToast("No se encontraron usuarios en la fuente de acceso", false);
@@ -717,76 +724,153 @@
                 loadSheetData({ silent: true });
             }
         });
+        window.addEventListener("online", () => {
+            if (currentActiveUser) loadSheetData({ silent: true });
+        });
+
+        let syncPending = false;
+        let syncPendingSilent = true;
 
         function loadSheetData(options = {}) {
             const silent = options.silent === true;
-            if (!currentActiveUser || syncInProgress) return;
+            if (!currentActiveUser) return Promise.resolve(false);
+
+            // Si ya hay una lectura en curso, no descartamos la actualización:
+            // dejamos una nueva lectura en cola para ejecutarla al terminar.
+            if (syncInProgress) {
+                syncPending = true;
+                syncPendingSilent = syncPendingSilent && silent;
+                return Promise.resolve(false);
+            }
+
             syncInProgress = true;
             setSyncStatus("Actualizando…", "busy");
 
-            Papa.parse(CSV_PUBLIC_URL + "&t=" + Date.now(), {
-                download: true,
-                header: false,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    try {
-                        if (!results || results.errors?.length && (!results.data || !results.data.length)) {
-                            throw new Error("Respuesta CSV no válida");
-                        }
-                        const parsed = [];
-                        loadNoteRows(results.data || []);
-                        (results.data || []).forEach((row, idx) => {
-                            const deUsuario = row[3] ? String(row[3]).trim().toLowerCase() : "";
-                            const sistema = row[4] ? String(row[4]).trim().toUpperCase() : "";
-                            const usuario = row[5] ? String(row[5]).trim() : "";
-                            const pass = row[6] ? String(row[6]).trim() : "";
-                            const centro = row[7] ? String(row[7]).trim() : "";
-                            const fecha = row[8] ? String(row[8]).trim() : "";
-                            const permitirCambio = row[9] ? String(row[9]).trim().toLowerCase() : "si";
-                            if (sistema.toLowerCase() === "sistema") return;
-
-                            if ((deUsuario === currentActiveUser || currentActiveUser === "carlos") && (sistema || usuario)) {
-                                parsed.push({
-                                    originalIndex: idx + 1,
-                                    deUsuario: deUsuario || "desconocido",
-                                    sistema: sistema || "GENERAL",
-                                    usuario,
-                                    contrasena: pass,
-                                    centro_de_atencion: centro,
-                                    actualizada: fecha,
-                                    permitirCambio: permitirCambio !== "no"
-                                });
-                            }
-                        });
-
-                        // Solo reemplazar datos cuando la consulta devuelve una respuesta válida.
-                        allData = parsed;
-                        lastSuccessfulSync = new Date();
-                        const countLabel = document.getElementById("recordCountLabel");
-                        if (countLabel) countLabel.textContent = `${allData.length} registros disponibles`;
-                        if (currentActiveUser === "carlos") {
-                            populateAdminUserSelector();
-                            renderAdminUsersList();
-                        }
-                        refreshView();
-                        setSyncStatus("Actualizado " + lastSuccessfulSync.toLocaleTimeString("es-SV", {
-                            hour: "2-digit", minute: "2-digit", second: "2-digit"
-                        }));
-                        if (!silent) showToast("Datos sincronizados con Google Sheets.");
-                    } catch (error) {
-                        setSyncStatus("Error de sincronización", "error");
-                        if (!silent) showToast("No se pudieron interpretar los datos recibidos.", false);
-                    } finally {
-                        syncInProgress = false;
-                    }
-                },
-                error: function() {
+            return new Promise((resolve) => {
+                let settled = false;
+                const finish = (ok) => {
+                    if (settled) return;
+                    settled = true;
                     syncInProgress = false;
-                    setSyncStatus("Sin conexión · reintentando", "error");
-                    if (!silent) showToast("No se pudieron cargar los registros. Revisa la conexión.", false);
-                    // Conserva los últimos datos válidos en pantalla si falla temporalmente la red.
+                    resolve(ok);
+
+                    if (syncPending && currentActiveUser) {
+                        const nextSilent = syncPendingSilent;
+                        syncPending = false;
+                        syncPendingSilent = true;
+                        setTimeout(() => loadSheetData({ silent: nextSilent }), 250);
+                    }
+                };
+
+                try {
+                    Papa.parse(CSV_PUBLIC_URL + "&_nocache=" + Date.now() + "_" + Math.random().toString(36).slice(2), {
+                        download: true,
+                        header: false,
+                        skipEmptyLines: false,
+                        downloadRequestHeaders: {
+                            "Cache-Control": "no-cache, no-store, max-age=0",
+                            "Pragma": "no-cache"
+                        },
+                        complete: function(results) {
+                            try {
+                                if (!results || (results.errors?.length && (!results.data || !results.data.length))) {
+                                    throw new Error("Respuesta CSV no válida");
+                                }
+
+                                const parsed = [];
+                                loadNoteRows(results.data || []);
+                                (results.data || []).forEach((row, idx) => {
+                                    // idx + 1 conserva el número real de fila de Sheets.
+                                    // No activar skipEmptyLines: true: desplaza los índices
+                                    // cuando hay filas vacías entre registros.
+                                    const deUsuario = row[3] ? String(row[3]).trim().toLowerCase() : "";
+                                    const sistema = row[4] ? String(row[4]).trim().toUpperCase() : "";
+                                    const usuario = row[5] ? String(row[5]).trim() : "";
+                                    const pass = row[6] ? String(row[6]).trim() : "";
+                                    const centro = row[7] ? String(row[7]).trim() : "";
+                                    const fecha = row[8] ? String(row[8]).trim() : "";
+                                    const permitirCambio = row[9] ? String(row[9]).trim().toLowerCase() : "si";
+
+                                    if (sistema.toLowerCase() === "sistema") return;
+                                    if ((deUsuario === currentActiveUser || currentActiveUser === "carlos") && (sistema || usuario)) {
+                                        parsed.push({
+                                            originalIndex: idx + 1,
+                                            deUsuario: deUsuario || "desconocido",
+                                            sistema: sistema || "GENERAL",
+                                            usuario,
+                                            contrasena: pass,
+                                            centro_de_atencion: centro,
+                                            actualizada: fecha,
+                                            permitirCambio: permitirCambio !== "no"
+                                        });
+                                    }
+                                });
+
+                                allData = parsed;
+                                lastSuccessfulSync = new Date();
+                                const countLabel = document.getElementById("recordCountLabel");
+                                if (countLabel) countLabel.textContent = `${allData.length} registros disponibles`;
+                                if (currentActiveUser === "carlos") {
+                                    populateAdminUserSelector();
+                                    renderAdminUsersList();
+                                }
+                                refreshView();
+                                setSyncStatus("Actualizado " + lastSuccessfulSync.toLocaleTimeString("es-SV", {
+                                    hour: "2-digit", minute: "2-digit", second: "2-digit"
+                                }));
+                                if (!silent) showToast("Datos sincronizados con Google Sheets.");
+                                finish(true);
+                            } catch (error) {
+                                setSyncStatus("Error de sincronización", "error");
+                                if (!silent) showToast("No se pudieron interpretar los datos recibidos.", false);
+                                finish(false);
+                            }
+                        },
+                        error: function() {
+                            setSyncStatus("Sin conexión · reintentando", "error");
+                            if (!silent) showToast("No se pudieron cargar los registros. Revisa la conexión.", false);
+                            finish(false);
+                        }
+                    });
+                } catch (error) {
+                    setSyncStatus("Error de sincronización", "error");
+                    finish(false);
                 }
             });
+        }
+
+        const waitForSync = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Tras escribir, el CSV publicado puede tardar unos segundos en reflejar
+        // el cambio. Reconsultamos varias veces sin exigir F5.
+        async function refreshAfterWrite(isChangeVisible, successMessage, pendingMessage) {
+            const delays = [900, 1600, 2800, 4500, 6500];
+            for (const delay of delays) {
+                await waitForSync(delay);
+                await loadSheetData({ silent: true });
+                await waitForSync(350);
+                if (typeof isChangeVisible === "function" && isChangeVisible()) {
+                    showToast(successMessage || "Cambios sincronizados con Google Sheets.");
+                    return true;
+                }
+            }
+            showToast(pendingMessage || "El cambio fue enviado. Google Sheets aún no lo refleja; seguiremos sincronizando automáticamente.", false);
+            return false;
+        }
+
+        async function refreshUsersAfterWrite(isChangeVisible, successMessage, pendingMessage) {
+            const delays = [900, 1600, 2800, 4500, 6500];
+            for (const delay of delays) {
+                await waitForSync(delay);
+                await preloadUsersFromCSV();
+                if (typeof isChangeVisible === "function" && isChangeVisible()) {
+                    if (currentActiveUser === "carlos") renderAdminUsersList();
+                    showToast(successMessage || "Usuarios sincronizados con Google Sheets.");
+                    return true;
+                }
+            }
+            showToast(pendingMessage || "Google Sheets todavía no refleja el cambio; vuelve a sincronizar en unos segundos.", false);
+            return false;
         }
 
         async function editCardPassword(rowIndex, sistema, usuario) {
@@ -817,8 +901,11 @@
                     })
                 });
                 playSound('success');
-                showToast("Solicitud enviada. Se actualizará al sincronizar.", false);
-                setTimeout(loadSheetData, 1000);
+                await refreshAfterWrite(
+                    () => allData.some(row => Number(row.originalIndex) === Number(rowIndex) && row.contrasena === nuevaClave.trim()),
+                    "Contraseña actualizada y sincronizada.",
+                    "La solicitud se envió, pero Google Sheets aún no refleja el cambio. La app seguirá intentando actualizar."
+                );
             } catch (e) {
                 playSound('error');
                 showToast("Error de comunicación", false);
@@ -844,8 +931,11 @@
                         actor: currentActiveUser
                     })
                 });
-                showToast("Permiso actualizado; sincronizando...", false);
-                setTimeout(loadSheetData, 1000);
+                await refreshAfterWrite(
+                    () => allData.some(row => Number(row.originalIndex) === Number(rowIndex) && row.permitirCambio === Boolean(allow)),
+                    "Permiso actualizado y sincronizado.",
+                    "El permiso se envió, pero todavía no aparece actualizado en Google Sheets."
+                );
             } catch (error) {
                 showToast("No se pudo actualizar el permiso.", false);
             }
@@ -854,10 +944,7 @@
         async function deleteCardRow(rowIndex) {
             if (!confirm("¿Desea eliminar este registro de la hoja de cálculo?")) return;
 
-            // Remoción instantánea en pantalla
-            allData = allData.filter(item => item.originalIndex !== rowIndex);
-            renderSystems(allData);
-
+            // No quitamos la tarjeta hasta confirmar que desapareció del CSV.
             playSound('delete');
             showToast("Eliminando de Google Sheets...");
             try {
@@ -872,8 +959,11 @@
                 });
 
                 playSound('success');
-                showToast("Solicitud de eliminación enviada; verifica el resultado al actualizar.", false);
-                setTimeout(loadSheetData, 800);
+                await refreshAfterWrite(
+                    () => !allData.some(item => Number(item.originalIndex) === Number(rowIndex)),
+                    "Registro eliminado y sincronizado.",
+                    "La eliminación se envió, pero Google Sheets aún no refleja el cambio."
+                );
             } catch (e) {
                 playSound('error');
                 showToast("Error al eliminar", false);
@@ -899,8 +989,11 @@
                 });
 
                 playSound('success');
-                showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
-                setTimeout(loadSheetData, 1000);
+                await refreshUsersAfterWrite(
+                    () => !Object.prototype.hasOwnProperty.call(USERS_DATABASE, u),
+                    "Usuario eliminado y sincronizado.",
+                    "La solicitud se envió; el listado se actualizará cuando Google Sheets publique el cambio."
+                );
             } catch (err) {
                 playSound('error');
                 showToast("Error al eliminar usuario", false);
@@ -925,14 +1018,15 @@
                     body: JSON.stringify({ action: "addUser", newUser: newUser, newPass: newPass })
                 });
 
-                USERS_DATABASE[newUser] = newPass;
                 document.getElementById('adminNewUser').value = '';
                 document.getElementById('adminNewPass').value = '';
 
-                renderAdminUsersList();
                 playSound('success');
-                showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
-                setTimeout(loadSheetData, 1000);
+                await refreshUsersAfterWrite(
+                    () => Object.prototype.hasOwnProperty.call(USERS_DATABASE, newUser) && USERS_DATABASE[newUser] === newPass,
+                    "Usuario creado y sincronizado.",
+                    "El usuario se envió, pero aún no aparece en la hoja publicada."
+                );
             } catch (err) {
                 playSound('error');
                 showToast("Error al guardar usuario", false);
@@ -955,11 +1049,12 @@
                     body: JSON.stringify({ action: "updateG2", user: u, newPass: newPass })
                 });
 
-                USERS_DATABASE[u] = newPass;
-                renderAdminUsersList();
                 playSound('success');
-                showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
-                setTimeout(loadSheetData, 1000);
+                await refreshUsersAfterWrite(
+                    () => USERS_DATABASE[u] === newPass,
+                    "Contraseña de ingreso actualizada y sincronizada.",
+                    "La solicitud se envió, pero la nueva contraseña aún no aparece en la hoja publicada."
+                );
             } catch (err) {
                 playSound('error');
                 showToast("Error al actualizar la contraseña", false);
@@ -1205,8 +1300,15 @@
                 closeModal('createModal');
                 document.getElementById('createForm').reset();
                 playSound('success');
-                showToast("Solicitud enviada; verifica el resultado al actualizar.", false);
-                setTimeout(loadSheetData, 1500);
+                await refreshAfterWrite(
+                    () => allData.some(row =>
+                        row.deUsuario === owner &&
+                        row.sistema === sys &&
+                        row.usuario === usr
+                    ),
+                    "Acceso creado y sincronizado.",
+                    "El acceso se envió, pero Google Sheets aún no lo muestra. Seguiremos actualizando."
+                );
             } catch (err) {
                 playSound('error');
                 showToast("Error al guardar", false);
