@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recordatorio de Cumpleaños</title>
     <script>
-        try { document.documentElement.classList.toggle('cumple-neon', localStorage.getItem('cumpleapp_neon_enabled') !== 'off'); } catch (_) {}
+        try { document.documentElement.classList.toggle('cumple-neon', localStorage.getItem('cumple_general_cumpleapp_neon_enabled') !== 'off'); } catch (_) {}
     </script>
     <!-- Favicon de Pastel Dinámico -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
@@ -1891,14 +1891,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Categoría / Relación</label>
-                        <select id="bCategory" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
-                            <option value="Atencion al usuario">Atencion al usuario</option>
-                            <option value="Minsal">Minsal</option>
-                            <option value="Doctor/a">Doctor/a</option>
-                            <option value="Enfermera">Enfermera</option>
-                            <option value="Auxiliar">Auxiliar</option>
-                            <option value="Otro">Otro</option>
-                        </select>
+                        <input id="bCategory" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all" list="birthdayCategoryList" type="text" maxlength="80" placeholder="Escribe o selecciona una categoría" autocomplete="off"><datalist id="birthdayCategoryList"></datalist>
                     </div>
                 </div>
                 <div class="birthday-photo-editor">
@@ -2119,7 +2112,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
     </div>
 
     <script>
-        let birthdays = JSON.parse(localStorage.getItem('birthday_app_data')) || [
+        let birthdays = JSON.parse(localStorage.getItem('cumple_general_birthday_app_data')) || [
             { name: 'Maria Mejia', date: '1995-02-05', category: 'Atencion al usuario', notes: 'Le encantan las flores rojas', photo: '' },
             { name: 'Krissia Rosa', date: '1990-02-19', category: 'Atencion al usuario', notes: 'Café de especialidad', photo: '' }
         ];
@@ -2132,8 +2125,8 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbw3JYwWOhmpVhPo3PZn2Qmz2GEWyqhRhZq5wk5ESUeFxAHhcjOiTKUAIyhQUm2XaGEG/exec';
 
         // Sobrescribe cualquier URL vieja guardada por versiones anteriores.
-        localStorage.setItem('birthday_sheets_url', googleSheetsUrl);
-        localStorage.setItem('birthday_apps_script_url', googleAppsScriptUrl);
+        localStorage.setItem('cumple_general_birthday_sheets_url', googleSheetsUrl);
+        localStorage.setItem('cumple_general_birthday_apps_script_url', googleAppsScriptUrl);
 
         // La hoja guarda el nombre. La imagen se sirve desde la carpeta del mismo sitio.
         function getBirthdayPhotosBaseUrl() {
@@ -2246,7 +2239,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         }
 
         let deferredPrompt = null;
-        let soundEnabled = localStorage.getItem('birthday_app_sound') !== 'off';
+        let soundEnabled = localStorage.getItem('cumple_general_birthday_app_sound') !== 'off';
         let audioContext = null;
 
         // Sonidos sintetizados, siempre después de una interacción y con silencio inmediato.
@@ -2346,7 +2339,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         function toggleSound() {
             cumpleAudioUnlocked = true;
             soundEnabled = !soundEnabled;
-            try { localStorage.setItem('birthday_app_sound', soundEnabled ? 'on' : 'off'); } catch (_) {}
+            try { localStorage.setItem('cumple_general_birthday_app_sound', soundEnabled ? 'on' : 'off'); } catch (_) {}
             if (!soundEnabled) stopCumpleSounds();
             updateSoundUI();
             if (soundEnabled) playSuccessSound();
@@ -2683,7 +2676,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 
         window.onload = function() {
             updateSoundUI();
-            const savedTheme = localStorage.getItem('birthday_app_theme');
+            const savedTheme = localStorage.getItem('cumple_general_birthday_app_theme');
             if (savedTheme === 'dark') {
                 document.documentElement.classList.add('dark');
                 document.getElementById('themeIcon').className = 'fa-solid fa-sun text-sm';
@@ -3158,23 +3151,33 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             const icon = document.getElementById('themeIcon');
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
-                localStorage.setItem('birthday_app_theme', 'light');
+                localStorage.setItem('cumple_general_birthday_app_theme', 'light');
                 icon.className = 'fa-solid fa-moon text-sm';
             } else {
                 html.classList.add('dark');
-                localStorage.setItem('birthday_app_theme', 'dark');
+                localStorage.setItem('cumple_general_birthday_app_theme', 'dark');
                 icon.className = 'fa-solid fa-sun text-sm';
             }
         }
 
         function saveData() {
-            localStorage.setItem('birthday_app_data', JSON.stringify(birthdays));
+            localStorage.setItem('cumple_general_birthday_app_data', JSON.stringify(birthdays));
         }
 
         function normalizeBirthdayCategory(value) {
-            const category = String(value || '').trim().toLocaleLowerCase('es');
-            return ['Atencion al usuario', 'Minsal', 'Doctor/a', 'Enfermera', 'Auxiliar', 'Otro']
-                .find(item => item.toLocaleLowerCase('es') === category) || 'Otro';
+            // Las categorías son datos de la hoja, no una lista cerrada en el HTML.
+            return String(value || '').trim() || 'Otro';
+        }
+
+        function refreshBirthdayCategorySuggestions() {
+            const list = document.getElementById('birthdayCategoryList');
+            if (!list) return;
+            const categories = [...new Set((birthdays || [])
+                .map(item => String(item.category || '').trim())
+                .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+            list.innerHTML = categories.map(category =>
+                `<option value="${String(category).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"></option>`
+            ).join('');
         }
 
         function parseSheetDate(rawDate) {
@@ -3265,6 +3268,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 
                 if (newBirthdays.length > 0) {
                     birthdays = newBirthdays;
+                    refreshBirthdayCategorySuggestions();
                     saveData();
                     refreshAllViews();
                     if (!isSilent) {
@@ -3686,15 +3690,11 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             }
             emptyState.classList.add('hidden');
             const categories = {
-                'Atencion al usuario': ['bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300', '#df7fac'],
-                'Minsal': ['bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300', '#89a8eb'],
-                'Doctor/a': ['bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', '#79bda8'],
-                'Enfermera': ['bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', '#79bda8'],
-                'Auxiliar': ['bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300', '#89a8eb'],
-                'Otro': ['bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300', '#ddb77d']
+                // Todas las categorías, actuales y futuras, usan el mismo celeste.
+                '__uniform__': ['bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300', '#89c7ee']
             };
             listContainer.innerHTML = filtered.map(b => {
-                const [badgeColor, accent] = categories[b.category] || ['bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300', '#b494d8'];
+                const [badgeColor, accent] = categories.__uniform__;
                 const name = birthdayPhotoAttribute(b.name);
                 const initial = birthdayPhotoAttribute(String(b.name || '?').charAt(0).toUpperCase());
                 const photo = getBirthdayPhotoUrl(b.photo);
@@ -4131,6 +4131,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             document.getElementById('editIndex').value = index;
             document.getElementById('bName').value = b.name;
             document.getElementById('bDate').value = b.date;
+            refreshBirthdayCategorySuggestions();
             document.getElementById('bCategory').value = normalizeBirthdayCategory(b.category);
             document.getElementById('bPhoto').value = normalizeBirthdayPhotoReference(b.photo) || b.photo || '';
             document.getElementById('bNotes').value = b.notes || '';
@@ -4780,7 +4781,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             }
 
             function getLocalPushInstallationId() {
-                return localStorage.getItem('cumpleapp_fcm_installation_id') || '';
+                return localStorage.getItem('cumple_general_cumpleapp_fcm_installation_id') || '';
             }
 
             function waitForLocalPushInstallationId(timeoutMs = 6000) {
@@ -5641,9 +5642,9 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
 
                 Object.keys(localStorage).forEach(key => {
                     if (
-                        key.startsWith('cumpleapp_notice_') ||
-                        key.startsWith('cumpleapp_popup_') ||
-                        key.startsWith('birthday_celebration_shown_')
+                        key.startsWith('cumple_general_cumpleapp_notice_') ||
+                        key.startsWith('cumple_general_cumpleapp_popup_') ||
+                        key.startsWith('cumple_general_birthday_celebration_shown_')
                     ) {
                         localStorage.removeItem(key);
                         removed++;
@@ -5887,7 +5888,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
     <script>
         (function () {
             const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
-            const ID_KEY = 'cumpleapp_fcm_installation_id';
+            const ID_KEY = 'cumple_general_cumpleapp_fcm_installation_id';
             const SYNC_KEY = 'cumpleapp_push_last_server_sync';
             let sdk, messaging, registration, initPromise, activeAttempt, fidWaiter;
             let retryTimer, retryCount = 0, lastAttemptAt = 0;
@@ -6461,7 +6462,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
     window.toggleCumpleNeon = function () {
         enabled = !enabled;
         root.classList.toggle('cumple-neon', enabled);
-        try { localStorage.setItem('cumpleapp_neon_enabled', enabled ? 'on' : 'off'); } catch (_) {}
+        try { localStorage.setItem('cumple_general_cumpleapp_neon_enabled', enabled ? 'on' : 'off'); } catch (_) {}
         if (!enabled && particles) particles.replaceChildren();
         updateControl();
         if (typeof playNeonSound === 'function') playNeonSound(enabled);
