@@ -2024,7 +2024,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Categoría / Relación</label>
-                        <input id="bCategory" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all" list="birthdayCategoryList" type="text" name="birthday-category" maxlength="80" placeholder="Escribe o selecciona una categoría" autocomplete="new-password" autocapitalize="words" spellcheck="false"><datalist id="birthdayCategoryList"></datalist>
+                        <select id="bCategory" name="birthday-category" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"><option value="" selected disabled>Selecciona una categoría</option></select>
                     </div>
                 </div>
                 <div class="birthday-photo-editor">
@@ -3302,16 +3302,86 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             return String(value || '').trim() || 'Otro';
         }
 
-        function refreshBirthdayCategorySuggestions() {
-            const list = document.getElementById('birthdayCategoryList');
-            if (!list) return;
-            const categories = [...new Set((birthdays || [])
-                .map(item => String(item.category || '').trim())
-                .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
-            list.innerHTML = categories.map(category =>
-                `<option value="${String(category).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"></option>`
-            ).join('');
+
+        let birthdayCategoryOptions = [];
+        let birthdayCategoryRequest = null;
+
+        function requestBirthdayCategoryOptions() {
+            if (birthdayCategoryRequest) return birthdayCategoryRequest;
+            birthdayCategoryRequest = new Promise((resolve, reject) => {
+                const callbackName = '__birthdayCategories_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+                const script = document.createElement('script');
+                let finished = false;
+                const cleanup = () => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timer);
+                    script.remove();
+                    try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+                };
+                const timer = setTimeout(() => {
+                    cleanup();
+                    birthdayCategoryRequest = null;
+                    reject(new Error('No se pudieron consultar las categorías de Google Sheets.'));
+                }, 15000);
+                window[callbackName] = (result) => {
+                    cleanup();
+                    birthdayCategoryRequest = null;
+                    if (result && result.status === 'success' && Array.isArray(result.categories)) {
+                        resolve(result.categories.map(v => String(v || '').trim()).filter(Boolean));
+                    } else {
+                        reject(new Error(result && result.message || 'Respuesta de categorías no válida.'));
+                    }
+                };
+                const url = new URL(googleAppsScriptUrl);
+                url.searchParams.set('action', 'getcategories');
+                url.searchParams.set('prefix', callbackName);
+                url.searchParams.set('_cb', String(Date.now()));
+                script.src = url.toString();
+                script.async = true;
+                script.onerror = () => {
+                    cleanup();
+                    birthdayCategoryRequest = null;
+                    reject(new Error('No se pudo conectar con Apps Script para consultar categorías.'));
+                };
+                document.head.appendChild(script);
+            });
+            return birthdayCategoryRequest;
         }
+
+        async function refreshBirthdayCategorySuggestions(selectedValue) {
+            const select = document.getElementById('bCategory');
+            if (!select) return;
+            const current = selectedValue !== undefined ? String(selectedValue || '').trim() : String(select.value || '').trim();
+            try {
+                birthdayCategoryOptions = await requestBirthdayCategoryOptions();
+            } catch (error) {
+                console.warn('Categorías de Sheets:', error);
+                // Si la consulta falla temporalmente, no se pierden las categorías visibles en los registros.
+                birthdayCategoryOptions = [...new Set((birthdays || []).map(item => String(item.category || '').trim()).filter(Boolean))];
+            }
+            const values = [...birthdayCategoryOptions];
+            // Un registro antiguo conserva su categoría aunque ya no figure en la validación actual.
+            if (current && !values.some(value => value.toLocaleLowerCase('es') === current.toLocaleLowerCase('es'))) {
+                values.push(current);
+            }
+            const fragment = document.createDocumentFragment();
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Selecciona una categoría';
+            placeholder.disabled = true;
+            fragment.appendChild(placeholder);
+            values.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                fragment.appendChild(option);
+            });
+            select.replaceChildren(fragment);
+            select.value = current && values.includes(current) ? current : '';
+        }
+
+
 
         function parseSheetDate(rawDate) {
             if (!rawDate) return null;
@@ -4137,8 +4207,9 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             } finally { clearTimeout(timer); }
         }
 
-        function openModal() {
+        async function openModal() {
             if (birthdaySaveInProgress) return;
+            await refreshBirthdayCategorySuggestions('');
             birthdayOriginalPhoto = '';
             birthdayPhotoAuthorizationRequired = false;
             birthdayDraftId = createBirthdayId();
@@ -4172,6 +4243,10 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             const name = document.getElementById('bName').value.trim();
             const date = document.getElementById('bDate').value;
             const category = normalizeBirthdayCategory(document.getElementById('bCategory').value);
+            if (!category || category === 'Otro' && !document.getElementById('bCategory').value) {
+                showCustomModal('Falta la categoría', 'Selecciona una categoría del menú desplegable.');
+                return;
+            }
             let photo = document.getElementById('bPhoto').value.trim();
             const notes = document.getElementById('bNotes').value.trim();
 
@@ -4254,7 +4329,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             }
         }
 
-        function editBirthday(index) {
+        async function editBirthday(index) {
             if (birthdaySaveInProgress) return;
             const b = birthdays[index];
             if (!b) return;
@@ -4264,7 +4339,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
             document.getElementById('editIndex').value = index;
             document.getElementById('bName').value = b.name;
             document.getElementById('bDate').value = b.date;
-            refreshBirthdayCategorySuggestions();
+            await refreshBirthdayCategorySuggestions(b.category);
             document.getElementById('bCategory').value = normalizeBirthdayCategory(b.category);
             document.getElementById('bPhoto').value = normalizeBirthdayPhotoReference(b.photo) || b.photo || '';
             document.getElementById('bNotes').value = b.notes || '';
