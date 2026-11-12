@@ -2025,7 +2025,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Categoría / Relación</label>
                         <select id="bCategory" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all">
-                            <option value="Atencion al usuario">Atencion al usuario</option>
+                            <option value="Centro de Atención">Centro de Atención</option>
                             <option value="Minsal">Minsal</option>
                             <option value="Doctor/a">Doctor/a</option>
                             <option value="Enfermera">Enfermera</option>
@@ -2277,7 +2277,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         // Solo se utiliza para reconocer enlaces antiguos y validar la respuesta de carga.
         // El navegador no necesita solicitar la imagen a este dominio.
         function getBirthdayPhotoRepositoryBaseUrl() {
-            return 'https://raw.githubusercontent.com/carlosmarcenaro64-cell/lsss/main/fotos/cumpleanos/';
+            return 'https://raw.githubusercontent.com/carlosmarcenaro64-cell/Isss/main/fotos/cumpleanos/';
         }
 
         function normalizeBirthdayPhotoFileName(value) {
@@ -2298,9 +2298,14 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
                 const folders = [
                     getBirthdayPhotosBaseUrl(),
                     getBirthdayPhotoRepositoryBaseUrl(),
+                    'https://raw.githubusercontent.com/carlosmarcenaro64-cell/Isss/refs/heads/main/fotos/cumpleanos/',
+                    'https://raw.githubusercontent.com/carlosmarcenaro64-cell/lsss/main/fotos/cumpleanos/',
                     'https://raw.githubusercontent.com/carlosmarcenaro64-cell/lsss/refs/heads/main/fotos/cumpleanos/',
+                    'https://github.com/carlosmarcenaro64-cell/Isss/blob/main/fotos/cumpleanos/',
                     'https://github.com/carlosmarcenaro64-cell/lsss/blob/main/fotos/cumpleanos/',
+                    'https://github.com/carlosmarcenaro64-cell/Isss/raw/main/fotos/cumpleanos/',
                     'https://github.com/carlosmarcenaro64-cell/lsss/raw/main/fotos/cumpleanos/',
+                    'https://carlosmarcenaro64-cell.github.io/Isss/fotos/cumpleanos/',
                     'https://carlosmarcenaro64-cell.github.io/lsss/fotos/cumpleanos/'
                 ];
                 for (const folder of folders) {
@@ -2682,7 +2687,7 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         async function shareCumpleApp() {
             playClickSound();
 
-            const appUrl = 'https://carlosmarcenaro64-cell.github.io/lsss/Cumple.html';
+            const appUrl = 'https://carlosmarcenaro64-cell.github.io/Isss/CAT.html';
             const shareData = {
                 title: 'CumpleApp 🎂',
                 text: 'Te comparto CumpleApp, una app para recordar cumpleaños y fechas especiales. 🎉',
@@ -3305,9 +3310,26 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
         }
 
         function normalizeBirthdayCategory(value) {
-            const category = String(value || '').trim().toLocaleLowerCase('es');
-            return ['Atencion al usuario', 'Minsal', 'Doctor/a', 'Enfermera', 'Auxiliar', 'Otro']
-                .find(item => item.toLocaleLowerCase('es') === category) || 'Otro';
+            const raw = String(value || '').trim();
+            const category = raw
+                .normalize('NFD')
+                .replace(/[\\u0300-\\u036f]/g, '')
+                .toLocaleLowerCase('es')
+                .replace(/\\s+/g, ' ');
+
+            // Compatibilidad con los nombres históricos usados en la hoja.
+            if ([
+                'centro de atencion',
+                'atencion al usuario',
+                'atencion de usuario',
+                'centro atencion usuario'
+            ].includes(category)) return 'Centro de Atención';
+
+            const categories = ['Minsal', 'Doctor/a', 'Enfermera', 'Auxiliar', 'Otro'];
+            return categories.find(item =>
+                item.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+                    .toLocaleLowerCase('es') === category
+            ) || 'Otro';
         }
 
         function parseSheetDate(rawDate) {
