@@ -1714,6 +1714,68 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-vis
       @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important; } }
     </style>
 
+
+    <!-- REFINAMIENTO VISUAL ISSS · V2 · SOLO CSS, SIN CAMBIOS DE LÓGICA -->
+    <style id="cumple-isss-polish-v2">
+      :root {
+        --ui-bg:#f4f7fb; --ui-panel:#fff; --ui-ink:#142d49; --ui-muted:#65778c;
+        --ui-line:#dce6f0; --ui-soft:#edf3f8; --ui-pink:#087e9b; --ui-purple:#245b91;
+        --ui-shadow:0 12px 30px rgba(19,53,84,.065); color-scheme:light;
+      }
+      html.dark {
+        --ui-bg:#0e1a29; --ui-panel:#17283c; --ui-ink:#edf4fb; --ui-muted:#a9bacb;
+        --ui-line:#2b4058; --ui-soft:#20354b; --ui-pink:#63c6d6; --ui-purple:#8bb9e8;
+        --ui-shadow:0 14px 34px rgba(0,0,0,.22); color-scheme:dark;
+      }
+      html { scroll-behavior:smooth; }
+      body { background:var(--ui-bg)!important; color:var(--ui-ink)!important; }
+      body::before { opacity:.7; background:radial-gradient(ellipse at 0 0,rgba(24,112,153,.075),transparent 38%),radial-gradient(ellipse at 100% 30%,rgba(217,164,65,.055),transparent 34%)!important; }
+      .cumple-header { background:color-mix(in srgb,var(--ui-panel) 94%,transparent)!important; border-color:var(--ui-line)!important; box-shadow:0 4px 18px rgba(16,48,78,.055)!important; }
+      .cumple-header-inner { max-width:1280px!important; min-height:72px; }
+      main.cumple-main { max-width:1280px!important; padding-top:30px!important; }
+      .cumple-brand > div:first-child { background:linear-gradient(145deg,#17658b,#12365d 72%,#087e9b)!important; border-radius:15px!important; box-shadow:0 7px 18px rgba(18,66,103,.18)!important; animation:none!important; }
+      .cumple-brand h1 { color:var(--ui-ink)!important; letter-spacing:-.55px; }
+      .cumple-brand p { color:var(--ui-muted)!important; letter-spacing:.15px; }
+      .cumple-toolbar > button:not(.cumple-new-button) { background:var(--ui-panel)!important; color:var(--ui-muted)!important; border:1px solid var(--ui-line)!important; box-shadow:none!important; border-radius:12px!important; }
+      .cumple-toolbar .cumple-new-button { background:linear-gradient(115deg,#15577b,#087e9b)!important; border-radius:12px!important; box-shadow:0 7px 18px rgba(8,126,155,.17)!important; }
+      .cumple-intro { padding:14px 0 8px!important; }
+      .cumple-eyebrow { color:#087e9b!important; letter-spacing:1.6px!important; }
+      .cumple-intro h2 { color:var(--ui-ink)!important; letter-spacing:-1.1px!important; }
+      .cumple-intro h2 span { color:#087e9b!important; text-shadow:none!important; }
+      html.dark .cumple-intro h2 span { color:#70d0de!important; }
+      .cumple-intro p { color:var(--ui-muted)!important; }
+      .cumple-today { border:1px solid var(--ui-line)!important; border-radius:16px!important; box-shadow:var(--ui-shadow)!important; }
+      .cumple-feature { border:1px solid rgba(255,255,255,.18)!important; border-radius:22px!important; background:linear-gradient(112deg,#12365d 0%,#15577b 58%,#087e9b 100%)!important; box-shadow:0 15px 32px rgba(17,62,96,.14)!important; }
+      .cumple-feature:nth-child(2n) { background:linear-gradient(112deg,#173c63,#176c87 60%,#278a9a)!important; }
+      .cumple-feature-countdown { background:rgba(255,255,255,.10)!important; border-color:rgba(255,255,255,.28)!important; box-shadow:none!important; }
+      .cumple-feature-avatar { border-radius:18px!important; box-shadow:0 0 0 3px rgba(255,255,255,.17)!important; animation:none!important; }
+      .cumple-overview > div { background:var(--ui-panel)!important; border:1px solid var(--ui-line)!important; border-radius:17px!important; box-shadow:var(--ui-shadow)!important; }
+      .cumple-overview > div:nth-child(1) > div:first-child { background:#e8f3f7!important;color:#14728d!important; }
+      .cumple-overview > div:nth-child(2) > div:first-child { background:#fbf2df!important;color:#a87920!important; }
+      .cumple-overview > div:nth-child(3) > div:first-child { background:#eaf0f8!important;color:#315f91!important; }
+      html.dark .cumple-overview > div > div:first-child { filter:brightness(.78) saturate(.8); }
+      .cumple-controls { background:var(--ui-panel)!important; border:1px solid var(--ui-line)!important; border-radius:17px!important; box-shadow:var(--ui-shadow)!important; }
+      .cumple-search #searchInput { background:var(--ui-soft)!important; border:1px solid var(--ui-line)!important; border-radius:12px!important; }
+      .cumple-filter-group .filter-btn { border-radius:10px!important; }
+      .cumple-filter-group .filter-btn[aria-pressed="true"] { background:#15577b!important; color:#fff!important; border-color:#15577b!important; }
+      #birthdayList > .birthday-card-selectable { background:var(--ui-panel)!important; border:1px solid var(--ui-line)!important; border-radius:17px!important; box-shadow:var(--ui-shadow)!important; }
+      #birthdayList > .birthday-card-selectable:hover { transform:translateY(-3px)!important; box-shadow:0 16px 34px rgba(19,53,84,.11)!important; }
+      .cumple-footer { color:var(--ui-muted)!important; border-color:var(--ui-line)!important; }
+      #cumplePushNotice > div { border-radius:15px!important; }
+      #customModal > div,#modalContent,#installModalContent { border-radius:22px!important; }
+      button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible { outline:3px solid rgba(8,126,155,.35)!important; outline-offset:2px!important; }
+      @media(max-width:640px) {
+        .cumple-header-inner { padding:11px 15px!important; }
+        main.cumple-main { padding:20px 15px 44px!important; gap:19px!important; }
+        .cumple-feature { grid-template-columns:minmax(0,1fr) 96px!important; gap:11px!important; padding:20px 16px!important; min-height:180px!important; }
+        .cumple-feature-countdown { width:88px!important;height:88px!important; }
+        .cumple-feature-countdown strong { font-size:35px!important; }
+      }
+      @media(prefers-reduced-motion:reduce) {
+        *,*::before,*::after { animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important; }
+      }
+    </style>
+
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased transition-colors duration-500 overflow-x-hidden relative">
 <div id="cumpleNeonAmbient" aria-hidden="true"><span class="cumple-neon-mote" style="--mote-x:6%;--mote-y:18%;--mote-size:4px;--mote-color:#ef6dc7;--mote-delay:-0s;--mote-speed:8s"></span><span class="cumple-neon-mote" style="--mote-x:94%;--mote-y:24%;--mote-size:5px;--mote-color:#8de4e5;--mote-delay:-1s;--mote-speed:9s"></span><span class="cumple-neon-mote" style="--mote-x:3%;--mote-y:57%;--mote-size:7px;--mote-color:#ae8eff;--mote-delay:-2s;--mote-speed:10s"></span><span class="cumple-neon-mote" style="--mote-x:90%;--mote-y:76%;--mote-size:4px;--mote-color:#ff97ca;--mote-delay:-3s;--mote-speed:11s"></span><span class="cumple-neon-mote" style="--mote-x:14%;--mote-y:87%;--mote-size:4px;--mote-color:#9e9dff;--mote-delay:-4s;--mote-speed:8s"></span><span class="cumple-neon-mote" style="--mote-x:83%;--mote-y:9%;--mote-size:5px;--mote-color:#ffc384;--mote-delay:-5s;--mote-speed:9s"></span><span class="cumple-neon-mote" style="--mote-x:41%;--mote-y:5%;--mote-size:3px;--mote-color:#f27bcc;--mote-delay:-6s;--mote-speed:10s"></span><span class="cumple-neon-mote" style="--mote-x:97%;--mote-y:51%;--mote-size:4px;--mote-color:#9989ee;--mote-delay:-7s;--mote-speed:11s"></span><span class="cumple-neon-mote" style="--mote-x:24%;--mote-y:42%;--mote-size:3px;--mote-color:#6adadb;--mote-delay:-8s;--mote-speed:8s"></span></div>
