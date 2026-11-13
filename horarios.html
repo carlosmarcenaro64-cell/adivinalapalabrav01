@@ -30,6 +30,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- Google Fonts Inter & JetBrains Mono -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -338,6 +339,11 @@
                     <button onclick="clearSchedule()" class="px-3 py-2 bg-slate-200 dark:bg-slate-900 hover:bg-slate-300 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
                         <i data-lucide="rotate-ccw" class="w-4 h-4 text-amber-500"></i>
                         <span>Limpiar Tabla</span>
+                    </button>
+                    <button type="button" id="btn-import-schedule" onclick="openScheduleImport()" class="px-3 py-2 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition" title="Importar horario desde una captura digital">
+                        <i data-lucide="file-image" class="w-4 h-4"></i>
+                        <span>Importar horario</span>
+                        <span class="text-[9px] font-black tracking-wide bg-amber-500 text-white px-1.5 py-0.5 rounded">BETA</span>
                     </button>
                     <button onclick="exportImage()" class="px-3 py-2 bg-indigo-100 dark:bg-indigo-900/40 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 border border-indigo-300 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-200 rounded-xl text-xs font-medium flex items-center gap-1.5 transition">
                         <i data-lucide="image" class="w-4 h-4 text-indigo-500"></i>
@@ -2155,6 +2161,313 @@
  const app=$('app-container');if(app){new MutationObserver(()=>{if(!app.classList.contains('hidden'))addAccountButtons()}).observe(app,{attributes:true,attributeFilter:['class']})}
 })();
 </script>
+
+
+    <!-- IMPORTADOR DE HORARIOS DESDE CAPTURAS DIGITALES (BETA) -->
+    <div id="schedule-import-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md hidden items-center justify-center z-[95] p-3 no-print">
+      <section class="glass-card rounded-2xl max-w-5xl w-full max-h-[94vh] overflow-y-auto p-5 border border-amber-400/40 shadow-2xl">
+        <div class="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3 mb-4">
+          <div>
+            <h3 class="font-black text-slate-900 dark:text-white flex items-center gap-2"><i data-lucide="file-image" class="w-5 h-5 text-amber-500"></i> Importar horario <span class="text-[9px] bg-amber-500 text-white px-2 py-1 rounded-md">BETA</span></h3>
+            <p class="text-xs text-slate-500 mt-1">Reconocimiento de capturas digitales de Excel y Google Sheets. Los colores no se utilizan.</p>
+          </div>
+          <button type="button" onclick="closeScheduleImport()" class="p-2 rounded-lg text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800" aria-label="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300">1. Selecciona la captura (PNG o JPG)</label>
+            <input id="schedule-import-file" type="file" accept="image/png,image/jpeg,image/webp" class="input-neo w-full rounded-xl p-2 text-xs">
+            <img id="schedule-import-preview" class="hidden max-h-72 max-w-full mx-auto rounded-lg border border-slate-300 dark:border-slate-700 object-contain" alt="Vista previa de la captura">
+            <button id="schedule-import-run" type="button" onclick="recognizeScheduleImage()" class="btn-neon-primary w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i data-lucide="scan-text" class="w-4 h-4"></i> Reconocer captura</button>
+            <div id="schedule-import-status" class="text-xs text-slate-500 min-h-5" aria-live="polite">La captura debe mostrar encabezados, nombres y filas de días completos.</div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-300">2. Resultado del reconocimiento</label>
+              <span id="schedule-import-count" class="text-[10px] text-slate-500"></span>
+            </div>
+            <div id="schedule-import-preview-table" class="max-h-72 overflow-auto rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+              <div class="p-4 text-slate-500">Aquí aparecerá la vista previa editable.</div>
+            </div>
+            <p class="text-[10px] text-slate-500">Revisa cada asignación. Los códigos deben existir en el catálogo de turnos de la institución activa.</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap justify-end gap-2 mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
+          <button type="button" onclick="closeScheduleImport()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold">Cancelar</button>
+          <button id="schedule-import-apply" type="button" onclick="applyScheduleImport()" disabled class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white text-xs font-bold">Confirmar importación</button>
+        </div>
+      </section>
+    </div>
+
+
+    <script>
+    // IMPORTADOR BETA: lector por columnas/celdas para la plantilla de captura proporcionada.
+    let scheduleImportRows = [];
+    let scheduleImportImageUrl = null;
+    let scheduleImportBlocks = [];
+    const SCHEDULE_IMPORT_TEMPLATE = {
+      width: 1199, height: 911, dataTop: 134, dataBottom: 885, rows: 30,
+      codeColumns: [[94,133],[257,299],[420,461],[573,615],[727,766],[881,917],[1036,1078]]
+    };
+
+    function openScheduleImport() {
+      const modal = document.getElementById('schedule-import-modal');
+      if (!modal) return;
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+      if (window.lucide) window.lucide.createIcons();
+    }
+    function closeScheduleImport() {
+      const modal = document.getElementById('schedule-import-modal');
+      if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    }
+    function importStatus(message, error = false) {
+      const el = document.getElementById('schedule-import-status');
+      if (el) { el.textContent = message; el.className = 'text-xs min-h-5 ' + (error ? 'text-rose-500' : 'text-slate-500'); }
+    }
+    function normalizeImportText(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+    function importEditDistance(a, b) {
+      const dp = Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+      for(let i=0;i<=a.length;i++) dp[i][0]=i;
+      for(let j=0;j<=b.length;j++) dp[0][j]=j;
+      for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++)
+        dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+      return dp[a.length][b.length];
+    }
+    function detectShiftCode(token) {
+      let cleaned = normalizeImportText(token);
+      if (!cleaned) return null;
+      if (['LIBRE','L1BRE','L1BR3','LIBR'].includes(cleaned)) return 'LIBRE';
+      // Confusiones frecuentes del OCR en códigos numéricos.
+      cleaned = cleaned.replace(/[OQD]/g,'0').replace(/[IL|]/g,'1').replace(/S/g,'5').replace(/B/g,'8');
+      const codes = Object.keys(SHIFTS);
+      let best = null, bestDistance = 99;
+      for (const code of codes) {
+        const candidate = code.replace(/[^A-Z0-9]/g,'');
+        const distance = importEditDistance(cleaned,candidate);
+        if (distance < bestDistance) { bestDistance=distance; best=code; }
+      }
+      return bestDistance <= (cleaned.length <= 4 ? 1 : 0) ? best : null;
+    }
+    function escapeImportHtml(value) {
+      return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    function importEmployeeOptions(selectedId) {
+      return '<option value="">Seleccionar empleado…</option>' + EMPLOYEES.map(emp =>
+        `<option value="${escapeImportHtml(emp.id)}" ${String(emp.id)===String(selectedId)?'selected':''}>${escapeImportHtml(emp.name)}</option>`
+      ).join('');
+    }
+    function renderScheduleImportPreview() {
+      const host = document.getElementById('schedule-import-preview-table');
+      const apply = document.getElementById('schedule-import-apply');
+      const count = document.getElementById('schedule-import-count');
+      if (!host) return;
+      if (!scheduleImportRows.length) {
+        host.innerHTML = '<div class="p-4 text-slate-500">No se detectaron turnos. Comprueba la imagen y vuelve a intentarlo.</div>';
+        if (apply) apply.disabled = true;
+        if (count) count.textContent = '';
+        return;
+      }
+      const activeCount = scheduleImportBlocks.filter(b=>b.active !== false).length;
+      const mapping = `<div class="p-2 space-y-2 border-b border-slate-200 dark:border-slate-700"><div class="font-bold text-slate-700 dark:text-slate-200">Relaciona los bloques con tu nómina. Puedes excluir los que no necesites.</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${
+        scheduleImportBlocks.map((b,i)=>`<div class="flex items-center gap-2 text-[10px] ${b.active===false?'opacity-50':''}"><span class="shrink-0 font-bold">Bloque ${i+1}</span><select data-import-block="${i}" ${b.active===false?'disabled':''} class="input-neo rounded-lg p-1 min-w-0 flex-1 text-[10px]">${importEmployeeOptions(b.empId)}</select><label class="shrink-0 flex items-center gap-1 cursor-pointer"><input type="checkbox" data-import-exclude="${i}" ${b.active===false?'checked':''} class="accent-amber-500"><span>Excluir</span></label></div>`).join('')
+      }</div><div class="text-[10px] text-slate-500">${activeCount} de ${scheduleImportBlocks.length} bloques incluidos</div></div>`;
+      const options = Object.keys(SHIFTS).map(code => `<option value="${code}">${code} · ${escapeImportHtml(SHIFTS[code].label)}</option>`).join('');
+      const rows = scheduleImportRows.map((r,i) => {
+        const block = scheduleImportBlocks[r.blockIndex];
+        const emp = EMPLOYEES.find(e=>String(e.id)===String(block?.empId));
+        return `<tr class="border-t border-slate-200 dark:border-slate-700"><td class="p-1.5 font-mono">${String(r.day).padStart(2,'0')}</td><td class="p-1.5">Bloque ${r.blockIndex+1}</td><td class="p-1.5">${escapeImportHtml(emp?.name || 'Sin asignar')}</td><td class="p-1.5"><select data-import-index="${i}" class="input-neo rounded-lg p-1 text-[10px] w-full">${options.replace(`value="${r.code}"`, `value="${r.code}" selected`)}</select></td></tr>`;
+      }).join('');
+      host.innerHTML = mapping + `<table class="w-full border-collapse"><thead class="sticky top-0 bg-slate-100 dark:bg-slate-900"><tr><th class="p-1.5 text-left">Día</th><th class="p-1.5 text-left">Origen</th><th class="p-1.5 text-left">Empleado</th><th class="p-1.5 text-left">Turno</th></tr></thead><tbody>${rows}</tbody></table>`;
+      if (count) count.textContent = `${scheduleImportRows.length} celdas reconocidas`;
+      validateImportMappings();
+    }
+    function validateImportMappings() {
+      const apply = document.getElementById('schedule-import-apply');
+      const activeBlocks = scheduleImportBlocks.filter(b=>b.active !== false);
+      const ids = activeBlocks.map(b=>String(b.empId||''));
+      const allSelected = activeBlocks.length > 0 && ids.every(Boolean);
+      const unique = new Set(ids).size === ids.length;
+      if (apply) apply.disabled = !(scheduleImportRows.some(r=>scheduleImportBlocks[r.blockIndex]?.active !== false) && allSelected && unique);
+      const status = document.getElementById('schedule-import-status');
+      if (activeBlocks.length === 0 && status) {
+        status.textContent = 'Todos los bloques están excluidos. Incluye al menos uno para continuar.';
+        status.className = 'text-xs min-h-5 text-rose-500';
+      } else if (allSelected && !unique && status) {
+        status.textContent = 'Hay empleados repetidos entre los bloques incluidos. Asigna empleados diferentes o excluye el bloque que no necesitas.';
+        status.className = 'text-xs min-h-5 text-rose-500';
+      }
+    }
+    async function recognizeScheduleImage() {
+      const file = document.getElementById('schedule-import-file')?.files?.[0];
+      if (!file) { importStatus('Selecciona primero una imagen PNG, JPG o WEBP.', true); return; }
+      if (!/^image\/(png|jpeg|webp)$/.test(file.type)) { importStatus('Formato no compatible. Utiliza PNG, JPG o WEBP.', true); return; }
+      const run = document.getElementById('schedule-import-run');
+      const preview = document.getElementById('schedule-import-preview');
+      scheduleImportRows = []; scheduleImportBlocks = [];
+      renderScheduleImportPreview();
+      if (scheduleImportImageUrl) URL.revokeObjectURL(scheduleImportImageUrl);
+      scheduleImportImageUrl = URL.createObjectURL(file);
+      preview.src = scheduleImportImageUrl; preview.classList.remove('hidden');
+      if (!window.Tesseract) { importStatus('No se pudo cargar el motor OCR. Comprueba tu conexión a internet.', true); return; }
+      run.disabled = true; run.textContent = 'Procesando 7 columnas…';
+      try {
+        importStatus('Preparando imagen y leyendo cada columna de códigos…');
+        const sourceImage = await new Promise((resolve,reject)=>{
+          const image = new Image(); image.onload=()=>resolve(image); image.onerror=()=>reject(new Error('No se pudo abrir la imagen.'));
+          image.src=scheduleImportImageUrl;
+        });
+        const template = SCHEDULE_IMPORT_TEMPLATE;
+        const scaleX = sourceImage.naturalWidth / template.width;
+        const scaleY = sourceImage.naturalHeight / template.height;
+        // Se rechazan proporciones muy distintas para no desplazar las celdas por error.
+        const ratio = sourceImage.naturalWidth / sourceImage.naturalHeight;
+        if (Math.abs(ratio - template.width/template.height) > 0.12) {
+          throw new Error('La imagen no tiene la proporción de la plantilla reconocida. Usa la captura completa, sin recortar.');
+        }
+        let currentImportColumn = 0;
+        const worker = await Tesseract.createWorker('eng', 1, {
+          logger: m => { if (m.status === 'recognizing text' && m.progress != null) importStatus(`Leyendo columna ${currentImportColumn}/7: ${Math.round(m.progress*100)}%`); }
+        });
+        await worker.setParameters({
+          tessedit_pageseg_mode: '6',
+          tessedit_char_whitelist: '0123456789LIBRElibreOQDSBIL'
+        });
+        let parsed = [];
+        try {
+          for (let blockIndex=0; blockIndex<template.codeColumns.length; blockIndex++) {
+            currentImportColumn = blockIndex+1;
+            const [baseX1,baseX2] = template.codeColumns[blockIndex];
+            const sx = Math.round(baseX1*scaleX), ex = Math.round(baseX2*scaleX);
+            const sy = Math.round(template.dataTop*scaleY), ey = Math.round(template.dataBottom*scaleY);
+            const cropCanvas = document.createElement('canvas');
+            const factor = 5;
+            cropCanvas.width = Math.max(1,Math.round((ex-sx)*factor));
+            cropCanvas.height = Math.max(1,Math.round((ey-sy)*factor));
+            const ctx = cropCanvas.getContext('2d',{willReadFrequently:true});
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(sourceImage,sx,sy,ex-sx,ey-sy,0,0,cropCanvas.width,cropCanvas.height);
+            const result = await worker.recognize(cropCanvas);
+            const words = result.data.words || [];
+            const byDay = new Map();
+            words.forEach(word=>{
+              const token = String(word.text||'').trim();
+              const code = detectShiftCode(token);
+              if (!code) return;
+              const centerY = ((word.bbox.y0+word.bbox.y1)/2)/factor;
+              const rowIndex = Math.round((centerY/scaleY - 12.5)/25.1);
+              const day = rowIndex+1;
+              if (day<1 || day>template.rows) return;
+              const confidence = Number(word.confidence)||0;
+              const old = byDay.get(day);
+              if (!old || confidence>old.confidence) byDay.set(day,{day,blockIndex,code,confidence});
+            });
+            byDay.forEach(row=>parsed.push(row));
+            // Segundo pase solo para celdas que el OCR de columna no pudo leer.
+            // Así se recuperan códigos pequeños sin tener que procesar 210 celdas siempre.
+            const missingDays = [];
+            for (let day=1; day<=template.rows; day++) if (!byDay.has(day)) missingDays.push(day);
+            if (missingDays.length) {
+              await worker.setParameters({tessedit_pageseg_mode:'7'});
+              for (const day of missingDays) {
+                const cellTop = Math.round((template.dataTop + (day-1)*25.1)*scaleY);
+                const cellBottom = Math.round((template.dataTop + day*25.1)*scaleY);
+                const cellCanvas = document.createElement('canvas');
+                const cellScale = 8;
+                cellCanvas.width = Math.max(1,Math.round((ex-sx)*cellScale));
+                cellCanvas.height = Math.max(1,Math.round((cellBottom-cellTop)*cellScale));
+                const cellCtx = cellCanvas.getContext('2d');
+                cellCtx.imageSmoothingEnabled = false;
+                cellCtx.drawImage(sourceImage,sx,cellTop,ex-sx,cellBottom-cellTop,0,0,cellCanvas.width,cellCanvas.height);
+                const cellResult = await worker.recognize(cellCanvas);
+                const cellText = String(cellResult.data.text||'').trim().split(/\s+/);
+                let cellCode = null;
+                for (const token of cellText) {
+                  cellCode = detectShiftCode(token);
+                  if (cellCode) break;
+                }
+                if (cellCode) byDay.set(day,{day,blockIndex,code:cellCode,confidence:75});
+              }
+              await worker.setParameters({tessedit_pageseg_mode:'6'});
+            }
+            byDay.forEach(row=>parsed.push(row));
+          }
+        } finally {
+          await worker.terminate();
+        }
+        const [year,month] = document.getElementById('month-picker').value.split('-').map(Number);
+        const daysInMonth = new Date(year,month,0).getDate();
+        scheduleImportRows = parsed.filter(r=>r.day<=daysInMonth)
+          .sort((a,b)=>a.day-b.day || a.blockIndex-b.blockIndex);
+        scheduleImportBlocks = template.codeColumns.map((_,i)=>({empId:'',active:true}));
+        renderScheduleImportPreview();
+        if (!scheduleImportRows.length) {
+          importStatus('No se reconocieron códigos dentro de las celdas. Usa la captura completa y nítida de esta plantilla.', true);
+        } else {
+          importStatus(`Se reconocieron ${scheduleImportRows.length} celdas. Asigna cada bloque a un empleado y revisa los turnos antes de confirmar.`);
+        }
+      } catch (err) {
+        console.error('Error en importador BETA:',err);
+        importStatus('No se pudo procesar la captura: '+(err.message||err),true);
+      } finally {
+        run.disabled=false;
+        run.innerHTML='<i data-lucide="scan-text" class="w-4 h-4"></i> Reconocer captura';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+    function applyScheduleImport() {
+      if (!scheduleImportRows.length) return;
+      const blockSelects = document.querySelectorAll('#schedule-import-preview-table select[data-import-block]');
+      blockSelects.forEach(select=>{
+        const block=scheduleImportBlocks[Number(select.dataset.importBlock)];
+        if(block) block.empId=select.value;
+      });
+      const turnSelects = document.querySelectorAll('#schedule-import-preview-table select[data-import-index]');
+      turnSelects.forEach(select=>{
+        const row=scheduleImportRows[Number(select.dataset.importIndex)];
+        if(row) row.code=select.value;
+      });
+      const activeBlocks=scheduleImportBlocks.filter(b=>b.active!==false);
+      const ids=activeBlocks.map(b=>String(b.empId||''));
+      if(!activeBlocks.length) { alert('Incluye al menos un bloque para importar.'); return; }
+      if(ids.some(id=>!id)||new Set(ids).size!==ids.length) {
+        alert('Asigna empleados diferentes a los bloques que decidiste incluir. Los bloques excluidos no necesitan empleado.'); return;
+      }
+      const validRows=scheduleImportRows
+        .filter(r=>scheduleImportBlocks[r.blockIndex]?.active!==false)
+        .map(r=>({...r,empId:scheduleImportBlocks[r.blockIndex].empId}))
+        .filter(r=>SHIFTS[r.code] && scheduleData[r.day] && Object.prototype.hasOwnProperty.call(scheduleData[r.day],r.empId));
+      if(!validRows.length){alert('No hay asignaciones válidas para la matriz actual.');return;}
+      const collisions=validRows.filter(r=>scheduleData[r.day][r.empId] && scheduleData[r.day][r.empId]!=='LIBRE');
+      if(collisions.length && !confirm(`Hay ${collisions.length} celdas que ya tienen turnos. ¿Deseas sobrescribirlas?`)) return;
+      if(!confirm(`Se importarán ${validRows.length} asignaciones en ${currentInstitution||'la institución activa'}. ¿Continuar?`)) return;
+      validRows.forEach(r=>{scheduleData[r.day][r.empId]=r.code;});
+      EMPLOYEES.forEach(emp=>updateEmployeeColumnUI(emp.id));
+      calculateTotals(); validateCoverage();
+      closeScheduleImport();
+      alert(`Importación aplicada: ${validRows.length} asignaciones. Revisa la matriz.`);
+    }
+    document.addEventListener('change',event=>{
+      if(event.target?.id==='schedule-import-file'){
+        const file=event.target.files?.[0]; if(file) importStatus(`Archivo seleccionado: ${file.name}`);
+      }
+      if(event.target?.matches?.('#schedule-import-preview-table select[data-import-block]')){
+        const block=scheduleImportBlocks[Number(event.target.dataset.importBlock)];
+        if(block) block.empId=event.target.value;
+        renderScheduleImportPreview();
+      }
+      if(event.target?.matches?.('#schedule-import-preview-table input[data-import-exclude]')){
+        const block=scheduleImportBlocks[Number(event.target.dataset.importExclude)];
+        if(block) {
+          block.active=!event.target.checked;
+          if(block.active===false) block.empId='';
+        }
+        renderScheduleImportPreview();
+      }
+    });
+    </script>
 
 </body>
 </html>
